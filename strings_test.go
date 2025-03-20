@@ -59,6 +59,6 @@ func ExampleGenerateString() {
 
 func BenchmarkGenerateString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		GenerateString(24, AllChars)
+		GenerateString(8, Alphanumeric)
 	}
 }
