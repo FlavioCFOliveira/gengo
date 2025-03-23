@@ -1,35 +1,30 @@
-package GoGen
+package gen
 
 import (
-	"strings"
 	"testing"
 )
 
-func TestGenerateWord(t *testing.T) {
-	word := GenerateWord()
+func TestWord(t *testing.T) {
+	word := Word()
 	println(word)
 }
 
-func TestGenerateGenerateWordByLengthType(t *testing.T) {
+func TestWordByLengthType(t *testing.T) {
 
 	t.Run("Small-Length-Words", func(t *testing.T) {
-		word := GenerateWordByLengthType(SmallLengthWord)
-		println(word)
+		_ = WordByLengthType(SmallLengthWord)
 	})
 
 	t.Run("Medium-Length-Words", func(t *testing.T) {
-		word := GenerateWordByLengthType(MediumLengthWords)
-		println(word)
+		_ = WordByLengthType(MediumLengthWords)
 	})
 
 	t.Run("big-Length-Words", func(t *testing.T) {
-		word := GenerateWordByLengthType(BigLengthWords)
-		println(word)
+		_ = WordByLengthType(BigLengthWords)
 	})
 
 }
 
-func TestGenerateWords(t *testing.T) {
-	words := GenerateWords(100)
-	println(strings.Join(words, " "))
+func TestWords(t *testing.T) {
+	_ = Words(100)
 }

@@ -1,4 +1,4 @@
-package GoGen
+package gen
 
 import (
 	"fmt"
@@ -6,14 +6,14 @@ import (
 	"testing"
 )
 
-func TestGenerateString(t *testing.T) {
+func TestString(t *testing.T) {
 
 	// arrange
 	size := 100
 	srcChars := "abc"
 
 	// act
-	result := GenerateString(size, srcChars)
+	result := String(size, srcChars)
 
 	// assert
 	for _, char := range result {
@@ -28,11 +28,11 @@ func TestGenerateString(t *testing.T) {
 		srcChars := "abc"
 
 		// act
-		result := GenerateString(size, srcChars)
+		result := String(size, srcChars)
 
 		// assert
 		if len(result) != 0 {
-			t.Errorf("GenerateString result length %d != 0", len(result))
+			t.Errorf("String result length %d != 0", len(result))
 		}
 	})
 
@@ -42,29 +42,29 @@ func TestGenerateString(t *testing.T) {
 		srcChars := "abc"
 
 		// act
-		result := GenerateString(size, srcChars)
+		result := String(size, srcChars)
 
 		// assert
 		if len(result) != 0 {
-			t.Errorf("GenerateString result length %d != %d", len(result), size)
+			t.Errorf("String result length %d != %d", len(result), size)
 		}
 	})
 
 }
 
-func ExampleGenerateString() {
-	HexColor := GenerateString(8, "0123456789ABCDEF")
+func ExampleString() {
+	HexColor := String(8, "0123456789ABCDEF")
 	fmt.Println(HexColor)
 }
 
-func BenchmarkGenerateString(b *testing.B) {
+func BenchmarkString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		GenerateString(8, Alphanumeric)
+		String(8, Alphanumeric)
 	}
 }
 
-func BenchmarkGenerateNumeric(b *testing.B) {
+func BenchmarkNumeric(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		GenerateNumeric(8)
+		StringNumeric(8)
 	}
 }

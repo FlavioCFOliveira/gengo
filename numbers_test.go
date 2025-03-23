@@ -1,31 +1,27 @@
-package GoGen
+package gen
 
 import "testing"
 
-func TestGenerateUInt(t *testing.T) {
+func TestUInt(t *testing.T) {
 	for i := 0; i < 1000; i++ {
-		t := GenerateUInt()
-		println(t)
+		_ = UInt()
 	}
 }
 
-func TestGenerateUInt8(t *testing.T) {
+func TestUInt8(t *testing.T) {
 	for i := 0; i < 1000; i++ {
-		t := GenerateUInt8()
-		println(t)
+		_ = UInt8()
 	}
 }
 
-func TestGenerateUInt16(t *testing.T) {
+func TestUInt16(t *testing.T) {
 	for i := 0; i < 1000; i++ {
-		t := GenerateUInt16()
-		println(t)
+		_ = UInt16()
 	}
 }
 
-func TestGenerateUInt64(t *testing.T) {
+func TestUInt64(t *testing.T) {
 	for i := 0; i < 1000; i++ {
-		t := GenerateUInt64()
-		println(t)
+		_ = UInt64()
 	}
 }

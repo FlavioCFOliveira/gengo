@@ -1,57 +1,57 @@
-package GoGen
+package gen
 
 import (
 	"math"
 	"math/rand"
 )
 
-func GenerateInt8Between(min, max int8) int8 {
+func Int8Between(min, max int8) int8 {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
 	return int8(rand.Intn(int(max-min+1)) + int(min))
 }
 
-func GenerateInt8() int8 {
-	return GenerateInt8Between(math.MinInt8, math.MaxInt8)
+func Int8() int8 {
+	return Int8Between(math.MinInt8, math.MaxInt8)
 }
 
-func GenerateInt16Between(min, max int16) int16 {
+func Int16Between(min, max int16) int16 {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
 	return int16(rand.Intn(int(max-min+1)) + int(min))
 }
 
-func GenerateInt16() int16 {
-	return GenerateInt16Between(math.MinInt16, math.MaxInt16)
+func Int16() int16 {
+	return Int16Between(math.MinInt16, math.MaxInt16)
 }
 
-func GenerateIntBetween(min, max int) int {
+func IntBetween(min, max int) int {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
 	return rand.Intn(max-min+1) + min
 }
 
-func GenerateInt() int {
-	return GenerateIntBetween(math.MinInt, math.MaxInt)
+func Int() int {
+	return IntBetween(math.MinInt, math.MaxInt)
 }
 
-func GenerateInt64Between(min, max int64) int64 {
+func Int64Between(min, max int64) int64 {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
 	return rand.Int63n(max-min+1) + min
 }
 
-func GenerateInt64() int64 {
-	return GenerateInt64Between(math.MinInt64, math.MaxInt64)
+func Int64() int64 {
+	return Int64Between(math.MinInt64, math.MaxInt64)
 }
 
 // ----------
 
-func GenerateUInt8Between(min, max uint8) uint8 {
+func UInt8Between(min, max uint8) uint8 {
 	if min > max {
 		min, max = max, min
 	}
@@ -72,11 +72,11 @@ func GenerateUInt8Between(min, max uint8) uint8 {
 	return min + randNum
 }
 
-func GenerateUInt8() uint8 {
-	return GenerateUInt8Between(0, math.MaxUint8)
+func UInt8() uint8 {
+	return UInt8Between(0, math.MaxUint8)
 }
 
-func GenerateUInt16Between(min, max uint16) uint16 {
+func UInt16Between(min, max uint16) uint16 {
 	if min > max {
 		min, max = max, min
 	}
@@ -99,11 +99,11 @@ func GenerateUInt16Between(min, max uint16) uint16 {
 	return min + randNum
 }
 
-func GenerateUInt16() uint16 {
-	return GenerateUInt16Between(0, math.MaxUint16)
+func UInt16() uint16 {
+	return UInt16Between(0, math.MaxUint16)
 }
 
-func GenerateUIntBetween(min, max uint32) uint32 {
+func UIntBetween(min, max uint32) uint32 {
 	if min > max {
 		min, max = max, min
 	}
@@ -118,11 +118,11 @@ func GenerateUIntBetween(min, max uint32) uint32 {
 	return min + uint32(randNum)
 }
 
-func GenerateUInt() uint32 {
-	return GenerateUIntBetween(0, math.MaxUint32)
+func UInt() uint32 {
+	return UIntBetween(0, math.MaxUint32)
 }
 
-func GenerateUInt64Between(min, max uint64) uint64 {
+func UInt64Between(min, max uint64) uint64 {
 	if min > max {
 		min, max = max, min
 	}
@@ -153,32 +153,32 @@ func GenerateUInt64Between(min, max uint64) uint64 {
 	return min + randNum
 }
 
-func GenerateUInt64() uint64 {
-	return GenerateUInt64Between(0, math.MaxUint64)
+func UInt64() uint64 {
+	return UInt64Between(0, math.MaxUint64)
 }
 
 // --------------
 
-func GenerateFloat32(min, max float32) float32 {
+func Float32(min, max float32) float32 {
 	if min > max {
 		min, max = max, min
 	}
 	return rand.Float32()*(max-min) + min
 }
-func GenerateFloat64(min, max float64) float64 {
+func Float64(min, max float64) float64 {
 	if min > max {
 		min, max = max, min
 	}
 
 	return rand.Float64()*(max-min) + min
 }
-func GenerateComplex64(minReal, maxReal, minImag, maxImag float32) complex64 {
-	realPart := GenerateFloat32(minReal, maxReal)
-	imagPart := GenerateFloat32(minImag, maxImag)
+func Complex64(minReal, maxReal, minImag, maxImag float32) complex64 {
+	realPart := Float32(minReal, maxReal)
+	imagPart := Float32(minImag, maxImag)
 	return complex(realPart, imagPart)
 }
-func GenerateComplex128(minReal, maxReal, minImag, maxImag float64) complex128 {
-	realPart := GenerateFloat64(minReal, maxReal)
-	imagPart := GenerateFloat64(minImag, maxImag)
+func Complex128(minReal, maxReal, minImag, maxImag float64) complex128 {
+	realPart := Float64(minReal, maxReal)
+	imagPart := Float64(minImag, maxImag)
 	return complex(realPart, imagPart)
 }

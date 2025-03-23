@@ -1,4 +1,4 @@
-package GoGen
+package gen
 
 type LengthTypeWords uint8
 
@@ -14,37 +14,37 @@ const BigLengthWords LengthTypeWords = 3
 // WordLengthRatio represents a ratio between LengthTypes
 const WordLengthRatio = `11111111111112222222222222222222222222233333333333`
 
-func GenerateWord() string {
-	return GenerateAlphabetic(GenerateIntBetween(2, 30))
+func Word() string {
+	return StringAlphabeticLowercase(IntBetween(2, 30))
 }
 
-func GenerateWordByLengthType(l LengthTypeWords) (word string) {
+func WordByLengthType(l LengthTypeWords) (word string) {
 
 	switch l {
 	case SmallLengthWord:
-		word = GenerateAlphabetic(GenerateIntBetween(1, 4))
+		word = StringAlphabeticLowercase(IntBetween(1, 4))
 	case MediumLengthWords:
-		word = GenerateAlphabetic(GenerateIntBetween(5, 8))
+		word = StringAlphabeticLowercase(IntBetween(5, 8))
 	case BigLengthWords:
-		word = GenerateAlphabetic(GenerateIntBetween(9, 30))
+		word = StringAlphabeticLowercase(IntBetween(9, 30))
 	default:
-		word = GenerateAlphabetic(GenerateIntBetween(1, 30))
+		word = StringAlphabeticLowercase(IntBetween(1, 30))
 	}
 
 	return
 }
 
-func GenerateWords(length int) (result []string) {
+func Words(length int) (result []string) {
 	result = make([]string, length, length)
 	for i := 0; i < length; i++ {
-		t := GenerateString(1, WordLengthRatio)
+		t := String(1, WordLengthRatio)
 		switch t {
 		case "1":
-			result[i] = GenerateWordByLengthType(SmallLengthWord)
+			result[i] = WordByLengthType(SmallLengthWord)
 		case "2":
-			result[i] = GenerateWordByLengthType(MediumLengthWords)
+			result[i] = WordByLengthType(MediumLengthWords)
 		case "3":
-			result[i] = GenerateWordByLengthType(BigLengthWords)
+			result[i] = WordByLengthType(BigLengthWords)
 		}
 	}
 	return

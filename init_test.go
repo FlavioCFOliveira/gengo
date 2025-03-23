@@ -1,4 +1,4 @@
-package GoGen
+package gen
 
 import (
 	"errors"

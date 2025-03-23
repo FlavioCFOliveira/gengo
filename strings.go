@@ -1,4 +1,4 @@
-package GoGen
+package gen
 
 const AllChars string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*()-_=+[]{}<>?/|\^~`
 const Alphanumeric string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`
@@ -9,7 +9,7 @@ const Numeric string = `0123456789`
 const Hexadecimal string = `0123456789ABCDEF`
 const Symbols string = `!@#$%&*()-_=+[]{}<>?/|\^~`
 
-func GenerateString(size int, sourceChars string) string {
+func String(size int, sourceChars string) string {
 
 	if size <= 0 || len(sourceChars) == 0 {
 		return ""
@@ -25,42 +25,42 @@ func GenerateString(size int, sourceChars string) string {
 	//return *(*string)(unsafe.Pointer(&result))
 }
 
-// GenerateAllChars returns a string with a given size containing all characters
-func GenerateAllChars(size int) string {
-	return GenerateString(size, AllChars)
+// StringAllChars returns a string with a given size containing all characters
+func StringAllChars(size int) string {
+	return String(size, AllChars)
 }
 
-// GenerateAlphanumeric returns a string with a given size containing only alphanumeric characters
-func GenerateAlphanumeric(size int) string {
-	return GenerateString(size, Alphanumeric)
+// StringAlphanumeric returns a string with a given size containing only alphanumeric characters
+func StringAlphanumeric(size int) string {
+	return String(size, Alphanumeric)
 }
 
-// GenerateAlphabetic returns a string with a given size containing only alphabetic characters
-func GenerateAlphabetic(size int) string {
-	return GenerateString(size, Alphabetic)
+// StringAlphabetic returns a string with a given size containing only alphabetic characters
+func StringAlphabetic(size int) string {
+	return String(size, Alphabetic)
 }
 
-// GenerateAlphabeticUppercase returns a string with a given size containing only alphabetic characters in upper case only
-func GenerateAlphabeticUppercase(size int) string {
-	return GenerateString(size, AlphabeticUppercase)
+// StringAlphabeticUppercase returns a string with a given size containing only alphabetic characters in upper case only
+func StringAlphabeticUppercase(size int) string {
+	return String(size, AlphabeticUppercase)
 }
 
-// GenerateAlphabeticLowercase returns a string with a given size containing only alphabetic characters in lower case only
-func GenerateAlphabeticLowercase(size int) string {
-	return GenerateString(size, AlphabeticLowercase)
+// StringAlphabeticLowercase returns a string with a given size containing only alphabetic characters in lower case only
+func StringAlphabeticLowercase(size int) string {
+	return String(size, AlphabeticLowercase)
 }
 
-// GenerateNumeric returns a string with a given size containing only numeric characters
-func GenerateNumeric(size int) string {
-	return GenerateString(size, Numeric)
+// StringNumeric returns a string with a given size containing only numeric characters
+func StringNumeric(size int) string {
+	return String(size, Numeric)
 }
 
-// GenerateHexadecimal returns a string with a given size containing only hexadecimal characters
-func GenerateHexadecimal(size int) string {
-	return GenerateString(size, Hexadecimal)
+// StringHexadecimal returns a string with a given size containing only hexadecimal characters
+func StringHexadecimal(size int) string {
+	return String(size, Hexadecimal)
 }
 
-// GenerateSymbols returns a string with a given size containing only symbols characters
-func GenerateSymbols(size int) string {
-	return GenerateString(size, Symbols)
+// StringSymbols returns a string with a given size containing only symbols characters
+func StringSymbols(size int) string {
+	return String(size, Symbols)
 }
