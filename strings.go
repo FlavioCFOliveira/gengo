@@ -15,12 +15,14 @@ func GenerateString(size int, sourceChars string) string {
 		return ""
 	}
 
-	result := make([]byte, size)
+	srcLen := len(sourceChars)
+	result := make([]byte, size, size)
 	for i := 0; i < size; i++ {
-		result[i] = sourceChars[rnd.Intn(len(sourceChars))]
+		result[i] = sourceChars[rnd.Intn(srcLen)]
 	}
 
 	return string(result)
+	//return *(*string)(unsafe.Pointer(&result))
 }
 
 // GenerateAllChars returns a string with a given size containing all characters

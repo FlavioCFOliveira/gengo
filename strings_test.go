@@ -53,12 +53,18 @@ func TestGenerateString(t *testing.T) {
 }
 
 func ExampleGenerateString() {
-	HexColor := GenerateString(6, "0123456789ABCDEF")
+	HexColor := GenerateString(8, "0123456789ABCDEF")
 	fmt.Println(HexColor)
 }
 
 func BenchmarkGenerateString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		GenerateString(8, Alphanumeric)
+	}
+}
+
+func BenchmarkGenerateNumeric(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		GenerateNumeric(8)
 	}
 }
