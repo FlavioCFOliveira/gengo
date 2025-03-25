@@ -1,4 +1,4 @@
-package gen
+package gengo
 
 import (
 	"math/rand"

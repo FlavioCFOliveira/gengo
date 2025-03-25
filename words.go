@@ -1,4 +1,4 @@
-package gen
+package gengo
 
 type LengthTypeWords uint8
 
