@@ -17,7 +17,7 @@ func String(size int, sourceChars string) string {
 	}
 
 	srcLen := len(sourceChars)
-	result := make([]byte, size, size)
+	result := make([]byte, size)
 	for i := 0; i < size; i++ {
 		result[i] = sourceChars[rnd.Intn(srcLen)]
 	}
