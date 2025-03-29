@@ -1,5 +1,5 @@
 bench:
-	go test -benchmem -run=^$ -bench ^Benchmark -benchtime 5s .
+	go test -benchmem -run=^ -bench ^Benchmark -benchtime 5s .
 
 check:
 	gofmt -l .
