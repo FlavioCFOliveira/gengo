@@ -6,9 +6,11 @@ import (
 	"time"
 )
 
-var rnd *rand.Rand
-var ErrorNilFunc = errors.New("f cannot be nil")
-var ErrorFuncNilResult = errors.New("f returned nil")
+var (
+	rnd                *rand.Rand
+	ErrorNilFunc       = errors.New("f cannot be nil")
+	ErrorFuncNilResult = errors.New("f returned nil")
+)
 
 var dtMin, dtMax int64
 

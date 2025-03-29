@@ -12,7 +12,6 @@ func TestReseed(t *testing.T) {
 }
 
 func TestReseedFunc(t *testing.T) {
-
 	t.Run("Success", func(t *testing.T) {
 		f := func() *rand.Rand {
 			return rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -21,15 +20,12 @@ func TestReseedFunc(t *testing.T) {
 		if err := ReseedFunc(f); err != nil {
 			t.Errorf("ReseedFunc() error = %v", err)
 		}
-
 	})
 
 	t.Run("NilFunc", func(t *testing.T) {
-
 		if err := ReseedFunc(nil); !errors.Is(err, ErrorNilFunc) {
 			t.Errorf("ReseedFunc() error = %v expected = %v", err, ErrorNilFunc)
 		}
-
 	})
 
 	t.Run("FuncNilResult", func(t *testing.T) {
@@ -40,7 +36,5 @@ func TestReseedFunc(t *testing.T) {
 		if err := ReseedFunc(f); !errors.Is(err, ErrorFuncNilResult) {
 			t.Errorf("ReseedFunc() error = %v expected = %v", err, ErrorFuncNilResult)
 		}
-
 	})
-
 }

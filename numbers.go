@@ -165,6 +165,7 @@ func Float32(min, max float32) float32 {
 	}
 	return rand.Float32()*(max-min) + min
 }
+
 func Float64(min, max float64) float64 {
 	if min > max {
 		min, max = max, min
@@ -172,11 +173,13 @@ func Float64(min, max float64) float64 {
 
 	return rand.Float64()*(max-min) + min
 }
+
 func Complex64(minReal, maxReal, minImag, maxImag float32) complex64 {
 	realPart := Float32(minReal, maxReal)
 	imagPart := Float32(minImag, maxImag)
 	return complex(realPart, imagPart)
 }
+
 func Complex128(minReal, maxReal, minImag, maxImag float64) complex128 {
 	realPart := Float64(minReal, maxReal)
 	imagPart := Float64(minImag, maxImag)

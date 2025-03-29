@@ -19,7 +19,6 @@ func Word() string {
 }
 
 func WordByLengthType(l LengthTypeWords) (word string) {
-
 	switch l {
 	case SmallLengthWord:
 		word = StringAlphabeticLowercase(IntBetween(1, 4))

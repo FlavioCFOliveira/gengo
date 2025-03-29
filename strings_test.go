@@ -7,7 +7,6 @@ import (
 )
 
 func TestString(t *testing.T) {
-
 	// arrange
 	size := 100
 	srcChars := "abc"
@@ -49,7 +48,6 @@ func TestString(t *testing.T) {
 			t.Errorf("String result length %d != %d", len(result), size)
 		}
 	})
-
 }
 
 func ExampleString() {
