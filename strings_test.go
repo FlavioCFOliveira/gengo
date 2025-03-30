@@ -7,7 +7,6 @@ import (
 )
 
 func TestString(t *testing.T) {
-
 	// arrange
 	size := 100
 	srcChars := "abc"
@@ -17,8 +16,8 @@ func TestString(t *testing.T) {
 
 	// assert
 	for _, char := range result {
-		if strings.Index(srcChars, string(char)) == -1 {
-			t.Errorf("char:%s not exist", string(char))
+		if !strings.ContainsRune(srcChars, char) {
+			t.Errorf("char: %q doesn't exist", char)
 		}
 	}
 
@@ -49,7 +48,6 @@ func TestString(t *testing.T) {
 			t.Errorf("String result length %d != %d", len(result), size)
 		}
 	})
-
 }
 
 func ExampleString() {

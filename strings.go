@@ -1,28 +1,29 @@
 package gengo
 
-const AllChars string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*()-_=+[]{}<>?/|\^~`
-const Alphanumeric string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`
-const Alphabetic string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`
-const AlphabeticUppercase string = `ABCDEFGHIJKLMNOPQRSTUVWXYZ`
-const AlphabeticLowercase string = `abcdefghijklmnopqrstuvwxyz`
-const Numeric string = `0123456789`
-const Hexadecimal string = `0123456789ABCDEF`
-const Symbols string = `!@#$%&*()-_=+[]{}<>?/|\^~`
+const (
+	AllChars            string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*()-_=+[]{}<>?/|\^~`
+	Alphanumeric        string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`
+	Alphabetic          string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`
+	AlphabeticUppercase string = `ABCDEFGHIJKLMNOPQRSTUVWXYZ`
+	AlphabeticLowercase string = `abcdefghijklmnopqrstuvwxyz`
+	Numeric             string = `0123456789`
+	Hexadecimal         string = `0123456789ABCDEF`
+	Symbols             string = `!@#$%&*()-_=+[]{}<>?/|\^~`
+)
 
 func String(size int, sourceChars string) string {
-
 	if size <= 0 || len(sourceChars) == 0 {
 		return ""
 	}
 
 	srcLen := len(sourceChars)
-	result := make([]byte, size, size)
+	result := make([]byte, size)
 	for i := 0; i < size; i++ {
 		result[i] = sourceChars[rnd.Intn(srcLen)]
 	}
 
 	return string(result)
-	//return *(*string)(unsafe.Pointer(&result))
+	// return *(*string)(unsafe.Pointer(&result))
 }
 
 // StringAllChars returns a string with a given size containing all characters

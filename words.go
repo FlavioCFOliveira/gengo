@@ -19,7 +19,6 @@ func Word() string {
 }
 
 func WordByLengthType(l LengthTypeWords) (word string) {
-
 	switch l {
 	case SmallLengthWord:
 		word = StringAlphabeticLowercase(IntBetween(1, 4))
@@ -35,7 +34,7 @@ func WordByLengthType(l LengthTypeWords) (word string) {
 }
 
 func Words(length int) (result []string) {
-	result = make([]string, length, length)
+	result = make([]string, length)
 	for i := 0; i < length; i++ {
 		t := String(1, WordLengthRatio)
 		switch t {

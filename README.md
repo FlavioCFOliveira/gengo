@@ -1,5 +1,7 @@
 # gengo
 
+[![build](https://github.com/FlavioCFOliveira/gengo/actions/workflows/go.yml/badge.svg)](https://github.com/FlavioCFOliveira/gengo/actions/workflows/go.yml)
+
 gengo is a go Module containing utility functions to generate random data. 
 
 ```sh

@@ -10,7 +10,6 @@ func TestWord(t *testing.T) {
 }
 
 func TestWordByLengthType(t *testing.T) {
-
 	t.Run("Small-Length-Words", func(t *testing.T) {
 		_ = WordByLengthType(SmallLengthWord)
 	})
@@ -22,7 +21,6 @@ func TestWordByLengthType(t *testing.T) {
 	t.Run("big-Length-Words", func(t *testing.T) {
 		_ = WordByLengthType(BigLengthWords)
 	})
-
 }
 
 func TestWords(t *testing.T) {
