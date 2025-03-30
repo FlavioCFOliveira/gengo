@@ -11,14 +11,15 @@ const (
 	Symbols             string = `!@#$%&*()-_=+[]{}<>?/|\^~`
 )
 
-func String(size int, sourceChars string) string {
-	if size <= 0 || len(sourceChars) == 0 {
+// String Generates a string with a given length using only characters of a given source.
+func String(length int, sourceChars string) string {
+	if length <= 0 || len(sourceChars) == 0 {
 		return ""
 	}
 
 	srcLen := len(sourceChars)
-	result := make([]byte, size)
-	for i := 0; i < size; i++ {
+	result := make([]byte, length)
+	for i := 0; i < length; i++ {
 		result[i] = sourceChars[rnd.Intn(srcLen)]
 	}
 
@@ -26,42 +27,42 @@ func String(size int, sourceChars string) string {
 	// return *(*string)(unsafe.Pointer(&result))
 }
 
-// StringAllChars returns a string with a given size containing all characters
-func StringAllChars(size int) string {
-	return String(size, AllChars)
+// StringAllChars returns a string with a given length containing all the predefined alphabetic, alphanumeric and symbols characters
+func StringAllChars(length int) string {
+	return String(length, AllChars)
 }
 
-// StringAlphanumeric returns a string with a given size containing only alphanumeric characters
-func StringAlphanumeric(size int) string {
-	return String(size, Alphanumeric)
+// StringAlphanumeric returns a string with a given length containing only alphanumeric characters
+func StringAlphanumeric(length int) string {
+	return String(length, Alphanumeric)
 }
 
-// StringAlphabetic returns a string with a given size containing only alphabetic characters
-func StringAlphabetic(size int) string {
-	return String(size, Alphabetic)
+// StringAlphabetic returns a string with a given length containing only alphabetic characters
+func StringAlphabetic(length int) string {
+	return String(length, Alphabetic)
 }
 
-// StringAlphabeticUppercase returns a string with a given size containing only alphabetic characters in upper case only
-func StringAlphabeticUppercase(size int) string {
-	return String(size, AlphabeticUppercase)
+// StringAlphabeticUppercase returns a string with a given length containing only alphabetic characters in upper case only
+func StringAlphabeticUppercase(length int) string {
+	return String(length, AlphabeticUppercase)
 }
 
-// StringAlphabeticLowercase returns a string with a given size containing only alphabetic characters in lower case only
-func StringAlphabeticLowercase(size int) string {
-	return String(size, AlphabeticLowercase)
+// StringAlphabeticLowercase returns a string with a given length containing only alphabetic characters in lower case only
+func StringAlphabeticLowercase(length int) string {
+	return String(length, AlphabeticLowercase)
 }
 
-// StringNumeric returns a string with a given size containing only numeric characters
-func StringNumeric(size int) string {
-	return String(size, Numeric)
+// StringNumeric returns a string with a given length containing only numeric characters
+func StringNumeric(length int) string {
+	return String(length, Numeric)
 }
 
-// StringHexadecimal returns a string with a given size containing only hexadecimal characters
-func StringHexadecimal(size int) string {
-	return String(size, Hexadecimal)
+// StringHexadecimal returns a string with a given length containing only hexadecimal characters
+func StringHexadecimal(length int) string {
+	return String(length, Hexadecimal)
 }
 
-// StringSymbols returns a string with a given size containing only symbols characters
-func StringSymbols(size int) string {
-	return String(size, Symbols)
+// StringSymbols returns a string with a given length containing only symbols characters
+func StringSymbols(length int) string {
+	return String(length, Symbols)
 }
