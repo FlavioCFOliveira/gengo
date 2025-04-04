@@ -9,7 +9,12 @@ func Int8Between(min, max int8) int8 {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
-	return int8(rand.Intn(int(max-min+1)) + int(min))
+	diff := int16(max) - int16(min) + 1
+	if diff <= 0 {
+		return 0
+	}
+	val := int16(rand.Int63n(int64(diff))) + int16(min)
+	return int8(val)
 }
 
 func Int8() int8 {
@@ -20,7 +25,13 @@ func Int16Between(min, max int16) int16 {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
-	return int16(rand.Intn(int(max-min+1)) + int(min))
+	diff := int32(max) - int32(min) + 1
+	if diff <= 0 {
+		return 0
+	}
+
+	val := int32(rand.Int63n(int64(diff))) + int32(min)
+	return int16(val)
 }
 
 func Int16() int16 {
@@ -31,7 +42,16 @@ func IntBetween(min, max int) int {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
-	return rand.Intn(max-min+1) + min
+
+	// Convert to int64 to avoid overflow on subtraction
+	diff := int64(max) - int64(min) + 1
+	if diff <= 0 {
+		return 0
+	}
+
+	// Generate a value in [0, diff)
+	r := rand.Int63n(diff)
+	return int(r) + min
 }
 
 func Int() int {
@@ -42,7 +62,11 @@ func Int64Between(min, max int64) int64 {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
-	return rand.Int63n(max-min+1) + min
+	diff := max - min + 1
+	if diff <= 0 {
+		return 0
+	}
+	return rand.Int63n(diff) + min
 }
 
 func Int64() int64 {
@@ -50,31 +74,23 @@ func Int64() int64 {
 }
 
 // ----------
+func Byte() byte {
+	return UInt8()
+}
 
 func UInt8Between(min, max uint8) uint8 {
 	if min > max {
 		min, max = max, min
 	}
 
-	rangeSize := uint16(max) - uint16(min) + 1 // usa uint16 para evitar overflow
-
-	var randNum uint8
-	limit := uint16(256) - (uint16(256) % rangeSize) // maior múltiplo de rangeSize dentro do uint8
-
-	for {
-		r := uint16(rand.Uint32() & 0xFF) // pega só os 8 bits menos significativos
-		if r < limit {
-			randNum = uint8(r % rangeSize)
-			break
-		}
+	diff := uint16(max) - uint16(min) + 1
+	if diff <= 0 {
+		return 0
 	}
-
-	return min + randNum
+	val := rand.Int63n(int64(diff)) + int64(min)
+	return uint8(val)
 }
 
-func Byte() byte {
-	return UInt8()
-}
 func UInt8() uint8 {
 	return UInt8Between(0, math.MaxUint8)
 }
@@ -84,22 +100,12 @@ func UInt16Between(min, max uint16) uint16 {
 		min, max = max, min
 	}
 
-	// Calcula o tamanho do intervalo de forma segura (usando uint32 para evitar overflow)
-	rangeSize := uint32(max) - uint32(min) + 1
-
-	var randNum uint16
-	limit := uint32(65536) - (uint32(65536) % rangeSize) // maior múltiplo de rangeSize dentro de uint16
-
-	for {
-		// Gera número aleatório com uint32
-		r := uint32(rand.Uint32() & 0xFFFF) // Pega os 16 bits menos significativos
-		if r < limit {
-			randNum = uint16(r % rangeSize)
-			break
-		}
+	diff := uint32(max) - uint32(min) + 1
+	if diff == 0 {
+		return 0
 	}
-
-	return min + randNum
+	val := rand.Int63n(int64(diff)) + int64(min)
+	return uint16(val)
 }
 
 func UInt16() uint16 {
@@ -111,14 +117,13 @@ func UIntBetween(min, max uint32) uint32 {
 		min, max = max, min
 	}
 
-	// rangeSize como uint64 para evitar overflow (ex: max = math.MaxUint32, min = 0)
-	rangeSize := uint64(max) - uint64(min) + 1
+	diff := uint64(max) - uint64(min) + 1
+	if diff == 0 {
+		return 0
+	}
 
-	// Gera número aleatório com uint64 para pegar todo o range
-	randNum := uint64(rand.Uint32())<<32 | uint64(rand.Uint32())
-	randNum = randNum % rangeSize
-
-	return min + uint32(randNum)
+	val := rand.Int63n(int64(diff)) + int64(min)
+	return uint32(val)
 }
 
 func UInt() uint32 {
@@ -129,31 +134,12 @@ func UInt64Between(min, max uint64) uint64 {
 	if min > max {
 		min, max = max, min
 	}
-
-	// Calcula tamanho do intervalo como uint128 (conceitualmente)
-	rangeSize := max - min + 1
-
-	var randNum uint64
-
-	if rangeSize == 0 {
-		// Caso especial: intervalo completo, pois max - min + 1 == 0 no overflow uint64
-		// Então retorna número aleatório completo
-		randNum = rand.Uint64()
-	} else {
-		// Garante valor uniforme dentro do intervalo com mod
-		// Usa rejection sampling para evitar viés (bias)
-		limit := ^uint64(0) - (^uint64(0) % rangeSize) // maior múltiplo de rangeSize que cabe em uint64
-
-		for {
-			r := rand.Uint64()
-			if r <= limit {
-				randNum = r % rangeSize
-				break
-			}
-		}
+	diff := max - min + 1
+	if diff == 0 {
+		// Full uint64 range
+		return rand.Uint64()
 	}
-
-	return min + randNum
+	return min + (rand.Uint64() % diff)
 }
 
 func UInt64() uint64 {
