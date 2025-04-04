@@ -24,7 +24,24 @@ func String(length int, sourceChars string) string {
 	}
 
 	return string(result)
-	// return *(*string)(unsafe.Pointer(&result))
+}
+
+// StringBetween Generates a string with a variable length using only characters of a given source.
+func StringBetween(min, max int, sourceChars string) string {
+	if min > max {
+		min, max = max, min // swap to ensure valid range
+	}
+
+	if max < 1 {
+		return ""
+	}
+
+	length := IntBetween(min, max)
+	for length < 0 {
+		length = IntBetween(min, max)
+	}
+
+	return String(length, sourceChars)
 }
 
 // StringAllChars returns a string with a given length containing all the predefined alphabetic, alphanumeric and symbols characters
