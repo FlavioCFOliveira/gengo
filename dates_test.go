@@ -7,14 +7,22 @@ import (
 
 func TestDate(t *testing.T) {
 	for i := 0; i < 1000; i++ {
-		_ = Date()
+		Date()
+	}
+}
+
+func TestUnixDate(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		UnixDate()
 	}
 }
 
 func TestDateBetween(t *testing.T) {
+
+	time.Now().Unix()
 	dMin := time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC)
 	dMax := time.Date(9999, 12, 31, 23, 59, 59, 0, time.UTC)
 	for i := 0; i < 1000; i++ {
-		_ = DateBetween(dMin, dMax)
+		DateBetween(dMin, dMax)
 	}
 }
