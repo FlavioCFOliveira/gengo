@@ -159,14 +159,20 @@ func UInt64() uint64 {
 
 // --------------
 
-func Float32(min, max float32) float32 {
+func Float32() float32 {
+	return Float32Between(math.SmallestNonzeroFloat32, math.MaxFloat32)
+}
+func Float32Between(min, max float32) float32 {
 	if min > max {
 		min, max = max, min
 	}
 	return rand.Float32()*(max-min) + min
 }
 
-func Float64(min, max float64) float64 {
+func Float64() float64 {
+	return Float64Between(math.SmallestNonzeroFloat64, math.MaxFloat64)
+}
+func Float64Between(min, max float64) float64 {
 	if min > max {
 		min, max = max, min
 	}
@@ -174,14 +180,24 @@ func Float64(min, max float64) float64 {
 	return rand.Float64()*(max-min) + min
 }
 
-func Complex64(minReal, maxReal, minImag, maxImag float32) complex64 {
-	realPart := Float32(minReal, maxReal)
-	imagPart := Float32(minImag, maxImag)
+func Complex64() complex64 {
+	realPart := Float32()
+	imagPart := Float32()
+	return complex(realPart, imagPart)
+}
+func Complex64Between(minReal, maxReal, minImag, maxImag float32) complex64 {
+	realPart := Float32Between(minReal, maxReal)
+	imagPart := Float32Between(minImag, maxImag)
 	return complex(realPart, imagPart)
 }
 
-func Complex128(minReal, maxReal, minImag, maxImag float64) complex128 {
-	realPart := Float64(minReal, maxReal)
-	imagPart := Float64(minImag, maxImag)
+func Complex128() complex128 {
+	realPart := Float64()
+	imagPart := Float64()
+	return complex(realPart, imagPart)
+}
+func Complex128Between(minReal, maxReal, minImag, maxImag float64) complex128 {
+	realPart := Float64Between(minReal, maxReal)
+	imagPart := Float64Between(minImag, maxImag)
 	return complex(realPart, imagPart)
 }
