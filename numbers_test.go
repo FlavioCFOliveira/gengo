@@ -20,7 +20,12 @@ func TestInt16(t *testing.T) {
 
 func TestInt(t *testing.T) {
 	for i := 0; i < 100; i++ {
-		Int()
+		println(Int())
+	}
+}
+func TestInt32(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		println(Int32())
 	}
 }
 func TestIntBetween(t *testing.T) {

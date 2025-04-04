@@ -3,6 +3,7 @@ package gengo
 import (
 	"math"
 	"math/rand"
+	"time"
 )
 
 func Int8Between(min, max int8) int8 {
@@ -13,6 +14,7 @@ func Int8Between(min, max int8) int8 {
 	if diff <= 0 {
 		return 0
 	}
+	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 	val := int16(rand.Int63n(int64(diff))) + int16(min)
 	return int8(val)
 }
@@ -30,6 +32,7 @@ func Int16Between(min, max int16) int16 {
 		return 0
 	}
 
+	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 	val := int32(rand.Int63n(int64(diff))) + int32(min)
 	return int16(val)
 }
@@ -47,6 +50,7 @@ func Int32Between(min, max int32) int32 {
 	if max > math.MaxInt32 {
 		max = math.MaxInt32
 	}
+	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// Handle the case where subtracting min from max overflows
 	if uint64(max)-uint64(min)+1 == 0 {
@@ -76,6 +80,7 @@ func IntBetween(min, max int) int {
 	if max > math.MaxInt32 {
 		max = math.MaxInt32
 	}
+	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	diff := int64(max) - int64(min) + 1
 	if diff <= 0 {
@@ -93,6 +98,7 @@ func Int64Between(min, max int64) int64 {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
+	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// Handle the case where subtracting min from max overflows
 	if uint64(max)-uint64(min)+1 == 0 {
@@ -124,6 +130,7 @@ func UInt8Between(min, max uint8) uint8 {
 	if diff <= 0 {
 		return 0
 	}
+	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 	val := rand.Int63n(int64(diff)) + int64(min)
 	return uint8(val)
 }
