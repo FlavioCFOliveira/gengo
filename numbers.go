@@ -74,6 +74,7 @@ func Int64() int64 {
 }
 
 // ----------
+
 func Byte() byte {
 	return UInt8()
 }
