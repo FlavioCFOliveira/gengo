@@ -33,44 +33,80 @@ func Int16Between(min, max int16) int16 {
 	val := int32(rand.Int63n(int64(diff))) + int32(min)
 	return int16(val)
 }
-
 func Int16() int16 {
 	return Int16Between(math.MinInt16, math.MaxInt16)
+}
+
+func Int32Between(min, max int32) int32 {
+	if min > max {
+		min, max = max, min // swap to ensure valid range
+	}
+	if min < math.MinInt32 {
+		min = math.MinInt32
+	}
+	if max > math.MaxInt32 {
+		max = math.MaxInt32
+	}
+
+	// Handle the case where subtracting min from max overflows
+	if uint64(max)-uint64(min)+1 == 0 {
+		r := rand.Uint64()
+		return int32(int64(r)) // Interpret as a signed 64-bit
+	}
+
+	diff := int64(max) - int64(min) + 1
+	if diff <= 0 {
+		return 0
+	}
+
+	r := rand.Int63n(diff)
+	return int32(r) + min
+}
+func Int32() int32 {
+	return Int32Between(math.MinInt32, math.MaxInt32)
 }
 
 func IntBetween(min, max int) int {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
+	if min < math.MinInt32 {
+		min = math.MinInt32
+	}
+	if max > math.MaxInt32 {
+		max = math.MaxInt32
+	}
 
-	// Convert to int64 to avoid overflow on subtraction
 	diff := int64(max) - int64(min) + 1
 	if diff <= 0 {
 		return 0
 	}
 
-	// Generate a value in [0, diff)
 	r := rand.Int63n(diff)
 	return int(r) + min
 }
-
 func Int() int {
-	return IntBetween(math.MinInt, math.MaxInt)
+	return rand.Int()
 }
 
 func Int64Between(min, max int64) int64 {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
+
+	// Handle the case where subtracting min from max overflows
+	if uint64(max)-uint64(min)+1 == 0 {
+		return rand.Int63() // Full int64 range
+	}
+
 	diff := max - min + 1
 	if diff <= 0 {
 		return 0
 	}
 	return rand.Int63n(diff) + min
 }
-
 func Int64() int64 {
-	return Int64Between(math.MinInt64, math.MaxInt64)
+	return rand.Int63()
 }
 
 // ----------
