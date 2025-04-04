@@ -72,6 +72,9 @@ func UInt8Between(min, max uint8) uint8 {
 	return min + randNum
 }
 
+func Byte() byte {
+	return UInt8()
+}
 func UInt8() uint8 {
 	return UInt8Between(0, math.MaxUint8)
 }
