@@ -170,9 +170,20 @@ func Float64Between(min, max float64) float64 {
 }
 
 func Complex64() complex64 {
-	realPart := Float32()
-	imagPart := Float32()
-	return complex(realPart, imagPart)
+	realPartMin := Float32()
+	realPartMax := Float32()
+	imagPartMin := Float32()
+	imagPartMax := Float32()
+
+	if realPartMin > realPartMax {
+		realPartMin, realPartMax = realPartMax, realPartMin
+	}
+
+	if imagPartMin > imagPartMax {
+		imagPartMin, imagPartMax = imagPartMax, imagPartMin
+	}
+
+	return Complex64Between(realPartMin, realPartMax, imagPartMin, imagPartMax)
 }
 func Complex64Between(minReal, maxReal, minImag, maxImag float32) complex64 {
 	realPart := Float32Between(minReal, maxReal)
@@ -181,9 +192,20 @@ func Complex64Between(minReal, maxReal, minImag, maxImag float32) complex64 {
 }
 
 func Complex128() complex128 {
-	realPart := Float64()
-	imagPart := Float64()
-	return complex(realPart, imagPart)
+	realPartMin := Float64()
+	realPartMax := Float64()
+	imagPartMin := Float64()
+	imagPartMax := Float64()
+
+	if realPartMin > realPartMax {
+		realPartMin, realPartMax = realPartMax, realPartMin
+	}
+
+	if imagPartMin > imagPartMax {
+		imagPartMin, imagPartMax = imagPartMax, imagPartMin
+	}
+
+	return Complex128Between(realPartMin, realPartMax, imagPartMin, imagPartMax)
 }
 func Complex128Between(minReal, maxReal, minImag, maxImag float64) complex128 {
 	realPart := Float64Between(minReal, maxReal)
