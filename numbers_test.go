@@ -1,97 +1,98 @@
 package gengo
 
 import (
-	"fmt"
 	"math"
 	"testing"
 )
 
+var loop = 1000
+
 func TestInt8(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		println(Int8())
+	for i := 0; i < loop; i++ {
+		Int8()
 	}
 }
 
 func TestInt16(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		println(Int16())
+	for i := 0; i < loop; i++ {
+		Int16()
 	}
 }
 
 func TestInt(t *testing.T) {
-	for i := 0; i < 100; i++ {
-		println(Int())
+	for i := 0; i < loop; i++ {
+		Int()
 	}
 }
 func TestInt32(t *testing.T) {
-	for i := 0; i < 100; i++ {
-		println(Int32())
+	for i := 0; i < loop; i++ {
+		Int32()
 	}
 }
 func TestIntBetween(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		println(IntBetween(math.MinInt, math.MaxInt))
+	for i := 0; i < loop; i++ {
+		IntBetween(math.MinInt, math.MaxInt)
 	}
 }
 
 func TestInt64(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		fmt.Println(Int64())
+	for i := 0; i < loop; i++ {
+		Int64()
 	}
 }
 func TestInt64Between(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		fmt.Println(Int64Between(math.MinInt64, math.MaxInt64))
+	for i := 0; i < loop; i++ {
+		Int64Between(math.MinInt64, math.MaxInt64)
 	}
 }
 
 func TestUInt(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		_ = UInt()
+	for i := 0; i < loop; i++ {
+		UInt()
 	}
 }
 
 func TestUInt8(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		_ = UInt8()
+	for i := 0; i < loop; i++ {
+		UInt8()
 	}
 }
 func TestByte(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		_ = Byte()
+	for i := 0; i < loop; i++ {
+		Byte()
 	}
 }
 
 func TestUInt16(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		_ = UInt16()
+	for i := 0; i < loop; i++ {
+		UInt16()
 	}
 }
 
 func TestUInt64(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		_ = UInt64()
+	for i := 0; i < loop; i++ {
+		UInt64()
 	}
 }
 
 func TestFloat32(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		_ = Float32()
+	for i := 0; i < loop; i++ {
+		Float32()
 	}
 }
 func TestFloat64(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		_ = Float64()
+	for i := 0; i < loop; i++ {
+		Float64()
 	}
 }
 
 func TestComplex64(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		_ = Complex64()
+	for i := 0; i < loop; i++ {
+		Complex64()
 	}
 }
 func TestComplex128(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		_ = Complex128()
+	for i := 0; i < loop; i++ {
+		Complex128()
 	}
 }
