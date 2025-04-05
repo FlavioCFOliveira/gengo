@@ -1,10 +1,45 @@
 package gengo
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
-	"time"
+	"strconv"
 )
+
+func RandomSize(input int64) int64 {
+
+	isNegative := input < 0
+	v := fmt.Sprint(input)
+
+	// remove negative sign
+	if isNegative {
+		v = v[1:]
+	}
+
+	if len(v) == 1 {
+		return input
+	}
+
+	// ensures final length is not zero
+	rLength := rand.Intn(len(v))
+	for rLength == 0 {
+		rLength = rand.Intn(len(v))
+	}
+
+	// extract the last n digits
+	newV := v[len(v)-rLength:]
+	if isNegative {
+		newV = "-" + newV
+	}
+
+	r, err := strconv.ParseInt(newV, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	return r
+}
 
 func Int8Between(min, max int8) int8 {
 	if min > max {
@@ -14,7 +49,7 @@ func Int8Between(min, max int8) int8 {
 	if diff <= 0 {
 		return 0
 	}
-	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	val := int16(rand.Int63n(int64(diff))) + int16(min)
 	return int8(val)
 }
@@ -32,9 +67,9 @@ func Int16Between(min, max int16) int16 {
 		return 0
 	}
 
-	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 	val := int32(rand.Int63n(int64(diff))) + int32(min)
-	return int16(val)
+
+	return int16(RandomSize(int64(val)))
 }
 func Int16() int16 {
 	return Int16Between(math.MinInt16, math.MaxInt16)
@@ -50,7 +85,6 @@ func Int32Between(min, max int32) int32 {
 	if max > math.MaxInt32 {
 		max = math.MaxInt32
 	}
-	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// Handle the case where subtracting min from max overflows
 	if uint64(max)-uint64(min)+1 == 0 {
@@ -64,7 +98,9 @@ func Int32Between(min, max int32) int32 {
 	}
 
 	r := rand.Int63n(diff)
-	return int32(r) + min
+	rr := int32(r) + min
+
+	return int32(RandomSize(int64(rr)))
 }
 func Int32() int32 {
 	return Int32Between(math.MinInt32, math.MaxInt32)
@@ -80,7 +116,6 @@ func IntBetween(min, max int) int {
 	if max > math.MaxInt32 {
 		max = math.MaxInt32
 	}
-	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	diff := int64(max) - int64(min) + 1
 	if diff <= 0 {
@@ -88,17 +123,17 @@ func IntBetween(min, max int) int {
 	}
 
 	r := rand.Int63n(diff)
-	return int(r) + min
+	rr := int(r) + min
+	return int(RandomSize(int64(rr)))
 }
 func Int() int {
-	return rand.Int()
+	return int(RandomSize(int64(rand.Int())))
 }
 
 func Int64Between(min, max int64) int64 {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
-	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// Handle the case where subtracting min from max overflows
 	if uint64(max)-uint64(min)+1 == 0 {
@@ -109,10 +144,11 @@ func Int64Between(min, max int64) int64 {
 	if diff <= 0 {
 		return 0
 	}
-	return rand.Int63n(diff) + min
+
+	return RandomSize(rand.Int63n(diff) + min)
 }
 func Int64() int64 {
-	return rand.Int63()
+	return RandomSize(rand.Int63())
 }
 
 // ----------
@@ -130,7 +166,7 @@ func UInt8Between(min, max uint8) uint8 {
 	if diff <= 0 {
 		return 0
 	}
-	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	val := rand.Int63n(int64(diff)) + int64(min)
 	return uint8(val)
 }
