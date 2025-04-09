@@ -26,7 +26,7 @@ func TestInt(t *testing.T) {
 }
 func TestInt32(t *testing.T) {
 	for i := 0; i < loop; i++ {
-		Int32()
+		println(Int32())
 	}
 }
 func TestIntBetween(t *testing.T) {
@@ -46,12 +46,6 @@ func TestInt64Between(t *testing.T) {
 	}
 }
 
-func TestUInt(t *testing.T) {
-	for i := 0; i < loop; i++ {
-		UInt()
-	}
-}
-
 func TestUInt8(t *testing.T) {
 	for i := 0; i < loop; i++ {
 		UInt8()
@@ -66,6 +60,11 @@ func TestByte(t *testing.T) {
 func TestUInt16(t *testing.T) {
 	for i := 0; i < loop; i++ {
 		UInt16()
+	}
+}
+func TestUInt32(t *testing.T) {
+	for i := 0; i < loop; i++ {
+		println(UInt32())
 	}
 }
 
