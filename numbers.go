@@ -3,7 +3,6 @@ package gengo
 import (
 	"math"
 	"math/rand/v2"
-	"time"
 )
 
 func Int8Between(min, max int8) int8 {
@@ -130,50 +129,20 @@ func UInt16() uint16 {
 }
 
 func UInt32Between(min, max uint32) uint32 {
-	if min > max {
-		min, max = max, min
-	}
-
-	// Usa o timestamp atual como a semente
-	seed := uint32(time.Now().UnixNano())
-	// Aplica uma operação bit a bit para distribuir a aleatoriedade
-	random := seed ^ (seed << 21) ^ (seed >> 35) ^ (seed << 4)
-
-	// Calcula o valor aleatório dentro do intervalo [min, max]
-	random = min + (random % (max - min + 1))
-
-	// Ajuste para garantir a variabilidade no número de dígitos
-	numDigits := 1 + random%10
-	factor := uint32(1)
-	for i := uint32(1); i < numDigits; i++ {
-		factor *= 10
-	}
-
-	// Ajusta o número aleatório para ter o número de dígitos desejado
-	if factor > max {
-		factor = max
-	}
-	random = min + (random % (factor - min + 1))
-	if random > max {
-		random = max
-	}
-
-	return random
+	var a = rand.Uint32()
+	a %= (max - min)
+	a += min
+	return a
 }
 func UInt32() uint32 {
-	return uint32(rand.UintN(math.MaxUint32))
+	return rand.Uint32()
 }
 
 func UInt64Between(min, max uint64) uint64 {
-	if min > max {
-		min, max = max, min
-	}
-	diff := max - min + 1
-	if diff == 0 {
-		// Full uint64 range
-		return rand.Uint64()
-	}
-	return min + (rand.Uint64() % diff)
+	var a = rand.Uint64()
+	a %= (max - min)
+	a += min
+	return a
 }
 
 func UInt64() uint64 {
