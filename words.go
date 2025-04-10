@@ -15,19 +15,19 @@ const BigLengthWords LengthTypeWords = 3
 const WordLengthRatio = `11111111111112222222222222222222222222233333333333`
 
 func Word() string {
-	return StringAlphabeticLowercase(IntBetween(2, 30))
+	return StringAlphabeticLowercase(UInt32Between(2, 30))
 }
 
 func WordByLengthType(l LengthTypeWords) (word string) {
 	switch l {
 	case SmallLengthWord:
-		word = StringAlphabeticLowercase(IntBetween(1, 4))
+		word = StringAlphabeticLowercase(UInt32Between(1, 4))
 	case MediumLengthWords:
-		word = StringAlphabeticLowercase(IntBetween(5, 8))
+		word = StringAlphabeticLowercase(UInt32Between(5, 8))
 	case BigLengthWords:
-		word = StringAlphabeticLowercase(IntBetween(9, 30))
+		word = StringAlphabeticLowercase(UInt32Between(9, 30))
 	default:
-		word = StringAlphabeticLowercase(IntBetween(1, 30))
+		word = StringAlphabeticLowercase(UInt32Between(1, 30))
 	}
 
 	return

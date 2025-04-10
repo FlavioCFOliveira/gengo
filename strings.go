@@ -12,14 +12,15 @@ const (
 )
 
 // String Generates a string with a given length using only characters of a given source.
-func String(length int, sourceChars string) string {
+func String(length uint32, sourceChars string) string {
 	if length <= 0 || len(sourceChars) == 0 {
 		return ""
 	}
 
 	srcLen := len(sourceChars)
 	result := make([]byte, length)
-	for i := 0; i < length; i++ {
+
+	for i := 0; i < int(length); i++ {
 		result[i] = sourceChars[rnd.Intn(srcLen)]
 	}
 
@@ -27,59 +28,56 @@ func String(length int, sourceChars string) string {
 }
 
 // StringBetween Generates a string with a variable length using only characters of a given source.
-func StringBetween(min, max int, sourceChars string) string {
+func StringBetween(min, max uint32, sourceChars string) string {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
 
-	if max < 1 {
-		return ""
+	diff := uint64(max) - uint64(min)
+
+	if min == max || diff < 2 {
+		return String(min, sourceChars)
 	}
 
-	length := IntBetween(min, max)
-	for length < 0 {
-		length = IntBetween(min, max)
-	}
-
-	return String(length, sourceChars)
+	return String(UInt32Between(min, max), sourceChars)
 }
 
 // StringAllChars returns a string with a given length containing all the predefined alphabetic, alphanumeric and symbols characters
-func StringAllChars(length int) string {
+func StringAllChars(length uint32) string {
 	return String(length, AllChars)
 }
 
 // StringAlphanumeric returns a string with a given length containing only alphanumeric characters
-func StringAlphanumeric(length int) string {
+func StringAlphanumeric(length uint32) string {
 	return String(length, Alphanumeric)
 }
 
 // StringAlphabetic returns a string with a given length containing only alphabetic characters
-func StringAlphabetic(length int) string {
+func StringAlphabetic(length uint32) string {
 	return String(length, Alphabetic)
 }
 
 // StringAlphabeticUppercase returns a string with a given length containing only alphabetic characters in upper case only
-func StringAlphabeticUppercase(length int) string {
+func StringAlphabeticUppercase(length uint32) string {
 	return String(length, AlphabeticUppercase)
 }
 
 // StringAlphabeticLowercase returns a string with a given length containing only alphabetic characters in lower case only
-func StringAlphabeticLowercase(length int) string {
+func StringAlphabeticLowercase(length uint32) string {
 	return String(length, AlphabeticLowercase)
 }
 
 // StringNumeric returns a string with a given length containing only numeric characters
-func StringNumeric(length int) string {
+func StringNumeric(length uint32) string {
 	return String(length, Numeric)
 }
 
 // StringHexadecimal returns a string with a given length containing only hexadecimal characters
-func StringHexadecimal(length int) string {
+func StringHexadecimal(length uint32) string {
 	return String(length, Hexadecimal)
 }
 
 // StringSymbols returns a string with a given length containing only symbols characters
-func StringSymbols(length int) string {
+func StringSymbols(length uint32) string {
 	return String(length, Symbols)
 }

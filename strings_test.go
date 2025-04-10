@@ -8,7 +8,7 @@ import (
 
 func TestString(t *testing.T) {
 	// arrange
-	size := 100
+	size := uint32(100)
 	srcChars := "abc"
 
 	// act
@@ -23,7 +23,7 @@ func TestString(t *testing.T) {
 
 	t.Run("zero size", func(tt *testing.T) {
 		// arrange
-		size := 0
+		size := uint32(0)
 		srcChars := "abc"
 
 		// act
@@ -35,19 +35,6 @@ func TestString(t *testing.T) {
 		}
 	})
 
-	t.Run("negative size", func(tt *testing.T) {
-		// arrange
-		size := -3
-		srcChars := "abc"
-
-		// act
-		result := String(size, srcChars)
-
-		// assert
-		if len(result) != 0 {
-			t.Errorf("String result length %d != %d", len(result), size)
-		}
-	})
 }
 
 func ExampleString() {
