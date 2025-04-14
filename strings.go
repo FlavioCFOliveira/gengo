@@ -1,5 +1,7 @@
 package gengo
 
+import "math/rand/v2"
+
 const (
 	AllChars            string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*()-_=+[]{}<>?/|\^~`
 	Alphanumeric        string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`
@@ -21,7 +23,7 @@ func String(length uint32, sourceChars string) string {
 	result := make([]byte, length)
 
 	for i := 0; i < int(length); i++ {
-		result[i] = sourceChars[rnd.Intn(srcLen)]
+		result[i] = sourceChars[rand.IntN(srcLen)]
 	}
 
 	return string(result)

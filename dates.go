@@ -1,16 +1,16 @@
 package gengo
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"time"
 )
 
 func Date() time.Time {
-	randomUnix := rand.Int63n(dtMax-dtMin+1) + dtMin
+	randomUnix := rand.Int64N(dtMax-dtMin+1) + dtMin
 	return time.Unix(randomUnix, 0).UTC()
 }
 func UnixDate() time.Time {
-	randomUnix := rand.Int63n(dtUnixMax-dtUnixMin+1) + dtUnixMin
+	randomUnix := rand.Int64N(dtUnixMax-dtUnixMin+1) + dtUnixMin
 	return time.Unix(randomUnix, 0).UTC()
 }
 
@@ -22,13 +22,12 @@ func DateBetween(start, end time.Time) time.Time {
 	startUnix := start.Unix()
 	endUnix := end.Unix()
 
-	// Garante que o range não está vazio
 	if startUnix == endUnix {
 		return start
 	}
 
 	// Gera um número aleatório entre startUnix e endUnix
-	randomUnix := rand.Int63n(endUnix-startUnix+1) + startUnix
+	randomUnix := rand.Int64N(endUnix-startUnix+1) + startUnix
 
 	// Converte para time.Time
 	return time.Unix(randomUnix, 0).UTC()

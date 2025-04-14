@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// DATE TESTS ----------------------------------------------------
 func TestDate(t *testing.T) {
 	for i := 0; i < loop; i++ {
 		Date()
@@ -16,6 +17,7 @@ func BenchmarkDate(b *testing.B) {
 	}
 }
 
+// UNIX DATE TESTS -----------------------------------------------
 func TestUnixDate(t *testing.T) {
 	for i := 0; i < loop; i++ {
 		UnixDate()
@@ -27,6 +29,7 @@ func BenchmarkUnixDate(b *testing.B) {
 	}
 }
 
+// DATE BETWEEN TESTS --------------------------------------------
 func TestDateBetween(t *testing.T) {
 
 	dMin := time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC)
