@@ -1,5 +1,7 @@
 package gengo
 
+import "math/rand/v2"
+
 func Bool() bool {
-	return UInt8Between(0, 1) == 1
+	return rand.Uint32()&1 == 1
 }

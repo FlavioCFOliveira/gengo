@@ -7,3 +7,9 @@ func TestBool(t *testing.T) {
 		Bool()
 	}
 }
+
+func BenchmarkBool(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Bool()
+	}
+}
