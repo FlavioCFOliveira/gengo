@@ -129,24 +129,32 @@ func UInt16() uint16 {
 }
 
 func UInt32Between(min, max uint32) uint32 {
-	var a = rand.Uint32()
-	a %= (max - min)
-	a += min
-	return a
+	if min > max {
+		min, max = max, min
+	}
+	diff := uint64(max) - uint64(min) + 1
+	if diff <= 0 {
+		return min
+	}
+	return min + uint32(rand.Uint64N(diff))
 }
 func UInt32() uint32 {
 	return rand.Uint32()
 }
 
 func UInt64Between(min, max uint64) uint64 {
-	var a = rand.Uint64()
-	a %= (max - min)
-	a += min
-	return a
+	if min > max {
+		min, max = max, min
+	}
+	diff := max - min + 1
+	if diff <= 0 { // overflow case
+		return rand.Uint64()
+	}
+	return min + rand.Uint64N(diff)
 }
 
 func UInt64() uint64 {
-	return uint64(rand.UintN(math.MaxUint64))
+	return rand.Uint64()
 }
 
 // --------------

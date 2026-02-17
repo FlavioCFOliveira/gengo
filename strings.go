@@ -11,12 +11,17 @@ const (
 	Numeric             string = `0123456789`
 	Hexadecimal         string = `0123456789ABCDEF`
 	Symbols             string = `!@#$%&*()-_=+[]{}<>?/|\^~`
+	MaxStringLength     uint32 = 1024 * 1024 // 1MB maximum string length
 )
 
 // String Generates a string with a given length using only characters of a given source.
 func String(length uint32, sourceChars string) string {
 	if length <= 0 || len(sourceChars) == 0 {
 		return ""
+	}
+
+	if length > MaxStringLength {
+		length = MaxStringLength
 	}
 
 	srcLen := len(sourceChars)
