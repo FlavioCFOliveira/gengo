@@ -331,6 +331,8 @@ Benchmarks on Apple M4:
 
 See `make bench` to run benchmarks locally.
 
+For detailed test results and performance analysis, see [TEST_REPORT.md](TEST_REPORT.md).
+
 ---
 
 ## License
