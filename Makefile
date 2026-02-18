@@ -3,7 +3,7 @@ bench:
 
 check:
 	gofmt -l .
-	golangci-lint run
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run
 
 dev-install:
 	go install golang.org/x/vuln/cmd/govulncheck@latest
@@ -16,7 +16,7 @@ test:
 	go test .
 
 vulncheck:
-	govulncheck ./...
+	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
 
 .PHONY: bench check dev-install format test vulncheck
