@@ -1,5 +1,7 @@
 package gengo
 
+import "math/rand/v2"
+
 // LengthTypeWords classifies a word by its character length category.
 type LengthTypeWords uint8
 
@@ -44,13 +46,12 @@ func Words(length int) (result []string) {
 	}
 	result = make([]string, length)
 	for i := 0; i < length; i++ {
-		t := String(1, WordLengthRatio)
-		switch t {
-		case "1":
+		switch WordLengthRatio[rand.IntN(len(WordLengthRatio))] {
+		case '1':
 			result[i] = WordByLengthType(SmallLengthWord)
-		case "2":
+		case '2':
 			result[i] = WordByLengthType(MediumLengthWords)
-		case "3":
+		case '3':
 			result[i] = WordByLengthType(BigLengthWords)
 		}
 	}

@@ -1,6 +1,9 @@
 package gengo
 
-import "math/rand/v2"
+import (
+	"math/bits"
+	"math/rand/v2"
+)
 
 // Character sets available for string generation.
 const (
@@ -17,7 +20,7 @@ const (
 
 // String generates a string with a given length using only characters of a given source.
 func String(length uint32, sourceChars string) string {
-	if length <= 0 || sourceChars == "" {
+	if length == 0 || sourceChars == "" {
 		return ""
 	}
 
@@ -25,11 +28,37 @@ func String(length uint32, sourceChars string) string {
 		length = MaxStringLength
 	}
 
-	srcLen := len(sourceChars)
+	srcLen := uint64(len(sourceChars))
 	result := make([]byte, length)
 
-	for i := 0; i < int(length); i++ {
-		result[i] = sourceChars[rand.IntN(srcLen)]
+	// Fast path: single-char source — fill without any PRNG call.
+	if srcLen == 1 {
+		for i := range result {
+			result[i] = sourceChars[0]
+		}
+		return string(result)
+	}
+
+	// Batch bit extraction: pull bitsPerChar bits at a time from a single
+	// rand.Uint64() word, refilling only when exhausted. This reduces PRNG
+	// invocations by 6–16x compared to one rand.IntN call per character.
+	bitsPerChar := uint(bits.Len64(srcLen - 1)) //nolint:gosec // bits.Len64 returns [0,64]; conversion to uint is always safe
+	mask := uint64((1 << bitsPerChar) - 1)
+	var rnd uint64
+	var bitsLeft uint
+
+	for i := uint32(0); i < length; {
+		if bitsLeft < bitsPerChar {
+			rnd = rand.Uint64()
+			bitsLeft = 64
+		}
+		idx := rnd & mask
+		rnd >>= bitsPerChar
+		bitsLeft -= bitsPerChar
+		if idx < srcLen {
+			result[i] = sourceChars[idx]
+			i++
+		}
 	}
 
 	return string(result)

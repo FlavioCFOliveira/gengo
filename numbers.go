@@ -50,7 +50,7 @@ func IntBetween(min, max int) int {
 		min, max = max, min
 	}
 	rangeSize := uint64(max) - uint64(min) + 1 //nolint:gosec // two's-complement widening; the difference is always correct in uint64
-	if rangeSize == 0 {                          // overflows to 0 only for the full int range
+	if rangeSize == 0 {                        // overflows to 0 only for the full int range
 		return int(rand.Uint64()) //nolint:gosec // same bit width on 64-bit; every bit pattern is a valid int
 	}
 	return int(uint64(min) + rand.Uint64N(rangeSize)) //nolint:gosec // result fits within the original [min,max] range
@@ -67,7 +67,7 @@ func Int64Between(min, max int64) int64 {
 		min, max = max, min
 	}
 	rangeSize := uint64(max) - uint64(min) + 1 //nolint:gosec // two's-complement widening; the difference is always correct in uint64
-	if rangeSize == 0 {                          // overflows to 0 only for the full int64 range
+	if rangeSize == 0 {                        // overflows to 0 only for the full int64 range
 		return int64(rand.Uint64()) //nolint:gosec // same bit width; every bit pattern is a valid int64
 	}
 	return int64(uint64(min) + rand.Uint64N(rangeSize)) //nolint:gosec // result fits within the original [min,max] range
@@ -90,7 +90,7 @@ func UInt8Between(min, max uint8) uint8 {
 	if min > max {
 		min, max = max, min
 	}
-	rangeSize := uint32(max) - uint32(min) + 1 // uint32 prevents uint8 overflow
+	rangeSize := uint32(max) - uint32(min) + 1          // uint32 prevents uint8 overflow
 	return uint8(uint32(min) + rand.Uint32N(rangeSize)) //nolint:gosec // result is in [min,max], guaranteed to fit in uint8
 }
 
@@ -104,7 +104,7 @@ func UInt16Between(min, max uint16) uint16 {
 	if min > max {
 		min, max = max, min
 	}
-	rangeSize := uint32(max) - uint32(min) + 1 // uint32 prevents uint16 overflow
+	rangeSize := uint32(max) - uint32(min) + 1           // uint32 prevents uint16 overflow
 	return uint16(uint32(min) + rand.Uint32N(rangeSize)) //nolint:gosec // result is in [min,max], guaranteed to fit in uint16
 }
 
@@ -151,7 +151,7 @@ func UInt64() uint64 {
 
 // Float32 returns a random float32 in (0, math.MaxFloat32].
 func Float32() float32 {
-	return Float32Between(math.SmallestNonzeroFloat32, math.MaxFloat32)
+	return rand.Float32()*math.MaxFloat32 + math.SmallestNonzeroFloat32
 }
 
 // Float32Between returns a random float32 in [min, max]. Arguments are swapped if min > max.
@@ -164,7 +164,7 @@ func Float32Between(min, max float32) float32 {
 
 // Float64 returns a random float64 in (0, math.MaxFloat64].
 func Float64() float64 {
-	return Float64Between(math.SmallestNonzeroFloat64, math.MaxFloat64)
+	return rand.Float64()*math.MaxFloat64 + math.SmallestNonzeroFloat64
 }
 
 // Float64Between returns a random float64 in [min, max]. Arguments are swapped if min > max.
