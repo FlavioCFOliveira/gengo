@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [v0.0.27] — Unreleased
+## [v0.0.27] — 2026-04-05
 
 ### Added
 - `Float32Between(min, max)` and `Float64Between(min, max)` — bounded float generation.
