@@ -39,13 +39,6 @@ func StringBetween(min, max uint32, sourceChars string) string {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
-
-	diff := uint64(max) - uint64(min)
-
-	if min == max || diff < 2 {
-		return String(min, sourceChars)
-	}
-
 	return String(UInt32Between(min, max), sourceChars)
 }
 

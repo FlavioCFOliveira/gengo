@@ -29,6 +29,6 @@ func DateBetween(start, end time.Time) time.Time {
 	// Generate a random number between startUnix and endUnix
 	randomUnix := rand.Int64N(endUnix-startUnix+1) + startUnix
 
-	// Converte para time.Time
+	// Convert to time.Time
 	return time.Unix(randomUnix, 0).UTC()
 }

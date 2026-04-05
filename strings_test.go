@@ -7,34 +7,106 @@ import (
 )
 
 func TestString(t *testing.T) {
-	// arrange
-	size := uint32(100)
-	srcChars := "abc"
-
-	// act
+	const size = uint32(100)
+	const srcChars = "abc"
 	result := String(size, srcChars)
-
-	// assert
-	for _, char := range result {
-		if !strings.ContainsRune(srcChars, char) {
-			t.Errorf("char: %q doesn't exist", char)
+	if uint32(len(result)) != size {
+		t.Fatalf("String(%d, ...) length = %d", size, len(result))
+	}
+	for _, ch := range result {
+		if !strings.ContainsRune(srcChars, ch) {
+			t.Fatalf("String: char %q not in source %q", ch, srcChars)
 		}
 	}
+	// zero size
+	if got := String(0, srcChars); len(got) != 0 {
+		t.Fatalf("String(0, ...) length = %d, want 0", len(got))
+	}
+	// empty source
+	if got := String(10, ""); len(got) != 0 {
+		t.Fatalf("String(10, \"\") length = %d, want 0", len(got))
+	}
+}
 
-	t.Run("zero size", func(tt *testing.T) {
-		// arrange
-		size := uint32(0)
-		srcChars := "abc"
-
-		// act
-		result := String(size, srcChars)
-
-		// assert
-		if len(result) != 0 {
-			t.Errorf("String result length %d != 0", len(result))
+// testStringCharset verifies that fn(size) always returns a string of exactly
+// size bytes whose every character belongs to charset.
+func testStringCharset(t *testing.T, fn func(uint32) string, charset, name string) {
+	t.Helper()
+	const size = uint32(50)
+	for i := 0; i < loop; i++ {
+		result := fn(size)
+		if uint32(len(result)) != size {
+			t.Fatalf("%s(%d) length = %d", name, size, len(result))
 		}
-	})
+		for _, ch := range result {
+			if !strings.ContainsRune(charset, ch) {
+				t.Fatalf("%s: char %q not in charset", name, ch)
+			}
+		}
+	}
+}
 
+func TestStringAllChars(t *testing.T) {
+	testStringCharset(t, StringAllChars, AllChars, "StringAllChars")
+}
+
+func TestStringAlphanumeric(t *testing.T) {
+	testStringCharset(t, StringAlphanumeric, Alphanumeric, "StringAlphanumeric")
+}
+
+func TestStringAlphabetic(t *testing.T) {
+	testStringCharset(t, StringAlphabetic, Alphabetic, "StringAlphabetic")
+}
+
+func TestStringAlphabeticUppercase(t *testing.T) {
+	testStringCharset(t, StringAlphabeticUppercase, AlphabeticUppercase, "StringAlphabeticUppercase")
+}
+
+func TestStringAlphabeticLowercase(t *testing.T) {
+	testStringCharset(t, StringAlphabeticLowercase, AlphabeticLowercase, "StringAlphabeticLowercase")
+}
+
+func TestStringNumeric(t *testing.T) {
+	testStringCharset(t, StringNumeric, Numeric, "StringNumeric")
+}
+
+func TestStringHexadecimal(t *testing.T) {
+	testStringCharset(t, StringHexadecimal, Hexadecimal, "StringHexadecimal")
+}
+
+func TestStringSymbols(t *testing.T) {
+	testStringCharset(t, StringSymbols, Symbols, "StringSymbols")
+}
+
+func TestStringBetween(t *testing.T) {
+	const min, max = uint32(5), uint32(20)
+	for i := 0; i < loop; i++ {
+		result := StringBetween(min, max, Alphanumeric)
+		l := uint32(len(result))
+		if l < min || l > max {
+			t.Fatalf("StringBetween(%d, %d) length = %d: out of range", min, max, l)
+		}
+	}
+	// swapped args must produce same valid range
+	for i := 0; i < loop; i++ {
+		result := StringBetween(max, min, Alphanumeric)
+		l := uint32(len(result))
+		if l < min || l > max {
+			t.Fatalf("StringBetween(%d, %d) length = %d: out of range", max, min, l)
+		}
+	}
+	// min == max must return exactly min length
+	if got := StringBetween(10, 10, Alphanumeric); uint32(len(got)) != 10 {
+		t.Fatalf("StringBetween(10, 10) length = %d, want 10", len(got))
+	}
+	// diff == 1 must return either min or max length
+	for i := 0; i < loop; i++ {
+		result := StringBetween(5, 6, Alphanumeric)
+		l := uint32(len(result))
+		if l < 5 || l > 6 {
+			t.Fatalf("StringBetween(5, 6) length = %d: out of range [5, 6]", l)
+		}
+	}
 }
 
 func ExampleString() {
@@ -48,7 +120,7 @@ func BenchmarkString(b *testing.B) {
 	}
 }
 
-func BenchmarkNumeric(b *testing.B) {
+func BenchmarkStringNumeric(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		StringNumeric(8)
 	}
