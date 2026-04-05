@@ -1,6 +1,11 @@
 # gengo
 
-[![build](https://github.com/FlavioCFOliveira/gengo/actions/workflows/go.yml/badge.svg)](https://github.com/FlavioCFOliveira/gengo/actions/workflows/go.yml) [![Go Reference](https://pkg.go.dev/badge/github.com/FlavioCFOliveira/gengo.svg)](https://pkg.go.dev/github.com/FlavioCFOliveira/gengo)
+[![build](https://github.com/FlavioCFOliveira/gengo/actions/workflows/go.yml/badge.svg)](https://github.com/FlavioCFOliveira/gengo/actions/workflows/go.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/FlavioCFOliveira/gengo.svg)](https://pkg.go.dev/github.com/FlavioCFOliveira/gengo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/FlavioCFOliveira/gengo)](https://goreportcard.com/report/github.com/FlavioCFOliveira/gengo)
+[![Go Version](https://img.shields.io/badge/go-%3E%3D1.26-00ADD8?logo=go)](https://go.dev/doc/devel/release)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/FlavioCFOliveira/gengo)](https://github.com/FlavioCFOliveira/gengo/releases)
 
 A high-performance Go module for generating random data. Built with production environments in mind, offering excellent performance and minimal resource usage.
 
@@ -10,7 +15,7 @@ A high-performance Go module for generating random data. Built with production e
 go get -u github.com/FlavioCFOliveira/gengo
 ```
 
-Requirements: Go 1.22+ (uses `math/rand/v2` with automatic seed initialization)
+Requirements: Go 1.26+
 
 ---
 
