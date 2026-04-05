@@ -179,6 +179,10 @@ func TestIntBetween(t *testing.T) {
 	if v := IntBetween(42, 42); v != 42 {
 		t.Fatalf("IntBetween(42, 42) = %d, want 42", v)
 	}
+	// full int range triggers rangeSize==0 overflow path
+	for i := 0; i < loop; i++ {
+		IntBetween(math.MinInt, math.MaxInt)
+	}
 }
 func BenchmarkInt(b *testing.B) {
 	for i := 0; i < b.N; i++ {

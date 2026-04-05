@@ -26,6 +26,11 @@ func TestString(t *testing.T) {
 	if got := String(10, ""); len(got) != 0 {
 		t.Fatalf("String(10, \"\") length = %d, want 0", len(got))
 	}
+	// length exceeding MaxStringLength must be capped
+	over := String(MaxStringLength+1, "ab")
+	if uint32(len(over)) != MaxStringLength {
+		t.Fatalf("String(MaxStringLength+1) length = %d, want %d", len(over), MaxStringLength)
+	}
 }
 
 // testStringCharset verifies that fn(size) always returns a string of exactly
