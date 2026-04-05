@@ -19,11 +19,11 @@ func TestString(t *testing.T) {
 		}
 	}
 	// zero size
-	if got := String(0, srcChars); len(got) != 0 {
+	if got := String(0, srcChars); got != "" {
 		t.Fatalf("String(0, ...) length = %d, want 0", len(got))
 	}
 	// empty source
-	if got := String(10, ""); len(got) != 0 {
+	if got := String(10, ""); got != "" {
 		t.Fatalf("String(10, \"\") length = %d, want 0", len(got))
 	}
 	// length exceeding MaxStringLength must be capped
@@ -129,7 +129,7 @@ func TestStringBetween(t *testing.T) {
 		}
 	}
 	// both bounds zero must return ""
-	if got := StringBetween(0, 0, Alphanumeric); len(got) != 0 {
+	if got := StringBetween(0, 0, Alphanumeric); got != "" {
 		t.Fatalf("StringBetween(0, 0) length = %d, want 0", len(got))
 	}
 }

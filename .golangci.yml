@@ -1,0 +1,58 @@
+version: "2"
+
+linters:
+  # Standard set: errcheck, govet, ineffassign, staticcheck, unused
+  default: standard
+  enable:
+    # Correctness
+    - exhaustive    # exhaustive switch statements (catches missing enum cases)
+    - nilerr        # incorrect nil-error return patterns
+    - nakedret      # flag naked returns in long functions
+    # Performance (core to this library's philosophy)
+    - prealloc      # suggest slice pre-allocation
+    - perfsprint    # avoid fmt.Sprintf where faster alternatives exist
+    - unconvert     # remove unnecessary type conversions
+    # Code quality
+    - gocyclo       # cyclomatic complexity
+    - gocritic      # opinionated but useful checks
+    - revive        # drop-in golint replacement with more rules
+    - unparam       # report always-same-value function parameters
+    # Style
+    - misspell      # fix common spelling mistakes in comments and strings
+    # Security
+    - gosec
+
+  settings:
+    gocyclo:
+      min-complexity: 15
+
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+        - style
+      disabled-checks:
+        - builtinShadow  # min/max are conventional names for range parameters
+
+    revive:
+      rules:
+        - name: var-naming
+        - name: error-return
+        - name: increment-decrement
+
+    misspell:
+      locale: US
+
+    exhaustive:
+      default-signifies-exhaustive: true
+
+    gosec:
+      excludes:
+        - G404  # math/rand is intentional — this library is not cryptographic
+
+  exclusions:
+    # Suppress integer-overflow warning: overflow is handled manually via wider
+    # intermediate types (e.g. int16 arithmetic for int8 ranges).
+    rules:
+      - linters: [gosec]
+        text: "G115"

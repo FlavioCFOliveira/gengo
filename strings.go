@@ -16,7 +16,7 @@ const (
 
 // String Generates a string with a given length using only characters of a given source.
 func String(length uint32, sourceChars string) string {
-	if length <= 0 || len(sourceChars) == 0 {
+	if length <= 0 || sourceChars == "" {
 		return ""
 	}
 

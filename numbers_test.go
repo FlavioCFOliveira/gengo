@@ -275,7 +275,7 @@ func TestUInt8Between(t *testing.T) {
 		UInt8Between(0, math.MaxUint8)
 	}
 }
-func TestByte(t *testing.T) {
+func TestByte(_ *testing.T) {
 	for i := 0; i < loop; i++ {
 		Byte()
 	}
@@ -342,7 +342,7 @@ func BenchmarkUInt16Between(b *testing.B) {
 
 // ---------- UInt32 ----------
 
-func TestUInt32(t *testing.T) {
+func TestUInt32(_ *testing.T) {
 	for i := 0; i < loop; i++ {
 		UInt32()
 	}
@@ -379,7 +379,7 @@ func BenchmarkUInt32Between(b *testing.B) {
 
 // ---------- UInt64 ----------
 
-func TestUInt64(t *testing.T) {
+func TestUInt64(_ *testing.T) {
 	for i := 0; i < loop; i++ {
 		UInt64()
 	}
