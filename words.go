@@ -34,6 +34,9 @@ func WordByLengthType(l LengthTypeWords) (word string) {
 }
 
 func Words(length int) (result []string) {
+	if length <= 0 {
+		return []string{}
+	}
 	result = make([]string, length)
 	for i := 0; i < length; i++ {
 		t := String(1, WordLengthRatio)

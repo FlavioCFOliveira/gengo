@@ -31,6 +31,22 @@ func TestString(t *testing.T) {
 	if uint32(len(over)) != MaxStringLength {
 		t.Fatalf("String(MaxStringLength+1) length = %d, want %d", len(over), MaxStringLength)
 	}
+	// exact MaxStringLength boundary must not be capped
+	exact := String(MaxStringLength, "ab")
+	if uint32(len(exact)) != MaxStringLength {
+		t.Fatalf("String(MaxStringLength) length = %d, want %d", len(exact), MaxStringLength)
+	}
+	// single-character source must produce a string of only that character
+	const singleN = uint32(20)
+	single := String(singleN, "a")
+	if uint32(len(single)) != singleN {
+		t.Fatalf("String(%d, \"a\") length = %d", singleN, len(single))
+	}
+	for _, ch := range single {
+		if ch != 'a' {
+			t.Fatalf("String(%d, \"a\") contains non-'a' char %q", singleN, ch)
+		}
+	}
 }
 
 // testStringCharset verifies that fn(size) always returns a string of exactly
@@ -111,6 +127,10 @@ func TestStringBetween(t *testing.T) {
 		if l < 5 || l > 6 {
 			t.Fatalf("StringBetween(5, 6) length = %d: out of range [5, 6]", l)
 		}
+	}
+	// both bounds zero must return ""
+	if got := StringBetween(0, 0, Alphanumeric); len(got) != 0 {
+		t.Fatalf("StringBetween(0, 0) length = %d, want 0", len(got))
 	}
 }
 

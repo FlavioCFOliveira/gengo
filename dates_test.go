@@ -64,6 +64,15 @@ func TestDateBetween(t *testing.T) {
 	if got := DateBetween(exact, exact); !got.Equal(exact) {
 		t.Fatalf("DateBetween(t, t) = %v, want %v", got, exact)
 	}
+	// pre-epoch range: both boundaries are negative Unix timestamps
+	preStart := time.Date(1940, 1, 1, 0, 0, 0, 0, time.UTC)
+	preEnd := time.Date(1969, 12, 31, 23, 59, 59, 0, time.UTC)
+	for i := 0; i < loop; i++ {
+		d := DateBetween(preStart, preEnd)
+		if d.Before(preStart) || d.After(preEnd) {
+			t.Fatalf("DateBetween (pre-epoch) = %v: out of range [%v, %v]", d, preStart, preEnd)
+		}
+	}
 }
 func BenchmarkDateBetween(b *testing.B) {
 	start := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)

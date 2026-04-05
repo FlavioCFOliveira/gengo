@@ -321,6 +321,9 @@ func TestUInt16Between(t *testing.T) {
 			t.Fatalf("UInt16Between(%d, %d) = %d: out of range", max, min, v)
 		}
 	}
+	if v := UInt16Between(500, 500); v != 500 {
+		t.Fatalf("UInt16Between(500, 500) = %d, want 500", v)
+	}
 	// full uint16 range must not panic
 	for i := 0; i < loop; i++ {
 		UInt16Between(0, math.MaxUint16)
@@ -415,7 +418,10 @@ func BenchmarkUInt64Between(b *testing.B) {
 
 func TestFloat32(t *testing.T) {
 	for i := 0; i < loop; i++ {
-		Float32()
+		v := Float32()
+		if v <= 0 {
+			t.Fatalf("Float32() = %v: expected > 0", v)
+		}
 	}
 }
 func TestFloat32Between(t *testing.T) {
@@ -431,6 +437,16 @@ func TestFloat32Between(t *testing.T) {
 		if v < min || v > max {
 			t.Fatalf("Float32Between(%f, %f) = %f: out of range", max, min, v)
 		}
+	}
+	// equal bounds must return that exact value
+	const eq32 = float32(3.14)
+	if v := Float32Between(eq32, eq32); v != eq32 {
+		t.Fatalf("Float32Between(%v, %v) = %v, want %v", eq32, eq32, v, eq32)
+	}
+	// NaN input propagates: Float32Between(NaN, x) returns NaN (documented behavior)
+	nan32 := float32(math.NaN())
+	if result := Float32Between(nan32, 1.0); !math.IsNaN(float64(result)) {
+		t.Fatalf("Float32Between(NaN, 1.0) = %v, want NaN", result)
 	}
 }
 func BenchmarkFloat32(b *testing.B) {
@@ -448,7 +464,10 @@ func BenchmarkFloat32Between(b *testing.B) {
 
 func TestFloat64(t *testing.T) {
 	for i := 0; i < loop; i++ {
-		Float64()
+		v := Float64()
+		if v <= 0 {
+			t.Fatalf("Float64() = %v: expected > 0", v)
+		}
 	}
 }
 func TestFloat64Between(t *testing.T) {
@@ -464,6 +483,16 @@ func TestFloat64Between(t *testing.T) {
 		if v < min || v > max {
 			t.Fatalf("Float64Between(%f, %f) = %f: out of range", max, min, v)
 		}
+	}
+	// equal bounds must return that exact value
+	const eq64 = float64(2.718281828)
+	if v := Float64Between(eq64, eq64); v != eq64 {
+		t.Fatalf("Float64Between(%v, %v) = %v, want %v", eq64, eq64, v, eq64)
+	}
+	// NaN input propagates: Float64Between(NaN, x) returns NaN (documented behavior)
+	nan64 := math.NaN()
+	if result := Float64Between(nan64, 1.0); !math.IsNaN(result) {
+		t.Fatalf("Float64Between(NaN, 1.0) = %v, want NaN", result)
 	}
 }
 func BenchmarkFloat64(b *testing.B) {
@@ -481,7 +510,13 @@ func BenchmarkFloat64Between(b *testing.B) {
 
 func TestComplex64(t *testing.T) {
 	for i := 0; i < loop; i++ {
-		Complex64()
+		v := Complex64()
+		if real(v) < 0 || real(v) >= 1 {
+			t.Fatalf("Complex64() real = %v: out of [0, 1)", real(v))
+		}
+		if imag(v) < 0 || imag(v) >= 1 {
+			t.Fatalf("Complex64() imag = %v: out of [0, 1)", imag(v))
+		}
 	}
 }
 func TestComplex64Between(t *testing.T) {
@@ -524,7 +559,13 @@ func BenchmarkComplex64Between(b *testing.B) {
 
 func TestComplex128(t *testing.T) {
 	for i := 0; i < loop; i++ {
-		Complex128()
+		v := Complex128()
+		if real(v) < 0 || real(v) >= 1 {
+			t.Fatalf("Complex128() real = %v: out of [0, 1)", real(v))
+		}
+		if imag(v) < 0 || imag(v) >= 1 {
+			t.Fatalf("Complex128() imag = %v: out of [0, 1)", imag(v))
+		}
 	}
 }
 func TestComplex128Between(t *testing.T) {

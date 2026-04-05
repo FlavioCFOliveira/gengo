@@ -49,16 +49,36 @@ func TestWordByLengthType(t *testing.T) {
 }
 
 func TestWords(t *testing.T) {
-	const n = 100
-	words := Words(n)
-	if len(words) != n {
-		t.Fatalf("Words(%d) returned %d words", n, len(words))
-	}
-	for i, word := range words {
-		if len(word) < 1 || len(word) > 30 {
-			t.Fatalf("Words(%d)[%d] length %d out of range [1, 30]", n, i, len(word))
+	t.Run("PositiveLength", func(t *testing.T) {
+		const n = 100
+		words := Words(n)
+		if len(words) != n {
+			t.Fatalf("Words(%d) returned %d words", n, len(words))
 		}
-	}
+		for i, word := range words {
+			if len(word) < 1 || len(word) > 30 {
+				t.Fatalf("Words(%d)[%d] length %d out of range [1, 30]", n, i, len(word))
+			}
+		}
+	})
+	t.Run("ZeroLength", func(t *testing.T) {
+		result := Words(0)
+		if result == nil {
+			t.Fatal("Words(0) returned nil, want empty slice")
+		}
+		if len(result) != 0 {
+			t.Fatalf("Words(0) length = %d, want 0", len(result))
+		}
+	})
+	t.Run("NegativeLength", func(t *testing.T) {
+		result := Words(-1)
+		if result == nil {
+			t.Fatal("Words(-1) returned nil, want empty slice")
+		}
+		if len(result) != 0 {
+			t.Fatalf("Words(-1) length = %d, want 0", len(result))
+		}
+	})
 }
 
 func BenchmarkWord(b *testing.B) {
