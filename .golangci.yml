@@ -17,7 +17,8 @@ linters:
     - gocritic      # opinionated but useful checks
     - revive        # drop-in golint replacement with more rules
     - unparam       # report always-same-value function parameters
-    # Style
+    # Style / public API docs
+    - godot         # exported declarations must end with a period
     - misspell      # fix common spelling mistakes in comments and strings
     # Security
     - gosec
@@ -36,9 +37,14 @@ linters:
 
     revive:
       rules:
+        - name: exported
         - name: var-naming
         - name: error-return
         - name: increment-decrement
+
+    godot:
+      scope: declarations  # only check exported declarations (public API docs)
+      capital: false
 
     misspell:
       locale: US
@@ -51,8 +57,10 @@ linters:
         - G404  # math/rand is intentional — this library is not cryptographic
 
   exclusions:
-    # Suppress integer-overflow warning: overflow is handled manually via wider
-    # intermediate types (e.g. int16 arithmetic for int8 ranges).
+    # numbers.go uses intentional signed↔unsigned conversions with wider intermediate
+    # types to generate values across full ranges without overflow (e.g. uint8 arithmetic
+    # for int8 ranges). These conversions are safe by design; suppress only in that file.
     rules:
       - linters: [gosec]
+        path: "numbers\\.go|.*_test\\.go"
         text: "G115"

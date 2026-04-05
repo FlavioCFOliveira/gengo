@@ -2,6 +2,7 @@ package gengo
 
 import "math/rand/v2"
 
+// Character sets available for string generation.
 const (
 	AllChars            string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*()-_=+[]{}<>?/|\^~`
 	Alphanumeric        string = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`
@@ -14,7 +15,7 @@ const (
 	MaxStringLength     uint32 = 1024 * 1024 // 1MB maximum string length
 )
 
-// String Generates a string with a given length using only characters of a given source.
+// String generates a string with a given length using only characters of a given source.
 func String(length uint32, sourceChars string) string {
 	if length <= 0 || sourceChars == "" {
 		return ""
@@ -34,7 +35,7 @@ func String(length uint32, sourceChars string) string {
 	return string(result)
 }
 
-// StringBetween Generates a string with a variable length using only characters of a given source.
+// StringBetween generates a string with a variable length using only characters of a given source.
 func StringBetween(min, max uint32, sourceChars string) string {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
@@ -42,42 +43,42 @@ func StringBetween(min, max uint32, sourceChars string) string {
 	return String(UInt32Between(min, max), sourceChars)
 }
 
-// StringAllChars returns a string with a given length containing all the predefined alphabetic, alphanumeric and symbols characters
+// StringAllChars returns a string with a given length containing all the predefined alphabetic, alphanumeric and symbols characters.
 func StringAllChars(length uint32) string {
 	return String(length, AllChars)
 }
 
-// StringAlphanumeric returns a string with a given length containing only alphanumeric characters
+// StringAlphanumeric returns a string with a given length containing only alphanumeric characters.
 func StringAlphanumeric(length uint32) string {
 	return String(length, Alphanumeric)
 }
 
-// StringAlphabetic returns a string with a given length containing only alphabetic characters
+// StringAlphabetic returns a string with a given length containing only alphabetic characters.
 func StringAlphabetic(length uint32) string {
 	return String(length, Alphabetic)
 }
 
-// StringAlphabeticUppercase returns a string with a given length containing only alphabetic characters in upper case only
+// StringAlphabeticUppercase returns a string with a given length containing only alphabetic characters in upper case only.
 func StringAlphabeticUppercase(length uint32) string {
 	return String(length, AlphabeticUppercase)
 }
 
-// StringAlphabeticLowercase returns a string with a given length containing only alphabetic characters in lower case only
+// StringAlphabeticLowercase returns a string with a given length containing only alphabetic characters in lower case only.
 func StringAlphabeticLowercase(length uint32) string {
 	return String(length, AlphabeticLowercase)
 }
 
-// StringNumeric returns a string with a given length containing only numeric characters
+// StringNumeric returns a string with a given length containing only numeric characters.
 func StringNumeric(length uint32) string {
 	return String(length, Numeric)
 }
 
-// StringHexadecimal returns a string with a given length containing only hexadecimal characters
+// StringHexadecimal returns a string with a given length containing only hexadecimal characters.
 func StringHexadecimal(length uint32) string {
 	return String(length, Hexadecimal)
 }
 
-// StringSymbols returns a string with a given length containing only symbols characters
+// StringSymbols returns a string with a given length containing only symbols characters.
 func StringSymbols(length uint32) string {
 	return String(length, Symbols)
 }
