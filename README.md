@@ -295,9 +295,9 @@ big    := gengo.WordByLengthType(gengo.BigLengthWords)
 words := gengo.Words(5)
 // Output: [ok then computer building wonderful]
 
-// Natural-language-like distribution:
-// ~22% small words (1–4 chars)
-// ~56% medium words (5–8 chars)
+// Natural-language-like distribution (from WordLengthRatio, 13/26/11 of 50):
+// ~26% small words (1–4 chars)
+// ~52% medium words (5–8 chars)
 // ~22% big words (9+ chars)
 ```
 
