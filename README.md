@@ -114,6 +114,8 @@ variable := gengo.StringBetween(5, 15, gengo.Alphanumeric)
 > secrets, use Go's [`crypto/rand`](https://pkg.go.dev/crypto/rand) package
 > instead.
 
+See [SECURITY.md](SECURITY.md) for the full security policy and how to report a vulnerability.
+
 ### Common Use Cases
 
 ```go
