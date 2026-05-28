@@ -172,9 +172,9 @@ b := gengo.Byte()
 
 | Function | Range | Description |
 |----------|-------|-------------|
-| `Float32()` | Smallest to MaxFloat32 | Full float32 range |
+| `Float32()` | (0, MaxFloat32] | Positive values only — use `Float32Between` for negatives or a custom range |
 | `Float32Between(min, max)` | Custom | Bounded float32 |
-| `Float64()` | Smallest to MaxFloat64 | Full float64 range |
+| `Float64()` | (0, MaxFloat64] | Positive values only — use `Float64Between` for negatives or a custom range |
 | `Float64Between(min, max)` | Custom | Bounded float64 |
 
 ```go
