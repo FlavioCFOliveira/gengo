@@ -10,16 +10,16 @@
 
 | Metric | Value |
 |--------|-------|
-| **Unit Tests** | 32/32 passed (100%) |
+| **Unit Tests** | 45/45 passed (100%) |
 | **Benchmarks** | 36 executed |
-| **Total Test Time** | ~0.43s |
+| **Total Test Time** | ~0.01s |
 | **Total Benchmark Time** | ~227s |
 
 ---
 
 ## Unit Tests
 
-All 32 unit tests passed successfully.
+All 45 unit tests passed successfully.
 
 ### Detailed Results
 
@@ -49,19 +49,36 @@ All 32 unit tests passed successfully.
 | `TestUInt64` | PASS | 0.00s |
 | `TestUInt64Between` | PASS | 0.00s |
 | `TestFloat32` | PASS | 0.00s |
+| `TestFloat32Between` | PASS | 0.00s |
 | `TestFloat64` | PASS | 0.00s |
+| `TestFloat64Between` | PASS | 0.00s |
 | `TestComplex64` | PASS | 0.00s |
+| `TestComplex64Between` | PASS | 0.00s |
 | `TestComplex128` | PASS | 0.00s |
+| `TestComplex128Between` | PASS | 0.00s |
 | `TestString` | PASS | 0.00s |
+| `TestStringByteOriented` | PASS | 0.00s |
+| `TestStringAllChars` | PASS | 0.00s |
+| `TestStringAlphanumeric` | PASS | 0.00s |
+| `TestStringAlphabetic` | PASS | 0.00s |
+| `TestStringAlphabeticUppercase` | PASS | 0.00s |
+| `TestStringAlphabeticLowercase` | PASS | 0.00s |
+| `TestStringNumeric` | PASS | 0.00s |
+| `TestStringHexadecimal` | PASS | 0.00s |
+| `TestStringSymbols` | PASS | 0.00s |
+| `TestStringBetween` | PASS | 0.00s |
 | `TestWord` | PASS | 0.00s |
 | `TestWordByLengthType` | PASS | 0.00s |
 | `TestWords` | PASS | 0.00s |
 
 ### Subtests
-- `TestString/zero_size` - PASS
-- `TestWordByLengthType/Small-Length-Words` - PASS
-- `TestWordByLengthType/Medium-Length-Words` - PASS
-- `TestWordByLengthType/big-Length-Words` - PASS
+- `TestWordByLengthType/SmallLengthWord` - PASS
+- `TestWordByLengthType/MediumLengthWords` - PASS
+- `TestWordByLengthType/BigLengthWords` - PASS
+- `TestWordByLengthType/Default` - PASS
+- `TestWords/PositiveLength` - PASS
+- `TestWords/ZeroLength` - PASS
+- `TestWords/NegativeLength` - PASS
 
 ---
 
@@ -209,30 +226,64 @@ All 32 unit tests passed successfully.
 --- PASS: TestUInt64Between (0.00s)
 === RUN   TestFloat32
 --- PASS: TestFloat32 (0.00s)
+=== RUN   TestFloat32Between
+--- PASS: TestFloat32Between (0.00s)
 === RUN   TestFloat64
 --- PASS: TestFloat64 (0.00s)
+=== RUN   TestFloat64Between
+--- PASS: TestFloat64Between (0.00s)
 === RUN   TestComplex64
 --- PASS: TestComplex64 (0.00s)
+=== RUN   TestComplex64Between
+--- PASS: TestComplex64Between (0.00s)
 === RUN   TestComplex128
 --- PASS: TestComplex128 (0.00s)
+=== RUN   TestComplex128Between
+--- PASS: TestComplex128Between (0.00s)
 === RUN   TestString
-=== RUN   TestString/zero_size
 --- PASS: TestString (0.00s)
-    --- PASS: TestString/zero_size (0.00s)
+=== RUN   TestStringByteOriented
+--- PASS: TestStringByteOriented (0.00s)
+=== RUN   TestStringAllChars
+--- PASS: TestStringAllChars (0.00s)
+=== RUN   TestStringAlphanumeric
+--- PASS: TestStringAlphanumeric (0.00s)
+=== RUN   TestStringAlphabetic
+--- PASS: TestStringAlphabetic (0.00s)
+=== RUN   TestStringAlphabeticUppercase
+--- PASS: TestStringAlphabeticUppercase (0.00s)
+=== RUN   TestStringAlphabeticLowercase
+--- PASS: TestStringAlphabeticLowercase (0.00s)
+=== RUN   TestStringNumeric
+--- PASS: TestStringNumeric (0.00s)
+=== RUN   TestStringHexadecimal
+--- PASS: TestStringHexadecimal (0.00s)
+=== RUN   TestStringSymbols
+--- PASS: TestStringSymbols (0.00s)
+=== RUN   TestStringBetween
+--- PASS: TestStringBetween (0.00s)
 === RUN   TestWord
 --- PASS: TestWord (0.00s)
 === RUN   TestWordByLengthType
-=== RUN   TestWordByLengthType/Small-Length-Words
-=== RUN   TestWordByLengthType/Medium-Length-Words
-=== RUN   TestWordByLengthType/big-Length-Words
+=== RUN   TestWordByLengthType/SmallLengthWord
+=== RUN   TestWordByLengthType/MediumLengthWords
+=== RUN   TestWordByLengthType/BigLengthWords
+=== RUN   TestWordByLengthType/Default
 --- PASS: TestWordByLengthType (0.00s)
-    --- PASS: TestWordByLengthType/Small-Length-Words (0.00s)
-    --- PASS: TestWordByLengthType/Medium-Length-Words (0.00s)
-    --- PASS: TestWordByLengthType/big-Length-Words (0.00s)
+    --- PASS: TestWordByLengthType/SmallLengthWord (0.00s)
+    --- PASS: TestWordByLengthType/MediumLengthWords (0.00s)
+    --- PASS: TestWordByLengthType/BigLengthWords (0.00s)
+    --- PASS: TestWordByLengthType/Default (0.00s)
 === RUN   TestWords
+=== RUN   TestWords/PositiveLength
+=== RUN   TestWords/ZeroLength
+=== RUN   TestWords/NegativeLength
 --- PASS: TestWords (0.00s)
+    --- PASS: TestWords/PositiveLength (0.00s)
+    --- PASS: TestWords/ZeroLength (0.00s)
+    --- PASS: TestWords/NegativeLength (0.00s)
 PASS
-ok  	github.com/FlavioCFOliveira/gengo	0.430s
+ok  	github.com/FlavioCFOliveira/gengo	0.014s
 ```
 
 ### Benchmark Output
@@ -287,7 +338,7 @@ ok  	github.com/FlavioCFOliveira/gengo	227.251s
 
 The **gengo** library demonstrates excellent test coverage and optimized performance:
 
-- **100% tests passing** (32/32)
+- **100% tests passing** (45/45)
 - **Zero memory allocations** in all primitive functions
 - **Execution times in the nanosecond range** for numeric types
 - **Consistency** between functions with and without custom ranges
