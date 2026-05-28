@@ -19,7 +19,7 @@ Generating realistic test data in Go usually means writing repetitive helper fun
 
 - **One function call** to generate any random value
 - **Zero external dependencies** — only the Go standard library
-- **Blazing fast** — sub-5ns for most operations on modern hardware
+- **Blazing fast** — single-digit-nanosecond generation for primitive types on modern hardware
 - **Safe by default** — built-in overflow protection, size limits, and uniform distribution
 
 ## Installation
@@ -348,17 +348,17 @@ gengo is designed to be safe to use in production code and CI pipelines without 
 
 ## Performance
 
-Benchmarks run on Apple M4. See `make bench` to reproduce on your machine.
+Benchmarks run on an AMD Ryzen 9 5900HX (Go 1.26.2, `-benchtime 5s`). See `make bench` to reproduce on your machine.
 
 | Operation | ns/op |
 |-----------|-------|
-| `IntBetween` | ~4.5 |
-| `Float64` | ~4.4 |
-| `String` (100 chars) | ~42 |
-| `Date` | ~4.6 |
-| `UInt64` | ~3.9 |
+| `IntBetween` | ~7.8 |
+| `Float64` | ~5.8 |
+| `String` (8 chars) | ~27.8 |
+| `Date` | ~7.4 |
+| `UInt64` | ~4.8 |
 
-For the full benchmark report and detailed test results, see [TEST_REPORT.md](TEST_REPORT.md).
+For the full benchmark report and detailed test results, see [BENCHMARKS.md](BENCHMARKS.md) and [TEST_REPORT.md](TEST_REPORT.md).
 
 ---
 
