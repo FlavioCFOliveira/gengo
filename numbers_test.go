@@ -448,6 +448,25 @@ func TestFloat32Between(t *testing.T) {
 	if result := Float32Between(nan32, 1.0); !math.IsNaN(float64(result)) {
 		t.Fatalf("Float32Between(NaN, 1.0) = %v, want NaN", result)
 	}
+	// Wide ranges whose span overflows float32 must still return a finite value
+	// within [min, max] (regression: previously returned +Inf).
+	wide32 := [...]struct{ lo, hi float32 }{
+		{-math.MaxFloat32, math.MaxFloat32},
+		{0, math.MaxFloat32},
+		{-math.MaxFloat32, 0},
+		{-math.MaxFloat32 / 2, math.MaxFloat32},
+	}
+	for _, w := range wide32 {
+		for i := 0; i < loop; i++ {
+			v := Float32Between(w.lo, w.hi)
+			if math.IsInf(float64(v), 0) || math.IsNaN(float64(v)) {
+				t.Fatalf("Float32Between(%v, %v) = %v: want finite", w.lo, w.hi, v)
+			}
+			if v < w.lo || v > w.hi {
+				t.Fatalf("Float32Between(%v, %v) = %v: out of [%v, %v]", w.lo, w.hi, v, w.lo, w.hi)
+			}
+		}
+	}
 }
 func BenchmarkFloat32(b *testing.B) {
 	for i := 0; i < b.N; i++ {
@@ -493,6 +512,25 @@ func TestFloat64Between(t *testing.T) {
 	nan64 := math.NaN()
 	if result := Float64Between(nan64, 1.0); !math.IsNaN(result) {
 		t.Fatalf("Float64Between(NaN, 1.0) = %v, want NaN", result)
+	}
+	// Wide ranges whose span overflows float64 must still return a finite value
+	// within [min, max] (regression: previously returned +Inf).
+	wide64 := [...]struct{ lo, hi float64 }{
+		{-math.MaxFloat64, math.MaxFloat64},
+		{0, math.MaxFloat64},
+		{-math.MaxFloat64, 0},
+		{-math.MaxFloat64 / 2, math.MaxFloat64},
+	}
+	for _, w := range wide64 {
+		for i := 0; i < loop; i++ {
+			v := Float64Between(w.lo, w.hi)
+			if math.IsInf(v, 0) || math.IsNaN(v) {
+				t.Fatalf("Float64Between(%v, %v) = %v: want finite", w.lo, w.hi, v)
+			}
+			if v < w.lo || v > w.hi {
+				t.Fatalf("Float64Between(%v, %v) = %v: out of [%v, %v]", w.lo, w.hi, v, w.lo, w.hi)
+			}
+		}
 	}
 }
 func BenchmarkFloat64(b *testing.B) {

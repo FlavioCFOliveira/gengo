@@ -159,7 +159,16 @@ func Float32Between(min, max float32) float32 {
 	if min > max {
 		min, max = max, min
 	}
-	return rand.Float32()*(max-min) + min
+	span := max - min
+	if span > math.MaxFloat32 {
+		// The span is wider than float32 can represent, so max-min overflowed to
+		// +Inf. Interpolate as the convex combination min*(1-t) + max*t instead:
+		// both weights lie in [0, 1] and (because an overflowing span implies
+		// min < 0 < max) the result stays finite and within [min, max].
+		t := rand.Float32()
+		return min*(1-t) + max*t
+	}
+	return rand.Float32()*span + min
 }
 
 // Float64 returns a random float64 in (0, math.MaxFloat64].
@@ -172,7 +181,16 @@ func Float64Between(min, max float64) float64 {
 	if min > max {
 		min, max = max, min
 	}
-	return rand.Float64()*(max-min) + min
+	span := max - min
+	if span > math.MaxFloat64 {
+		// The span is wider than float64 can represent, so max-min overflowed to
+		// +Inf. Interpolate as the convex combination min*(1-t) + max*t instead:
+		// both weights lie in [0, 1] and (because an overflowing span implies
+		// min < 0 < max) the result stays finite and within [min, max].
+		t := rand.Float64()
+		return min*(1-t) + max*t
+	}
+	return rand.Float64()*span + min
 }
 
 // Complex64 returns a random complex64 with real and imaginary parts in [0, 1).
