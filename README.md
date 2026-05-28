@@ -43,7 +43,7 @@ import (
 )
 
 func main() {
-    // Random alphanumeric string — great for tokens and IDs
+    // Random alphanumeric string — handy for test fixtures and IDs
     fmt.Println(gengo.StringAlphanumeric(20))
     // Output: k9mP2vLxQr5tWnB8aJc
 
@@ -103,38 +103,31 @@ variable := gengo.StringBetween(5, 15, gengo.Alphanumeric)
 | `StringHexadecimal(n)` | Hex digits 0–9, A–F | `A7F3B9E2D1` |
 | `StringSymbols(n)` | Special characters only | `@#$%&*()-_` |
 
-### Generating a Secure Password
+### Security: Not for Passwords or Secrets
 
-A secure password needs at least 12 characters and a mix of uppercase letters, lowercase letters, digits, and symbols. `StringAllChars` covers all four groups in one call:
+> [!WARNING]
+> **gengo is not cryptographically secure.** It is built on
+> [`math/rand/v2`](https://pkg.go.dev/math/rand/v2), whose output is fast but
+> predictable and therefore unsuitable for any security-sensitive purpose.
+> **Never** use gengo to generate passwords, API tokens, session IDs,
+> encryption keys, salts, or any other secret — the results are guessable. For
+> secrets, use Go's [`crypto/rand`](https://pkg.go.dev/crypto/rand) package
+> instead.
 
-```go
-// 16-character password with letters, numbers, and symbols
-password := gengo.StringAllChars(16)
-// Output: k9@mP2#vLx$Qr5tW
-
-// Longer passphrase-style password (24 chars) for higher-security contexts
-strongPassword := gengo.StringAllChars(24)
-// Output: T7$mKp2#vLx@Qr5tWnB8aJc!
-
-// Alphanumeric-only password (no symbols) — useful when the target system
-// restricts special characters
-safePassword := gengo.StringAlphanumeric(16)
-// Output: xK8pM2vLqRtWnB5a
-```
-
-> `StringAllChars` draws from 94 characters (a–z, A–Z, 0–9, and 32 symbols),
-> giving each 16-character password over 10²⁹ possible combinations.
-
-**Common use cases:**
+### Common Use Cases
 
 ```go
-// API token or session ID
-token := gengo.StringHexadecimal(32)
-// Output: A7F3B9E2D108C4E5A67F9B2C1D0E8F5A
-
-// Short readable identifier
+// Short, human-readable identifier for test fixtures
 id := gengo.StringAlphanumeric(8)
 // Output: xK8pM2vL
+
+// Random label for seeding a database column
+label := gengo.StringAlphabetic(12)
+// Output: bGtRvNmKlPqX
+
+// Random hex value for non-secret test data (e.g. a fake colour code)
+hex := gengo.StringHexadecimal(6)
+// Output: A7F3B9
 ```
 
 ---
