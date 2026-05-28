@@ -1,8 +1,8 @@
 # Test Report - gengo
 
-**Date:** 2026-02-17
+**Date:** 2026-05-29
 **Package:** github.com/FlavioCFOliveira/gengo
-**Platform:** darwin/arm64 (Apple M4)
+**Platform:** linux/amd64 (AMD Ryzen 9 5900HX, 16 threads) · Go go1.26.2
 
 ---
 
@@ -11,9 +11,9 @@
 | Metric | Value |
 |--------|-------|
 | **Unit Tests** | 32/32 passed (100%) |
-| **Benchmarks** | 28 executed |
+| **Benchmarks** | 36 executed |
 | **Total Test Time** | ~0.43s |
-| **Total Benchmark Time** | ~157s |
+| **Total Benchmark Time** | ~227s |
 
 ---
 
@@ -72,51 +72,58 @@ All 32 unit tests passed successfully.
 #### Booleans and Dates
 | Benchmark | Operations | Time/op | Allocations |
 |-----------|------------|---------|-------------|
-| `BenchmarkBool` | 1,000,000,000 | 3.641 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkDate` | 1,000,000,000 | 4.697 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUnixDate` | 1,000,000,000 | 4.706 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkDateBetween` | 965,769,960 | 6.236 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkBool` | 1,000,000,000 | 4.719 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkDate` | 821,951,491 | 7.377 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUnixDate` | 813,031,130 | 7.401 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkDateBetween` | 564,340,304 | 10.66 ns/op | 0 B/op, 0 allocs/op |
 
 #### Signed Integers (Int8/16/32/64)
 | Benchmark | Operations | Time/op | Allocations |
 |-----------|------------|---------|-------------|
-| `BenchmarkInt8` | 1,000,000,000 | 4.598 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkInt8Between` | 1,000,000,000 | 4.720 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkInt16` | 1,000,000,000 | 4.702 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkInt16Between` | 1,000,000,000 | 4.755 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkInt32` | 1,000,000,000 | 3.896 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkInt32Between` | 1,000,000,000 | 4.089 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkInt` | 1,000,000,000 | 3.818 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkIntBetween` | 1,000,000,000 | 5.150 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkInt64` | 1,000,000,000 | 3.957 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkInt64Between` | 1,000,000,000 | 4.751 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkInt8` | 1,000,000,000 | 4.763 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkInt8Between` | 801,699,829 | 7.424 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkInt16` | 1,000,000,000 | 4.774 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkInt16Between` | 828,890,362 | 7.398 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkInt32` | 1,000,000,000 | 4.753 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkInt32Between` | 810,285,100 | 7.469 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkInt` | 1,000,000,000 | 4.762 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkIntBetween` | 767,547,925 | 7.812 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkInt64` | 1,000,000,000 | 4.770 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkInt64Between` | 761,782,174 | 7.872 ns/op | 0 B/op, 0 allocs/op |
 
 #### Unsigned Integers (UInt8/16/32/64) and Byte
 | Benchmark | Operations | Time/op | Allocations |
 |-----------|------------|---------|-------------|
-| `BenchmarkUInt8` | 1,000,000,000 | 4.059 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt8Between` | 1,000,000,000 | 4.716 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkByte` | 1,000,000,000 | 4.110 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt16` | 1,000,000,000 | 4.057 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt16Between` | 1,000,000,000 | 4.693 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt32` | 1,000,000,000 | 3.989 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt32Between` | 1,000,000,000 | 4.710 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt64` | 1,000,000,000 | 3.914 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt64Between` | 1,000,000,000 | 4.666 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUInt8` | 1,000,000,000 | 4.780 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUInt8Between` | 801,432,346 | 7.463 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkByte` | 1,000,000,000 | 4.768 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUInt16` | 1,000,000,000 | 4.767 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUInt16Between` | 811,150,370 | 7.515 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUInt32` | 1,000,000,000 | 4.796 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUInt32Between` | 803,114,101 | 7.489 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUInt64` | 1,000,000,000 | 4.786 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUInt64Between` | 757,757,079 | 7.942 ns/op | 0 B/op, 0 allocs/op |
 
 #### Floating Point and Complex Numbers
 | Benchmark | Operations | Time/op | Allocations |
 |-----------|------------|---------|-------------|
-| `BenchmarkFloat32` | 1,000,000,000 | 4.361 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkFloat64` | 1,000,000,000 | 4.409 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkComplex64` | 765,420,063 | 7.858 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkComplex128` | 773,105,215 | 7.865 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkFloat32` | 1,000,000,000 | 5.804 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkFloat32Between` | 885,918,817 | 6.791 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkFloat64` | 1,000,000,000 | 5.767 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkFloat64Between` | 935,214,699 | 6.443 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkComplex64` | 586,800,524 | 10.25 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkComplex64Between` | 421,643,383 | 14.24 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkComplex128` | 575,015,457 | 10.44 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkComplex128Between` | 438,102,889 | 13.71 ns/op | 0 B/op, 0 allocs/op |
 
-#### Strings
+#### Strings and Words
 | Benchmark | Operations | Time/op | Allocations |
 |-----------|------------|---------|-------------|
-| `BenchmarkString` | 140,433,414 | 42.72 ns/op | 8 B/op, 1 allocs/op |
-| `BenchmarkNumeric` | 140,505,907 | 42.75 ns/op | 8 B/op, 1 allocs/op |
+| `BenchmarkString` | 217,566,918 | 27.76 ns/op | 8 B/op, 1 allocs/op |
+| `BenchmarkStringNumeric` | 92,571,711 | 62.65 ns/op | 8 B/op, 1 allocs/op |
+| `BenchmarkWord` | 68,938,351 | 86.55 ns/op | 18 B/op, 1 allocs/op |
+| `BenchmarkWordByLengthType` | 100,000,000 | 50.12 ns/op | 7 B/op, 1 allocs/op |
+| `BenchmarkWords` | 7,636,587 | 788.4 ns/op | 258 B/op, 10 allocs/op |
 
 ---
 
@@ -126,27 +133,27 @@ All 32 unit tests passed successfully.
 
 1. **Zero Allocations in Primitive Types**: All number, boolean, and date generation functions perform no memory allocations (0 allocs/op), adhering to the library's performance philosophy.
 
-2. **Extremely Fast Execution**: Numeric and boolean functions execute in ~3-7 nanoseconds per operation, achieving over 1 billion operations in 5 seconds of benchmarking.
+2. **Fast Execution**: Numeric and boolean functions execute in ~4.7–8 nanoseconds per operation, achieving hundreds of millions to over a billion operations in 5 seconds of benchmarking.
 
 3. **Fastest Functions** (top 5):
-   - `BenchmarkInt`: 3.818 ns/op
-   - `BenchmarkInt32`: 3.896 ns/op
-   - `BenchmarkUInt64`: 3.914 ns/op
-   - `BenchmarkUInt32`: 3.989 ns/op
-   - `BenchmarkBool`: 3.641 ns/op
+   - `BenchmarkBool`: 4.719 ns/op
+   - `BenchmarkInt32`: 4.753 ns/op
+   - `BenchmarkInt`: 4.762 ns/op
+   - `BenchmarkInt8`: 4.763 ns/op
+   - `BenchmarkUInt16`: 4.767 ns/op
 
-4. **Complex Numbers Slower**: `BenchmarkComplex64` and `BenchmarkComplex128` are naturally slower (~7.8 ns/op) as they require generating two parts (real and imaginary).
+4. **Complex Numbers Slower**: `BenchmarkComplex64` and `BenchmarkComplex128` are naturally slower (~10.3 ns/op), and their `Between` variants slower still (~14 ns/op), as they generate two parts (real and imaginary).
 
-5. **Strings with Controlled Allocation**: String functions (`BenchmarkString`, `BenchmarkNumeric`) are the only ones that perform allocations (1 alloc/op, 8 bytes), which is expected as they need to allocate memory for the result.
+5. **Strings with Controlled Allocation**: String and word functions (`BenchmarkString`, `BenchmarkStringNumeric`, `BenchmarkWord`, `BenchmarkWordByLengthType`, `BenchmarkWords`) are the only ones that allocate (1 alloc/op for single results; `BenchmarkWords` allocates once per generated word), as they must allocate memory for the returned string(s).
 
 ### Aggregated Metrics
 
 | Category | Best Time | Worst Time | Approximate Average |
 |----------|-----------|------------|---------------------|
-| Booleans | 3.641 ns/op | 6.236 ns/op | ~4.8 ns/op |
-| Integers | 3.818 ns/op | 5.150 ns/op | ~4.5 ns/op |
-| Floats | 4.361 ns/op | 7.865 ns/op | ~5.2 ns/op |
-| Strings | 42.72 ns/op | 42.75 ns/op | ~42.7 ns/op |
+| Booleans & Dates | 4.719 ns/op | 10.66 ns/op | ~7.5 ns/op |
+| Integers | 4.753 ns/op | 7.942 ns/op | ~6.0 ns/op |
+| Floats & Complex | 5.767 ns/op | 14.24 ns/op | ~8.7 ns/op |
+| Strings | 27.76 ns/op | 62.65 ns/op | ~45 ns/op |
 
 ---
 
@@ -230,41 +237,48 @@ ok  	github.com/FlavioCFOliveira/gengo	0.430s
 
 ### Benchmark Output
 ```
-goos: darwin
-goarch: arm64
+goos: linux
+goarch: amd64
 pkg: github.com/FlavioCFOliveira/gengo
-cpu: Apple M4
-BenchmarkBool-10            	1000000000	         3.641 ns/op	       0 B/op	       0 allocs/op
-BenchmarkDate-10            	1000000000	         4.697 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUnixDate-10        	1000000000	         4.706 ns/op	       0 B/op	       0 allocs/op
-BenchmarkDateBetween-10     	 965769960	         6.236 ns/op	       0 B/op	       0 allocs/op
-BenchmarkInt8-10            	1000000000	         4.598 ns/op	       0 B/op	       0 allocs/op
-BenchmarkInt8Between-10     	1000000000	         4.720 ns/op	       0 B/op	       0 allocs/op
-BenchmarkInt16-10           	1000000000	         4.702 ns/op	       0 B/op	       0 allocs/op
-BenchmarkInt16Between-10    	1000000000	         4.755 ns/op	       0 B/op	       0 allocs/op
-BenchmarkInt32-10           	1000000000	         3.896 ns/op	       0 B/op	       0 allocs/op
-BenchmarkInt32Between-10    	1000000000	         4.089 ns/op	       0 B/op	       0 allocs/op
-BenchmarkInt-10             	1000000000	         3.818 ns/op	       0 B/op	       0 allocs/op
-BenchmarkIntBetween-10      	1000000000	         5.150 ns/op	       0 B/op	       0 allocs/op
-BenchmarkInt64-10           	1000000000	         3.957 ns/op	       0 B/op	       0 allocs/op
-BenchmarkInt64Between-10    	1000000000	         4.751 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt8-10           	1000000000	         4.059 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt8Between-10     	1000000000	         4.716 ns/op	       0 B/op	       0 allocs/op
-BenchmarkByte-10            	1000000000	         4.110 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt16-10          	1000000000	         4.057 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt16Between-10   	1000000000	         4.693 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt32-10          	1000000000	         3.989 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt32Between-10   	1000000000	         4.710 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt64-10          	1000000000	         3.914 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt64Between-10   	1000000000	         4.666 ns/op	       0 B/op	       0 allocs/op
-BenchmarkFloat32-10         	1000000000	         4.361 ns/op	       0 B/op	       0 allocs/op
-BenchmarkFloat64-10         	1000000000	         4.409 ns/op	       0 B/op	       0 allocs/op
-BenchmarkComplex64-10       	 765420063	         7.858 ns/op	       0 B/op	       0 allocs/op
-BenchmarkComplex128-10      	 773105215	         7.865 ns/op	       0 B/op	       0 allocs/op
-BenchmarkString-10          	 140433414	        42.72 ns/op	       8 B/op	       1 allocs/op
-BenchmarkNumeric-10         	 140505907	        42.75 ns/op	       8 B/op	       1 allocs/op
+cpu: AMD Ryzen 9 5900HX with Radeon Graphics        
+BenchmarkBool-16                 	1000000000	         4.719 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDate-16                 	821951491	         7.377 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUnixDate-16             	813031130	         7.401 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDateBetween-16          	564340304	        10.66 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInt8-16                 	1000000000	         4.763 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInt8Between-16          	801699829	         7.424 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInt16-16                	1000000000	         4.774 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInt16Between-16         	828890362	         7.398 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInt32-16                	1000000000	         4.753 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInt32Between-16         	810285100	         7.469 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInt-16                  	1000000000	         4.762 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIntBetween-16           	767547925	         7.812 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInt64-16                	1000000000	         4.770 ns/op	       0 B/op	       0 allocs/op
+BenchmarkInt64Between-16         	761782174	         7.872 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUInt8-16                	1000000000	         4.780 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUInt8Between-16         	801432346	         7.463 ns/op	       0 B/op	       0 allocs/op
+BenchmarkByte-16                 	1000000000	         4.768 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUInt16-16               	1000000000	         4.767 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUInt16Between-16        	811150370	         7.515 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUInt32-16               	1000000000	         4.796 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUInt32Between-16        	803114101	         7.489 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUInt64-16               	1000000000	         4.786 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUInt64Between-16        	757757079	         7.942 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFloat32-16              	1000000000	         5.804 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFloat32Between-16       	885918817	         6.791 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFloat64-16              	1000000000	         5.767 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFloat64Between-16       	935214699	         6.443 ns/op	       0 B/op	       0 allocs/op
+BenchmarkComplex64-16            	586800524	        10.25 ns/op	       0 B/op	       0 allocs/op
+BenchmarkComplex64Between-16     	421643383	        14.24 ns/op	       0 B/op	       0 allocs/op
+BenchmarkComplex128-16           	575015457	        10.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkComplex128Between-16    	438102889	        13.71 ns/op	       0 B/op	       0 allocs/op
+BenchmarkString-16               	217566918	        27.76 ns/op	       8 B/op	       1 allocs/op
+BenchmarkStringNumeric-16        	92571711	        62.65 ns/op	       8 B/op	       1 allocs/op
+BenchmarkWord-16                 	68938351	        86.55 ns/op	      18 B/op	       1 allocs/op
+BenchmarkWordByLengthType-16     	100000000	        50.12 ns/op	       7 B/op	       1 allocs/op
+BenchmarkWords-16                	 7636587	       788.4 ns/op	     258 B/op	      10 allocs/op
 PASS
-ok  	github.com/FlavioCFOliveira/gengo	156.873s
+ok  	github.com/FlavioCFOliveira/gengo	227.251s
 ```
 
 ---
