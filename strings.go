@@ -18,7 +18,14 @@ const (
 	MaxStringLength     uint32 = 1024 * 1024 // 1MB maximum string length
 )
 
-// String generates a string with a given length using only characters of a given source.
+// String generates a length-byte string by sampling bytes from sourceChars.
+//
+// It is byte-oriented: length counts bytes (not runes), characters are picked
+// by byte index, and sourceChars is expected to hold only single-byte (ASCII)
+// characters — every predefined character set in this package qualifies.
+// Passing a multibyte charset (emoji, accented letters, CJK, and so on) samples
+// individual UTF-8 bytes and therefore yields invalid UTF-8, so use an ASCII
+// charset instead. length is capped at MaxStringLength bytes.
 func String(length uint32, sourceChars string) string {
 	if length == 0 || sourceChars == "" {
 		return ""

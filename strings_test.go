@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"unicode/utf8"
 )
 
 func TestString(t *testing.T) {
@@ -45,6 +46,28 @@ func TestString(t *testing.T) {
 	for _, ch := range single {
 		if ch != 'a' {
 			t.Fatalf("String(%d, \"a\") contains non-'a' char %q", singleN, ch)
+		}
+	}
+}
+
+// TestStringByteOriented documents the byte-oriented (ASCII) contract: length
+// counts bytes, and an ASCII source always yields valid UTF-8 composed solely
+// of bytes drawn from the charset.
+func TestStringByteOriented(t *testing.T) {
+	const charset = "ACGT0123456789xyz!@#"
+	const n = 64
+	for i := 0; i < loop; i++ {
+		result := String(n, charset)
+		if len(result) != n {
+			t.Fatalf("String(%d, ...) = %d bytes, want %d", n, len(result), n)
+		}
+		if !utf8.ValidString(result) {
+			t.Fatalf("String(%d, %q) = %q: invalid UTF-8", n, charset, result)
+		}
+		for j := 0; j < len(result); j++ {
+			if strings.IndexByte(charset, result[j]) < 0 {
+				t.Fatalf("String produced byte %q not in charset %q", result[j], charset)
+			}
 		}
 	}
 }

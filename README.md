@@ -77,7 +77,7 @@ func main() {
 
 ## String Generation
 
-All string functions accept a `length` parameter (capped at 1 MB). Pick a predefined type or pass your own character set.
+All string functions accept a `length` parameter — the number of bytes, capped at 1 MB. Pick a predefined type or pass your own character set. String generation is byte-oriented, so custom character sets should contain only single-byte (ASCII) characters; multibyte input (emoji, accents, CJK) produces invalid UTF-8.
 
 ### Custom and Variable-Length Strings
 
@@ -325,9 +325,10 @@ name := gengo.String(12, usernameSafe)
 urlSafe := gengo.Alphanumeric + "-_"
 slug := gengo.String(20, urlSafe)
 
-// Fun custom charset
-emojiLike := "😀😎🎉🚀💡"
-fun := gengo.String(5, emojiLike)
+// Fun custom charset (ASCII) — e.g. DNA bases
+dna := "ACGT"
+sequence := gengo.String(20, dna)
+// Output: GATTACAGATTACAGGCTAG
 ```
 
 ---
