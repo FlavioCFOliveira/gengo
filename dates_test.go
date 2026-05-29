@@ -74,6 +74,30 @@ func TestDateBetween(t *testing.T) {
 		}
 	}
 }
+func TestDateBetweenGranularity(t *testing.T) {
+	// Whole-second granularity: results carry a zero sub-second component and are
+	// in UTC, even when the bounds have sub-second parts.
+	start := time.Date(2020, 1, 1, 0, 0, 0, 123456789, time.UTC)
+	end := time.Date(2020, 6, 1, 12, 30, 45, 987654321, time.UTC)
+	for i := 0; i < loop; i++ {
+		d := DateBetween(start, end)
+		if d.Nanosecond() != 0 {
+			t.Fatalf("DateBetween sub-second component = %d, want 0", d.Nanosecond())
+		}
+		if d.Location() != time.UTC {
+			t.Fatalf("DateBetween location = %v, want UTC", d.Location())
+		}
+	}
+	// Same-second special case: start is returned unchanged, preserving its
+	// sub-second component and location.
+	loc := time.FixedZone("X", 3600)
+	a := time.Date(2020, 1, 1, 0, 0, 0, 555, loc)
+	b := a.Add(900 * time.Millisecond) // still within the same second
+	if got := DateBetween(a, b); !got.Equal(a) || got.Nanosecond() != 555 || got.Location() != loc {
+		t.Fatalf("DateBetween same-second = %v (ns=%d), want start unchanged", got, got.Nanosecond())
+	}
+}
+
 func BenchmarkDateBetween(b *testing.B) {
 	start := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 	end := time.Date(2020, 12, 31, 23, 59, 59, 0, time.UTC)

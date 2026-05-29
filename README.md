@@ -221,6 +221,8 @@ Generate random timestamps for testing date-sensitive logic, filling databases w
 | `UnixDate()` | Random Unix timestamp | 1970 to 2038 (32-bit range) |
 | `DateBetween(start, end)` | Random date within a specific range | Custom |
 
+> All date functions work at whole-second granularity and return UTC times with a zero sub-second component. For `DateBetween`, the bounds' sub-second parts are ignored; as a special case, when `start` and `end` fall within the same second, `start` is returned unchanged.
+
 ```go
 // Random historical or future date
 d := gengo.Date()

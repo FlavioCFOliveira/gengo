@@ -15,7 +15,13 @@ func UnixDate() time.Time {
 	return time.Unix(rand.Int64N(dtUnixRange)+dtUnixMin, 0).UTC()
 }
 
-// DateBetween returns a random time.Time in [start, end]. Arguments are swapped if start is after end.
+// DateBetween returns a random time.Time in [start, end]. Arguments are swapped
+// if start is after end.
+//
+// DateBetween operates at whole-second granularity: the bounds' sub-second
+// components are ignored, and the returned time is in UTC with a zero sub-second
+// component. As a special case, when start and end fall within the same second,
+// start is returned unchanged, preserving its sub-second component and location.
 func DateBetween(start, end time.Time) time.Time {
 	if start.After(end) {
 		start, end = end, start
