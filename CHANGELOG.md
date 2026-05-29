@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## Versioning Policy
+
+gengo follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html):
+
+- **MAJOR** — incompatible (breaking) API changes.
+- **MINOR** — new, backward-compatible functionality.
+- **PATCH** — backward-compatible bug fixes.
+
+The project is in the **0.x** series. Per SemVer, while the major version is `0`
+the public API is not yet guaranteed stable: backward-compatible features and
+fixes bump the **minor** and **patch** numbers respectively, and an incompatible
+change may still occur in a minor release before `1.0.0`. Starting with
+**v0.1.0**, releases follow this policy; the earlier run of `0.0.x` tags — which
+shipped features as patches and included the no-op re-tags `v0.0.20`–`v0.0.25`
+(all pointing at the same commit) — predates it.
+
+Each version is tagged exactly once; tags are never moved or re-pointed. A
+mistaken or empty release is superseded by a new, higher version, never by
+re-tagging an existing one.
+
+---
+
+## [Unreleased]
+
+Next release: **v0.1.0** — the first release under the Versioning Policy above.
+This cycle adds backward-compatible features, so the **minor** version is bumped.
+
+### Added
+- `Generator` type with `New(seed)` and `NewSource(rand.Source)` constructors for
+  reproducible, seeded output; its methods mirror every package-level function.
+- `SECURITY.md` — security policy with a non-cryptographic disclaimer and a
+  vulnerability-reporting process.
+
+### Fixed
+- `Float32Between` / `Float64Between` no longer return `+Inf` for very wide
+  ranges; results are always finite and within `[min, max]`.
+
+### Changed
+- Documentation corrected to match the implementation: `Words` length
+  distribution (26/52/22), `Float32`/`Float64` positive-only range, and the
+  `String` performance label (8-char input).
+- `String` documented as byte/ASCII-oriented (multibyte charsets yield invalid
+  UTF-8); the broken README emoji example was replaced.
+- `DateBetween` whole-second granularity documented.
+- `BENCHMARKS.md` and `TEST_REPORT.md` regenerated on a single reference machine
+  so figures are consistent and reproducible (resolves the contradictory
+  `BenchmarkString` numbers).
+
+### Security
+- Removed insecure password / API-token / session-ID recommendations from the
+  README and added a prominent warning to use `crypto/rand` for secrets, since
+  gengo is built on the non-cryptographic `math/rand/v2`.
+
+---
+
 ## [v0.0.27] — 2026-04-05
 
 ### Added
