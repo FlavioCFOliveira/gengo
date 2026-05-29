@@ -19,3 +19,7 @@
 
 # env file
 .env
+
+# IDE / editor directories
+.idea/
+.vscode/
