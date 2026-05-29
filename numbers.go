@@ -80,13 +80,13 @@ func Int64() int64 {
 
 // ----------
 
-// Byte returns a random byte (alias for UInt8).
+// Byte returns a random byte (alias for Uint8).
 func Byte() byte {
-	return UInt8()
+	return Uint8()
 }
 
-// UInt8Between returns a random uint8 in [min, max]. Arguments are swapped if min > max.
-func UInt8Between(min, max uint8) uint8 {
+// Uint8Between returns a random uint8 in [min, max]. Arguments are swapped if min > max.
+func Uint8Between(min, max uint8) uint8 {
 	if min > max {
 		min, max = max, min
 	}
@@ -94,13 +94,13 @@ func UInt8Between(min, max uint8) uint8 {
 	return uint8(uint32(min) + rand.Uint32N(rangeSize)) //nolint:gosec // result is in [min,max], guaranteed to fit in uint8
 }
 
-// UInt8 returns a random uint8 across the full [0, math.MaxUint8] range.
-func UInt8() uint8 {
+// Uint8 returns a random uint8 across the full [0, math.MaxUint8] range.
+func Uint8() uint8 {
 	return uint8(rand.Uint32()) //nolint:gosec // low 8 bits of a random uint32; every bit pattern is a valid uint8
 }
 
-// UInt16Between returns a random uint16 in [min, max]. Arguments are swapped if min > max.
-func UInt16Between(min, max uint16) uint16 {
+// Uint16Between returns a random uint16 in [min, max]. Arguments are swapped if min > max.
+func Uint16Between(min, max uint16) uint16 {
 	if min > max {
 		min, max = max, min
 	}
@@ -108,13 +108,13 @@ func UInt16Between(min, max uint16) uint16 {
 	return uint16(uint32(min) + rand.Uint32N(rangeSize)) //nolint:gosec // result is in [min,max], guaranteed to fit in uint16
 }
 
-// UInt16 returns a random uint16 across the full [0, math.MaxUint16] range.
-func UInt16() uint16 {
+// Uint16 returns a random uint16 across the full [0, math.MaxUint16] range.
+func Uint16() uint16 {
 	return uint16(rand.Uint32()) //nolint:gosec // low 16 bits of a random uint32; every bit pattern is a valid uint16
 }
 
-// UInt32Between returns a random uint32 in [min, max]. Arguments are swapped if min > max.
-func UInt32Between(min, max uint32) uint32 {
+// Uint32Between returns a random uint32 in [min, max]. Arguments are swapped if min > max.
+func Uint32Between(min, max uint32) uint32 {
 	if min > max {
 		min, max = max, min
 	}
@@ -125,13 +125,13 @@ func UInt32Between(min, max uint32) uint32 {
 	return min + rand.Uint32N(uint32(rangeSize)) //nolint:gosec // rangeSize is verified to fit in uint32
 }
 
-// UInt32 returns a random uint32 across the full [0, math.MaxUint32] range.
-func UInt32() uint32 {
+// Uint32 returns a random uint32 across the full [0, math.MaxUint32] range.
+func Uint32() uint32 {
 	return rand.Uint32()
 }
 
-// UInt64Between returns a random uint64 in [min, max]. Arguments are swapped if min > max.
-func UInt64Between(min, max uint64) uint64 {
+// Uint64Between returns a random uint64 in [min, max]. Arguments are swapped if min > max.
+func Uint64Between(min, max uint64) uint64 {
 	if min > max {
 		min, max = max, min
 	}
@@ -142,8 +142,8 @@ func UInt64Between(min, max uint64) uint64 {
 	return min + rand.Uint64N(rangeSize)
 }
 
-// UInt64 returns a random uint64 across the full [0, math.MaxUint64] range.
-func UInt64() uint64 {
+// Uint64 returns a random uint64 across the full [0, math.MaxUint64] range.
+func Uint64() uint64 {
 	return rand.Uint64()
 }
 

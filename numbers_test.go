@@ -242,37 +242,37 @@ func BenchmarkInt64Between(b *testing.B) {
 	}
 }
 
-// ---------- UInt8 / Byte ----------
+// ---------- Uint8 / Byte ----------
 
-func TestUInt8(t *testing.T) {
+func TestUint8(t *testing.T) {
 	seen := make(map[uint8]bool)
 	for i := 0; i < loop; i++ {
-		seen[UInt8()] = true
+		seen[Uint8()] = true
 	}
 	if len(seen) < 10 {
-		t.Errorf("UInt8() low variance: %d unique values in %d calls", len(seen), loop)
+		t.Errorf("Uint8() low variance: %d unique values in %d calls", len(seen), loop)
 	}
 }
-func TestUInt8Between(t *testing.T) {
+func TestUint8Between(t *testing.T) {
 	const min, max = uint8(10), uint8(200)
 	for i := 0; i < loop; i++ {
-		v := UInt8Between(min, max)
+		v := Uint8Between(min, max)
 		if v < min || v > max {
-			t.Fatalf("UInt8Between(%d, %d) = %d: out of range", min, max, v)
+			t.Fatalf("Uint8Between(%d, %d) = %d: out of range", min, max, v)
 		}
 	}
 	for i := 0; i < loop; i++ {
-		v := UInt8Between(max, min)
+		v := Uint8Between(max, min)
 		if v < min || v > max {
-			t.Fatalf("UInt8Between(%d, %d) = %d: out of range", max, min, v)
+			t.Fatalf("Uint8Between(%d, %d) = %d: out of range", max, min, v)
 		}
 	}
-	if v := UInt8Between(5, 5); v != 5 {
-		t.Fatalf("UInt8Between(5, 5) = %d, want 5", v)
+	if v := Uint8Between(5, 5); v != 5 {
+		t.Fatalf("Uint8Between(5, 5) = %d, want 5", v)
 	}
 	// full uint8 range must not panic
 	for i := 0; i < loop; i++ {
-		UInt8Between(0, math.MaxUint8)
+		Uint8Between(0, math.MaxUint8)
 	}
 }
 func TestByte(_ *testing.T) {
@@ -280,14 +280,14 @@ func TestByte(_ *testing.T) {
 		Byte()
 	}
 }
-func BenchmarkUInt8(b *testing.B) {
+func BenchmarkUint8(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		UInt8()
+		Uint8()
 	}
 }
-func BenchmarkUInt8Between(b *testing.B) {
+func BenchmarkUint8Between(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		UInt8Between(1, 255)
+		Uint8Between(1, 255)
 	}
 }
 func BenchmarkByte(b *testing.B) {
@@ -296,121 +296,121 @@ func BenchmarkByte(b *testing.B) {
 	}
 }
 
-// ---------- UInt16 ----------
+// ---------- Uint16 ----------
 
-func TestUInt16(t *testing.T) {
+func TestUint16(t *testing.T) {
 	seen := make(map[uint16]bool)
 	for i := 0; i < loop; i++ {
-		seen[UInt16()] = true
+		seen[Uint16()] = true
 	}
 	if len(seen) < 10 {
-		t.Errorf("UInt16() low variance: %d unique values in %d calls", len(seen), loop)
+		t.Errorf("Uint16() low variance: %d unique values in %d calls", len(seen), loop)
 	}
 }
-func TestUInt16Between(t *testing.T) {
+func TestUint16Between(t *testing.T) {
 	const min, max = uint16(1), uint16(1000)
 	for i := 0; i < loop; i++ {
-		v := UInt16Between(min, max)
+		v := Uint16Between(min, max)
 		if v < min || v > max {
-			t.Fatalf("UInt16Between(%d, %d) = %d: out of range", min, max, v)
+			t.Fatalf("Uint16Between(%d, %d) = %d: out of range", min, max, v)
 		}
 	}
 	for i := 0; i < loop; i++ {
-		v := UInt16Between(max, min)
+		v := Uint16Between(max, min)
 		if v < min || v > max {
-			t.Fatalf("UInt16Between(%d, %d) = %d: out of range", max, min, v)
+			t.Fatalf("Uint16Between(%d, %d) = %d: out of range", max, min, v)
 		}
 	}
-	if v := UInt16Between(500, 500); v != 500 {
-		t.Fatalf("UInt16Between(500, 500) = %d, want 500", v)
+	if v := Uint16Between(500, 500); v != 500 {
+		t.Fatalf("Uint16Between(500, 500) = %d, want 500", v)
 	}
 	// full uint16 range must not panic
 	for i := 0; i < loop; i++ {
-		UInt16Between(0, math.MaxUint16)
+		Uint16Between(0, math.MaxUint16)
 	}
 }
-func BenchmarkUInt16(b *testing.B) {
+func BenchmarkUint16(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		UInt16()
+		Uint16()
 	}
 }
-func BenchmarkUInt16Between(b *testing.B) {
+func BenchmarkUint16Between(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		UInt16Between(1, 1000)
+		Uint16Between(1, 1000)
 	}
 }
 
-// ---------- UInt32 ----------
+// ---------- Uint32 ----------
 
-func TestUInt32(_ *testing.T) {
+func TestUint32(_ *testing.T) {
 	for i := 0; i < loop; i++ {
-		UInt32()
+		Uint32()
 	}
 }
-func TestUInt32Between(t *testing.T) {
+func TestUint32Between(t *testing.T) {
 	const min, max = uint32(1), uint32(100000)
 	for i := 0; i < loop; i++ {
-		v := UInt32Between(min, max)
+		v := Uint32Between(min, max)
 		if v < min || v > max {
-			t.Fatalf("UInt32Between(%d, %d) = %d: out of range", min, max, v)
+			t.Fatalf("Uint32Between(%d, %d) = %d: out of range", min, max, v)
 		}
 	}
 	for i := 0; i < loop; i++ {
-		v := UInt32Between(max, min)
+		v := Uint32Between(max, min)
 		if v < min || v > max {
-			t.Fatalf("UInt32Between(%d, %d) = %d: out of range", max, min, v)
+			t.Fatalf("Uint32Between(%d, %d) = %d: out of range", max, min, v)
 		}
 	}
 	// full uint32 range must not panic
 	for i := 0; i < loop; i++ {
-		UInt32Between(0, math.MaxUint32)
+		Uint32Between(0, math.MaxUint32)
 	}
 }
-func BenchmarkUInt32(b *testing.B) {
+func BenchmarkUint32(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		UInt32()
+		Uint32()
 	}
 }
-func BenchmarkUInt32Between(b *testing.B) {
+func BenchmarkUint32Between(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		UInt32Between(1, 100000)
+		Uint32Between(1, 100000)
 	}
 }
 
-// ---------- UInt64 ----------
+// ---------- Uint64 ----------
 
-func TestUInt64(_ *testing.T) {
+func TestUint64(_ *testing.T) {
 	for i := 0; i < loop; i++ {
-		UInt64()
+		Uint64()
 	}
 }
-func TestUInt64Between(t *testing.T) {
+func TestUint64Between(t *testing.T) {
 	const min, max = uint64(1), uint64(1000000)
 	for i := 0; i < loop; i++ {
-		v := UInt64Between(min, max)
+		v := Uint64Between(min, max)
 		if v < min || v > max {
-			t.Fatalf("UInt64Between(%d, %d) = %d: out of range", min, max, v)
+			t.Fatalf("Uint64Between(%d, %d) = %d: out of range", min, max, v)
 		}
 	}
 	for i := 0; i < loop; i++ {
-		v := UInt64Between(max, min)
+		v := Uint64Between(max, min)
 		if v < min || v > max {
-			t.Fatalf("UInt64Between(%d, %d) = %d: out of range", max, min, v)
+			t.Fatalf("Uint64Between(%d, %d) = %d: out of range", max, min, v)
 		}
 	}
 	// full uint64 range must not panic
 	for i := 0; i < loop; i++ {
-		UInt64Between(0, math.MaxUint64)
+		Uint64Between(0, math.MaxUint64)
 	}
 }
-func BenchmarkUInt64(b *testing.B) {
+func BenchmarkUint64(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		UInt64()
+		Uint64()
 	}
 }
-func BenchmarkUInt64Between(b *testing.B) {
+func BenchmarkUint64Between(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		UInt64Between(1, 1000000)
+		Uint64Between(1, 1000000)
 	}
 }
 

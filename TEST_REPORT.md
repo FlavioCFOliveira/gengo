@@ -39,15 +39,15 @@ All 45 unit tests passed successfully.
 | `TestIntBetween` | PASS | 0.00s |
 | `TestInt64` | PASS | 0.00s |
 | `TestInt64Between` | PASS | 0.00s |
-| `TestUInt8` | PASS | 0.00s |
-| `TestUInt8Between` | PASS | 0.00s |
+| `TestUint8` | PASS | 0.00s |
+| `TestUint8Between` | PASS | 0.00s |
 | `TestByte` | PASS | 0.00s |
-| `TestUInt16` | PASS | 0.00s |
-| `TestUInt16Between` | PASS | 0.00s |
-| `TestUInt32` | PASS | 0.00s |
-| `TestUInt32Between` | PASS | 0.00s |
-| `TestUInt64` | PASS | 0.00s |
-| `TestUInt64Between` | PASS | 0.00s |
+| `TestUint16` | PASS | 0.00s |
+| `TestUint16Between` | PASS | 0.00s |
+| `TestUint32` | PASS | 0.00s |
+| `TestUint32Between` | PASS | 0.00s |
+| `TestUint64` | PASS | 0.00s |
+| `TestUint64Between` | PASS | 0.00s |
 | `TestFloat32` | PASS | 0.00s |
 | `TestFloat32Between` | PASS | 0.00s |
 | `TestFloat64` | PASS | 0.00s |
@@ -108,18 +108,18 @@ All 45 unit tests passed successfully.
 | `BenchmarkInt64` | 1,000,000,000 | 4.770 ns/op | 0 B/op, 0 allocs/op |
 | `BenchmarkInt64Between` | 761,782,174 | 7.872 ns/op | 0 B/op, 0 allocs/op |
 
-#### Unsigned Integers (UInt8/16/32/64) and Byte
+#### Unsigned Integers (Uint8/16/32/64) and Byte
 | Benchmark | Operations | Time/op | Allocations |
 |-----------|------------|---------|-------------|
-| `BenchmarkUInt8` | 1,000,000,000 | 4.780 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt8Between` | 801,432,346 | 7.463 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUint8` | 1,000,000,000 | 4.780 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUint8Between` | 801,432,346 | 7.463 ns/op | 0 B/op, 0 allocs/op |
 | `BenchmarkByte` | 1,000,000,000 | 4.768 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt16` | 1,000,000,000 | 4.767 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt16Between` | 811,150,370 | 7.515 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt32` | 1,000,000,000 | 4.796 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt32Between` | 803,114,101 | 7.489 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt64` | 1,000,000,000 | 4.786 ns/op | 0 B/op, 0 allocs/op |
-| `BenchmarkUInt64Between` | 757,757,079 | 7.942 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUint16` | 1,000,000,000 | 4.767 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUint16Between` | 811,150,370 | 7.515 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUint32` | 1,000,000,000 | 4.796 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUint32Between` | 803,114,101 | 7.489 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUint64` | 1,000,000,000 | 4.786 ns/op | 0 B/op, 0 allocs/op |
+| `BenchmarkUint64Between` | 757,757,079 | 7.942 ns/op | 0 B/op, 0 allocs/op |
 
 #### Floating Point and Complex Numbers
 | Benchmark | Operations | Time/op | Allocations |
@@ -157,7 +157,7 @@ All 45 unit tests passed successfully.
    - `BenchmarkInt32`: 4.753 ns/op
    - `BenchmarkInt`: 4.762 ns/op
    - `BenchmarkInt8`: 4.763 ns/op
-   - `BenchmarkUInt16`: 4.767 ns/op
+   - `BenchmarkUint16`: 4.767 ns/op
 
 4. **Complex Numbers Slower**: `BenchmarkComplex64` and `BenchmarkComplex128` are naturally slower (~10.3 ns/op), and their `Between` variants slower still (~14 ns/op), as they generate two parts (real and imaginary).
 
@@ -206,24 +206,24 @@ All 45 unit tests passed successfully.
 --- PASS: TestInt64 (0.00s)
 === RUN   TestInt64Between
 --- PASS: TestInt64Between (0.00s)
-=== RUN   TestUInt8
---- PASS: TestUInt8 (0.00s)
-=== RUN   TestUInt8Between
---- PASS: TestUInt8Between (0.00s)
+=== RUN   TestUint8
+--- PASS: TestUint8 (0.00s)
+=== RUN   TestUint8Between
+--- PASS: TestUint8Between (0.00s)
 === RUN   TestByte
 --- PASS: TestByte (0.00s)
-=== RUN   TestUInt16
---- PASS: TestUInt16 (0.00s)
-=== RUN   TestUInt16Between
---- PASS: TestUInt16Between (0.00s)
-=== RUN   TestUInt32
---- PASS: TestUInt32 (0.00s)
-=== RUN   TestUInt32Between
---- PASS: TestUInt32Between (0.00s)
-=== RUN   TestUInt64
---- PASS: TestUInt64 (0.00s)
-=== RUN   TestUInt64Between
---- PASS: TestUInt64Between (0.00s)
+=== RUN   TestUint16
+--- PASS: TestUint16 (0.00s)
+=== RUN   TestUint16Between
+--- PASS: TestUint16Between (0.00s)
+=== RUN   TestUint32
+--- PASS: TestUint32 (0.00s)
+=== RUN   TestUint32Between
+--- PASS: TestUint32Between (0.00s)
+=== RUN   TestUint64
+--- PASS: TestUint64 (0.00s)
+=== RUN   TestUint64Between
+--- PASS: TestUint64Between (0.00s)
 === RUN   TestFloat32
 --- PASS: TestFloat32 (0.00s)
 === RUN   TestFloat32Between
@@ -306,15 +306,15 @@ BenchmarkInt-16                  	1000000000	         4.762 ns/op	       0 B/op	
 BenchmarkIntBetween-16           	767547925	         7.812 ns/op	       0 B/op	       0 allocs/op
 BenchmarkInt64-16                	1000000000	         4.770 ns/op	       0 B/op	       0 allocs/op
 BenchmarkInt64Between-16         	761782174	         7.872 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt8-16                	1000000000	         4.780 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt8Between-16         	801432346	         7.463 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUint8-16                	1000000000	         4.780 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUint8Between-16         	801432346	         7.463 ns/op	       0 B/op	       0 allocs/op
 BenchmarkByte-16                 	1000000000	         4.768 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt16-16               	1000000000	         4.767 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt16Between-16        	811150370	         7.515 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt32-16               	1000000000	         4.796 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt32Between-16        	803114101	         7.489 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt64-16               	1000000000	         4.786 ns/op	       0 B/op	       0 allocs/op
-BenchmarkUInt64Between-16        	757757079	         7.942 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUint16-16               	1000000000	         4.767 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUint16Between-16        	811150370	         7.515 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUint32-16               	1000000000	         4.796 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUint32Between-16        	803114101	         7.489 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUint64-16               	1000000000	         4.786 ns/op	       0 B/op	       0 allocs/op
+BenchmarkUint64Between-16        	757757079	         7.942 ns/op	       0 B/op	       0 allocs/op
 BenchmarkFloat32-16              	1000000000	         5.804 ns/op	       0 B/op	       0 allocs/op
 BenchmarkFloat32Between-16       	885918817	         6.791 ns/op	       0 B/op	       0 allocs/op
 BenchmarkFloat64-16              	1000000000	         5.767 ns/op	       0 B/op	       0 allocs/op

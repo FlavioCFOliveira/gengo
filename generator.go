@@ -111,11 +111,11 @@ func (g *Generator) Int64() int64 {
 
 // Byte is the seeded-generator equivalent of [Byte].
 func (g *Generator) Byte() byte {
-	return g.UInt8()
+	return g.Uint8()
 }
 
-// UInt8Between is the seeded-generator equivalent of [UInt8Between].
-func (g *Generator) UInt8Between(min, max uint8) uint8 {
+// Uint8Between is the seeded-generator equivalent of [Uint8Between].
+func (g *Generator) Uint8Between(min, max uint8) uint8 {
 	if min > max {
 		min, max = max, min
 	}
@@ -123,13 +123,13 @@ func (g *Generator) UInt8Between(min, max uint8) uint8 {
 	return uint8(uint32(min) + g.r.Uint32N(rangeSize))
 }
 
-// UInt8 is the seeded-generator equivalent of [UInt8].
-func (g *Generator) UInt8() uint8 {
+// Uint8 is the seeded-generator equivalent of [Uint8].
+func (g *Generator) Uint8() uint8 {
 	return uint8(g.r.Uint32())
 }
 
-// UInt16Between is the seeded-generator equivalent of [UInt16Between].
-func (g *Generator) UInt16Between(min, max uint16) uint16 {
+// Uint16Between is the seeded-generator equivalent of [Uint16Between].
+func (g *Generator) Uint16Between(min, max uint16) uint16 {
 	if min > max {
 		min, max = max, min
 	}
@@ -137,13 +137,13 @@ func (g *Generator) UInt16Between(min, max uint16) uint16 {
 	return uint16(uint32(min) + g.r.Uint32N(rangeSize))
 }
 
-// UInt16 is the seeded-generator equivalent of [UInt16].
-func (g *Generator) UInt16() uint16 {
+// Uint16 is the seeded-generator equivalent of [Uint16].
+func (g *Generator) Uint16() uint16 {
 	return uint16(g.r.Uint32())
 }
 
-// UInt32Between is the seeded-generator equivalent of [UInt32Between].
-func (g *Generator) UInt32Between(min, max uint32) uint32 {
+// Uint32Between is the seeded-generator equivalent of [Uint32Between].
+func (g *Generator) Uint32Between(min, max uint32) uint32 {
 	if min > max {
 		min, max = max, min
 	}
@@ -154,13 +154,13 @@ func (g *Generator) UInt32Between(min, max uint32) uint32 {
 	return min + g.r.Uint32N(uint32(rangeSize))
 }
 
-// UInt32 is the seeded-generator equivalent of [UInt32].
-func (g *Generator) UInt32() uint32 {
+// Uint32 is the seeded-generator equivalent of [Uint32].
+func (g *Generator) Uint32() uint32 {
 	return g.r.Uint32()
 }
 
-// UInt64Between is the seeded-generator equivalent of [UInt64Between].
-func (g *Generator) UInt64Between(min, max uint64) uint64 {
+// Uint64Between is the seeded-generator equivalent of [Uint64Between].
+func (g *Generator) Uint64Between(min, max uint64) uint64 {
 	if min > max {
 		min, max = max, min
 	}
@@ -171,8 +171,8 @@ func (g *Generator) UInt64Between(min, max uint64) uint64 {
 	return min + g.r.Uint64N(rangeSize)
 }
 
-// UInt64 is the seeded-generator equivalent of [UInt64].
-func (g *Generator) UInt64() uint64 {
+// Uint64 is the seeded-generator equivalent of [Uint64].
+func (g *Generator) Uint64() uint64 {
 	return g.r.Uint64()
 }
 
@@ -285,7 +285,7 @@ func (g *Generator) StringBetween(min, max uint32, sourceChars string) string {
 	if min > max {
 		min, max = max, min
 	}
-	return g.String(g.UInt32Between(min, max), sourceChars)
+	return g.String(g.Uint32Between(min, max), sourceChars)
 }
 
 // StringAllChars is the seeded-generator equivalent of [StringAllChars].
@@ -369,20 +369,20 @@ func (g *Generator) Bool() bool {
 
 // Word is the seeded-generator equivalent of [Word].
 func (g *Generator) Word() string {
-	return g.StringAlphabeticLowercase(g.UInt32Between(2, 30))
+	return g.StringAlphabeticLowercase(g.Uint32Between(2, 30))
 }
 
 // WordByLengthType is the seeded-generator equivalent of [WordByLengthType].
 func (g *Generator) WordByLengthType(l LengthTypeWords) (word string) {
 	switch l {
 	case SmallLengthWord:
-		word = g.StringAlphabeticLowercase(g.UInt32Between(1, 4))
+		word = g.StringAlphabeticLowercase(g.Uint32Between(1, 4))
 	case MediumLengthWords:
-		word = g.StringAlphabeticLowercase(g.UInt32Between(5, 8))
+		word = g.StringAlphabeticLowercase(g.Uint32Between(5, 8))
 	case BigLengthWords:
-		word = g.StringAlphabeticLowercase(g.UInt32Between(9, 30))
+		word = g.StringAlphabeticLowercase(g.Uint32Between(9, 30))
 	default:
-		word = g.StringAlphabeticLowercase(g.UInt32Between(1, 30))
+		word = g.StringAlphabeticLowercase(g.Uint32Between(1, 30))
 	}
 
 	return word

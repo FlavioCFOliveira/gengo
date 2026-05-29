@@ -22,10 +22,10 @@ func fingerprint(g *Generator) string {
 			g.Int32(), g.Int32Between(-1000000, 1000000), g.Int(), g.IntBetween(1, 100),
 			g.Int64(), g.Int64Between(0, 1000000000))
 		fmt.Fprintf(&b, "%d|%d|%d|%d|%d|%d|%d|%d|",
-			g.UInt8(), g.UInt8Between(0, 200), g.Byte(), g.UInt16(),
-			g.UInt16Between(0, 5000), g.UInt32(), g.UInt32Between(0, 1000000), g.UInt64())
+			g.Uint8(), g.Uint8Between(0, 200), g.Byte(), g.Uint16(),
+			g.Uint16Between(0, 5000), g.Uint32(), g.Uint32Between(0, 1000000), g.Uint64())
 		fmt.Fprintf(&b, "%d|%v|%v|%v|%v|",
-			g.UInt64Between(0, 1000000000000), g.Float32(), g.Float32Between(-1, 1),
+			g.Uint64Between(0, 1000000000000), g.Float32(), g.Float32Between(-1, 1),
 			g.Float64(), g.Float64Between(-1, 1))
 		fmt.Fprintf(&b, "%v|%v|%v|%v|",
 			g.Complex64(), g.Complex64Between(-1, 1, -1, 1), g.Complex128(),
@@ -60,7 +60,7 @@ func TestNewSourceReproducible(t *testing.T) {
 	a := NewSource(rand.NewPCG(7, 11))
 	b := NewSource(rand.NewPCG(7, 11))
 	for i := 0; i < loop; i++ {
-		if a.UInt64() != b.UInt64() {
+		if a.Uint64() != b.Uint64() {
 			t.Fatal("NewSource with identical PCG seeds must reproduce the sequence")
 		}
 	}
@@ -75,8 +75,8 @@ func TestGeneratorRanges(t *testing.T) {
 		if v := g.Float64Between(-5, 5); v < -5 || v > 5 {
 			t.Fatalf("Float64Between out of range: %v", v)
 		}
-		if v := g.UInt8Between(100, 150); v < 100 || v > 150 {
-			t.Fatalf("UInt8Between out of range: %d", v)
+		if v := g.Uint8Between(100, 150); v < 100 || v > 150 {
+			t.Fatalf("Uint8Between out of range: %d", v)
 		}
 		s := g.String(16, Alphanumeric)
 		if len(s) != 16 {
@@ -113,23 +113,23 @@ func TestGeneratorIntSwapBranches(t *testing.T) {
 func TestGeneratorUintSwapAndFullRange(t *testing.T) {
 	g := New(7)
 	// Unsigned Between methods must swap reversed bounds.
-	if v := g.UInt8Between(200, 0); v > 200 {
-		t.Fatalf("UInt8Between swap: %d", v)
+	if v := g.Uint8Between(200, 0); v > 200 {
+		t.Fatalf("Uint8Between swap: %d", v)
 	}
-	if v := g.UInt16Between(5000, 0); v > 5000 {
-		t.Fatalf("UInt16Between swap: %d", v)
+	if v := g.Uint16Between(5000, 0); v > 5000 {
+		t.Fatalf("Uint16Between swap: %d", v)
 	}
-	if v := g.UInt32Between(1000000, 0); v > 1000000 {
-		t.Fatalf("UInt32Between swap: %d", v)
+	if v := g.Uint32Between(1000000, 0); v > 1000000 {
+		t.Fatalf("Uint32Between swap: %d", v)
 	}
-	if v := g.UInt64Between(1000, 0); v > 1000 {
-		t.Fatalf("UInt64Between swap: %d", v)
+	if v := g.Uint64Between(1000, 0); v > 1000 {
+		t.Fatalf("Uint64Between swap: %d", v)
 	}
 	// Full-range special branches (rangeSize overflows to 0 / exceeds MaxUint32).
 	_ = g.IntBetween(math.MinInt, math.MaxInt)
 	_ = g.Int64Between(math.MinInt64, math.MaxInt64)
-	_ = g.UInt32Between(0, math.MaxUint32)
-	_ = g.UInt64Between(0, math.MaxUint64)
+	_ = g.Uint32Between(0, math.MaxUint32)
+	_ = g.Uint64Between(0, math.MaxUint64)
 }
 
 func TestGeneratorFloatBranches(t *testing.T) {

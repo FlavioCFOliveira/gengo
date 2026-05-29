@@ -17,8 +17,8 @@
 The most significant gain is in `String`, which became **2.37× faster** (−58%)
 thanks to the batched PRNG calls introduced in commit `71d7483`. On this platform
 the `numbers.go` rewrite (`ec0e6e4`) also delivered large gains for the small
-integer types — `Int8` and `Int16` are **~38% faster** and `Int32`, `UInt8`,
-`Byte`, and `UInt16` are **~21–24% faster** — by eliminating intermediate
+integer types — `Int8` and `Int16` are **~38% faster** and `Int32`, `Uint8`,
+`Byte`, and `Uint16` are **~21–24% faster** — by eliminating intermediate
 wide-type casts. Float types gained inlined generation paths (~6–7%). Several new
 benchmarks (`Float32Between`, `Float64Between`, `Complex64Between`,
 `Complex128Between`, `Word`, `WordByLengthType`, `Words`) cover API additions that
@@ -50,28 +50,28 @@ did not exist in v0.0.26.
 | `Int8` | 7.624 ns | 4.763 ns | −2.861 ns | **+38%** |
 | `Int16` | 7.641 ns | 4.774 ns | −2.867 ns | **+38%** |
 | `Int32` | 5.980 ns | 4.753 ns | −1.227 ns | **+21%** |
-| `UInt8` | 6.233 ns | 4.780 ns | −1.453 ns | **+23%** |
+| `Uint8` | 6.233 ns | 4.780 ns | −1.453 ns | **+23%** |
 | `Byte` | 6.264 ns | 4.768 ns | −1.496 ns | **+24%** |
-| `UInt16` | 6.254 ns | 4.767 ns | −1.487 ns | **+24%** |
+| `Uint16` | 6.254 ns | 4.767 ns | −1.487 ns | **+24%** |
 | `Int` | 4.752 ns | 4.762 ns | +0.010 ns | ≈ same |
 | `Int64` | 4.757 ns | 4.770 ns | +0.013 ns | ≈ same |
-| `UInt32` | 4.747 ns | 4.796 ns | +0.049 ns | ≈ same |
-| `UInt64` | 4.759 ns | 4.786 ns | +0.027 ns | ≈ same |
+| `Uint32` | 4.747 ns | 4.796 ns | +0.049 ns | ≈ same |
+| `Uint64` | 4.759 ns | 4.786 ns | +0.027 ns | ≈ same |
 | `Int8Between` | 7.628 ns | 7.424 ns | −0.204 ns | ≈ same |
 | `Int16Between` | 7.616 ns | 7.398 ns | −0.218 ns | ≈ same |
 | `Int32Between` | 6.516 ns | 7.469 ns | +0.953 ns | ≈ same¹ |
 | `IntBetween` | 7.838 ns | 7.812 ns | −0.026 ns | ≈ same |
 | `Int64Between` | 7.611 ns | 7.872 ns | +0.261 ns | ≈ same¹ |
-| `UInt8Between` | 7.470 ns | 7.463 ns | −0.007 ns | ≈ same |
-| `UInt16Between` | 7.442 ns | 7.515 ns | +0.073 ns | ≈ same |
-| `UInt32Between` | 7.633 ns | 7.489 ns | −0.144 ns | ≈ same |
-| `UInt64Between` | 7.852 ns | 7.942 ns | +0.090 ns | ≈ same |
+| `Uint8Between` | 7.470 ns | 7.463 ns | −0.007 ns | ≈ same |
+| `Uint16Between` | 7.442 ns | 7.515 ns | +0.073 ns | ≈ same |
+| `Uint32Between` | 7.633 ns | 7.489 ns | −0.144 ns | ≈ same |
+| `Uint64Between` | 7.852 ns | 7.942 ns | +0.090 ns | ≈ same |
 
 ¹ The `Between` variants cluster around 7.4–7.9 ns/op on HEAD; the remaining
 inter-version differences are run-to-run measurement noise rather than real
 regressions.
 
-The plain `Int8`, `Int16`, `Int32`, `UInt8`, `Byte`, and `UInt16` variants
+The plain `Int8`, `Int16`, `Int32`, `Uint8`, `Byte`, and `Uint16` variants
 improved because the `numbers.go` rewrite eliminated intermediate wide-type casts
 that had prevented the compiler from producing the optimal instruction sequence.
 

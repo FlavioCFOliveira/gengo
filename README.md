@@ -150,20 +150,20 @@ Every integer type comes in two flavours:
 | `int32` | `Int32()` | ±2 billion | `Int32Between(0, 999999)` |
 | `int64` | `Int64()` | ±9 quintillion | `Int64Between(0, time.Now().Unix())` |
 | `int` | `Int()` | Platform dependent | `IntBetween(1, 100)` |
-| `uint8` / `byte` | `UInt8()` / `Byte()` | 0 to 255 | `UInt8Between(0, 255)` |
-| `uint16` | `UInt16()` | 0 to 65 535 | `UInt16Between(1000, 5000)` |
-| `uint32` | `UInt32()` | 0 to 4 billion | `UInt32Between(0, 100000)` |
-| `uint64` | `UInt64()` | 0 to 18 quintillion | `UInt64Between(0, math.MaxUint32)` |
+| `uint8` / `byte` | `Uint8()` / `Byte()` | 0 to 255 | `Uint8Between(0, 255)` |
+| `uint16` | `Uint16()` | 0 to 65 535 | `Uint16Between(1000, 5000)` |
+| `uint32` | `Uint32()` | 0 to 4 billion | `Uint32Between(0, 100000)` |
+| `uint64` | `Uint64()` | 0 to 18 quintillion | `Uint64Between(0, math.MaxUint32)` |
 
 ```go
 // Random age between 18 and 100
 age := gengo.IntBetween(18, 100)
 
 // Random percentage (0–100)
-percent := gengo.UInt8Between(0, 100)
+percent := gengo.Uint8Between(0, 100)
 
 // Random unprivileged port number
-port := gengo.UInt16Between(1024, 65535)
+port := gengo.Uint16Between(1024, 65535)
 
 // Random byte for binary data
 b := gengo.Byte()
@@ -386,7 +386,7 @@ Benchmarks run on an AMD Ryzen 9 5900HX (Go 1.26.2, `-benchtime 5s`). See `make 
 | `Float64` | ~5.8 |
 | `String` (8 chars) | ~27.8 |
 | `Date` | ~7.4 |
-| `UInt64` | ~4.8 |
+| `Uint64` | ~4.8 |
 
 For the full benchmark report and detailed test results, see [BENCHMARKS.md](BENCHMARKS.md) and [TEST_REPORT.md](TEST_REPORT.md).
 

@@ -32,7 +32,9 @@ re-tagging an existing one.
 ## [Unreleased]
 
 Next release: **v0.1.0** — the first release under the Versioning Policy above.
-This cycle adds backward-compatible features, so the **minor** version is bumped.
+This cycle bumps the **minor** version. Per the Versioning Policy, while still in
+`0.x` it carries one incompatible API change (the `UInt*` → `Uint*` rename below)
+alongside backward-compatible additions and fixes.
 
 ### Added
 - `Generator` type with `New(seed)` and `NewSource(rand.Source)` constructors for
@@ -47,6 +49,12 @@ This cycle adds backward-compatible features, so the **minor** version is bumped
   ranges; results are always finite and within `[min, max]`.
 
 ### Changed
+- **BREAKING:** renamed the unsigned-integer API from `UInt*` to Go's idiomatic
+  `Uint*` spelling — `Uint8`, `Uint16`, `Uint32`, `Uint64`, their `Between`
+  variants, and the matching `Generator` methods. This matches the standard
+  library (`math.MaxUint64`, `math/rand/v2.Uint64`, `sync/atomic.Uint64`). The
+  old `UInt*` names were removed; update call sites accordingly (for example,
+  `gengo.UInt8Between` → `gengo.Uint8Between`).
 - Documentation corrected to match the implementation: `Words` length
   distribution (26/52/22), `Float32`/`Float64` positive-only range, and the
   `String` performance label (8-char input).

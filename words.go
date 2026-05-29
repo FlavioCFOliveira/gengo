@@ -22,20 +22,20 @@ const WordLengthRatio = `11111111111112222222222222222222222222233333333333`
 
 // Word returns a random lowercase alphabetic word between 2 and 30 characters.
 func Word() string {
-	return StringAlphabeticLowercase(UInt32Between(2, 30))
+	return StringAlphabeticLowercase(Uint32Between(2, 30))
 }
 
 // WordByLengthType returns a random lowercase alphabetic word of the given length category.
 func WordByLengthType(l LengthTypeWords) (word string) {
 	switch l {
 	case SmallLengthWord:
-		word = StringAlphabeticLowercase(UInt32Between(1, 4))
+		word = StringAlphabeticLowercase(Uint32Between(1, 4))
 	case MediumLengthWords:
-		word = StringAlphabeticLowercase(UInt32Between(5, 8))
+		word = StringAlphabeticLowercase(Uint32Between(5, 8))
 	case BigLengthWords:
-		word = StringAlphabeticLowercase(UInt32Between(9, 30))
+		word = StringAlphabeticLowercase(Uint32Between(9, 30))
 	default:
-		word = StringAlphabeticLowercase(UInt32Between(1, 30))
+		word = StringAlphabeticLowercase(Uint32Between(1, 30))
 	}
 
 	return word

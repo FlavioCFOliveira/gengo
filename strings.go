@@ -76,7 +76,7 @@ func StringBetween(min, max uint32, sourceChars string) string {
 	if min > max {
 		min, max = max, min // swap to ensure valid range
 	}
-	return String(UInt32Between(min, max), sourceChars)
+	return String(Uint32Between(min, max), sourceChars)
 }
 
 // StringAllChars returns a string with a given length containing all the predefined alphabetic, alphanumeric and symbols characters.
