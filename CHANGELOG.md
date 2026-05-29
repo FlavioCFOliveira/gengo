@@ -39,6 +39,8 @@ This cycle adds backward-compatible features, so the **minor** version is bumped
   reproducible, seeded output; its methods mirror every package-level function.
 - `SECURITY.md` — security policy with a non-cryptographic disclaimer and a
   vulnerability-reporting process.
+- `CONTRIBUTING.md` — build, test, and lint workflow, coding and commit
+  conventions, and the pull-request process.
 
 ### Fixed
 - `Float32Between` / `Float64Between` no longer return `+Inf` for very wide

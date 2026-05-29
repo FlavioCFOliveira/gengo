@@ -392,6 +392,12 @@ For the full benchmark report and detailed test results, see [BENCHMARKS.md](BEN
 
 ---
 
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the build, test, and lint workflow, the coding conventions, and the pull-request process. For security issues, follow [SECURITY.md](SECURITY.md).
+
+---
+
 ## License
 
 Released under the [MIT License](LICENSE).
