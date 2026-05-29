@@ -149,7 +149,7 @@ func UInt64() uint64 {
 
 // --------------
 
-// Float32 returns a random float32 in (0, math.MaxFloat32].
+// Float32 returns a random float32 in (0, math.MaxFloat32).
 func Float32() float32 {
 	return rand.Float32()*math.MaxFloat32 + math.SmallestNonzeroFloat32
 }
@@ -171,7 +171,7 @@ func Float32Between(min, max float32) float32 {
 	return rand.Float32()*span + min
 }
 
-// Float64 returns a random float64 in (0, math.MaxFloat64].
+// Float64 returns a random float64 in (0, math.MaxFloat64).
 func Float64() float64 {
 	return rand.Float64()*math.MaxFloat64 + math.SmallestNonzeroFloat64
 }

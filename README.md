@@ -45,7 +45,7 @@ import (
 func main() {
     // Random alphanumeric string — handy for test fixtures and IDs
     fmt.Println(gengo.StringAlphanumeric(20))
-    // Output: k9mP2vLxQr5tWnB8aJc
+    // Output: k9mP2vLxQr5tWnB8aJcT
 
     // Random integer in a custom range
     fmt.Println(gengo.IntBetween(1, 100))
@@ -173,9 +173,9 @@ b := gengo.Byte()
 
 | Function | Range | Description |
 |----------|-------|-------------|
-| `Float32()` | (0, MaxFloat32] | Positive values only — use `Float32Between` for negatives or a custom range |
+| `Float32()` | (0, MaxFloat32) | Positive values only — use `Float32Between` for negatives or a custom range |
 | `Float32Between(min, max)` | Custom | Bounded float32 |
-| `Float64()` | (0, MaxFloat64] | Positive values only — use `Float64Between` for negatives or a custom range |
+| `Float64()` | (0, MaxFloat64) | Positive values only — use `Float64Between` for negatives or a custom range |
 | `Float64Between(min, max)` | Custom | Bounded float64 |
 
 ```go
@@ -283,7 +283,7 @@ word := gengo.Word()
 |----------|--------|----------------|
 | `SmallLengthWord` | 1–4 chars | `cat`, `dog`, `sun` |
 | `MediumLengthWords` | 5–8 chars | `house`, `garden` |
-| `BigLengthWords` | 9+ chars | `wonderful`, `beautiful` |
+| `BigLengthWords` | 9–30 chars | `wonderful`, `beautiful` |
 
 ```go
 small  := gengo.WordByLengthType(gengo.SmallLengthWord)
@@ -301,7 +301,7 @@ words := gengo.Words(5)
 // Natural-language-like distribution (from WordLengthRatio, 13/26/11 of 50):
 // ~26% small words (1–4 chars)
 // ~52% medium words (5–8 chars)
-// ~22% big words (9+ chars)
+// ~22% big words (9–30 chars)
 ```
 
 ---
@@ -339,14 +339,14 @@ Use these built-in constants to build your own character sets or combine them fo
 
 | Constant | Characters | Size |
 |----------|------------|------|
-| `AllChars` | `a-zA-Z0-9!@#$%...` | 94 |
+| `AllChars` | `a-zA-Z0-9!@#$%...` | 87 |
 | `Alphanumeric` | `a-zA-Z0-9` | 62 |
 | `Alphabetic` | `a-zA-Z` | 52 |
 | `AlphabeticUppercase` | `A-Z` | 26 |
 | `AlphabeticLowercase` | `a-z` | 26 |
 | `Numeric` | `0-9` | 10 |
 | `Hexadecimal` | `0-9A-F` | 16 |
-| `Symbols` | `!@#$%...` | 32 |
+| `Symbols` | `!@#$%...` | 25 |
 
 ```go
 // Letters and underscores — safe for usernames
