@@ -1,7 +1,3 @@
-// Package gengo provides a simple and practical way to generate random data
-// structures. It offers a zero-dependency API for generating random values of
-// standard Go types including integers, floats, complex numbers, strings,
-// booleans, dates, and words.
 package gengo
 
 import "time"
