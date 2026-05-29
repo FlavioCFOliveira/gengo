@@ -29,12 +29,12 @@ re-tagging an existing one.
 
 ---
 
-## [Unreleased]
+## [v0.1.0] — 2026-05-29
 
-Next release: **v0.1.0** — the first release under the Versioning Policy above.
-This cycle bumps the **minor** version. Per the Versioning Policy, while still in
-`0.x` it carries one incompatible API change (the `UInt*` → `Uint*` rename below)
-alongside backward-compatible additions and fixes.
+The first release under the Versioning Policy above. This cycle bumps the
+**minor** version. Per the Versioning Policy, while still in `0.x` it carries one
+incompatible API change (the `UInt*` → `Uint*` rename below) alongside
+backward-compatible additions and fixes.
 
 ### Added
 - `Generator` type with `New(seed)` and `NewSource(rand.Source)` constructors for
