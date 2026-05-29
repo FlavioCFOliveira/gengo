@@ -57,10 +57,10 @@ linters:
         - G404  # math/rand is intentional — this library is not cryptographic
 
   exclusions:
-    # numbers.go uses intentional signed↔unsigned conversions with wider intermediate
-    # types to generate values across full ranges without overflow (e.g. uint8 arithmetic
-    # for int8 ranges). These conversions are safe by design; suppress only in that file.
+    # numbers.go and generator.go use intentional signed↔unsigned conversions with wider
+    # intermediate types to generate values across full ranges without overflow (e.g. uint8
+    # arithmetic for int8 ranges). These conversions are safe by design; suppress only there.
     rules:
       - linters: [gosec]
-        path: "numbers\\.go|.*_test\\.go"
+        path: "numbers\\.go|generator\\.go|.*_test\\.go"
         text: "G115"

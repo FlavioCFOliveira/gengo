@@ -69,6 +69,7 @@ func main() {
 - [Date & Time](#date--time)
 - [Booleans](#booleans)
 - [Words & Text](#words--text)
+- [Reproducible Output](#reproducible-output)
 - [Character Sets](#character-sets)
 - [Safety & Limits](#safety--limits)
 - [Performance](#performance)
@@ -300,6 +301,33 @@ words := gengo.Words(5)
 // ~52% medium words (5–8 chars)
 // ~22% big words (9+ chars)
 ```
+
+---
+
+## Reproducible Output
+
+By default, gengo's package-level functions draw from Go's global `math/rand/v2` source, which is automatically seeded — great for variety, but the output cannot be reproduced. When you need a deterministic sequence (for example, to reproduce a failing test), create a seeded `Generator`:
+
+```go
+// Same seed → same sequence, every run
+g := gengo.New(42)
+fmt.Println(g.IntBetween(1, 100))            // deterministic for seed 42
+fmt.Println(g.String(8, gengo.Alphanumeric)) // deterministic for seed 42
+
+// A second generator with the same seed reproduces the sequence exactly
+g2 := gengo.New(42)
+// g2 yields the identical sequence as g
+```
+
+A `Generator` exposes a method for every package-level function (`g.Int8()`, `g.Float64Between(...)`, `g.Date()`, `g.Word()`, and so on), so it is a drop-in replacement when you need reproducibility. For full control over the underlying algorithm, build one from any `math/rand/v2` source:
+
+```go
+import "math/rand/v2"
+
+g := gengo.NewSource(rand.NewPCG(1, 2))
+```
+
+> A `Generator` is **not** safe for concurrent use by multiple goroutines (it wraps a `math/rand/v2.Rand`). Use one generator per goroutine, or the package-level functions — which are safe for concurrent use — when you don't need reproducibility.
 
 ---
 
