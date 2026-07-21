@@ -38,20 +38,48 @@ import (
 // onsets. This two-pass order is what removes every backtrack.
 //
 // Sampling weights for the derived inventories reuse the weights of the base
-// inventories in wordspt_data.go (single source of truth). The only two new
-// weights are the empty-onset and empty-coda weights below; like the base
-// weights, their exact values are ordinal estimates (flagged), while their
-// ordering encodes an authoritative pt-PT fact: the language strongly prefers
-// consonant onsets and open (CV) syllables (Mateus, M. H. & d'Andrade, E., "The
-// Phonology of Portuguese", Oxford, 2000; Cunha & Cintra). The values change only
-// how often onsetless or closed syllables appear; they never affect the
-// conformance validators.
+// inventories in wordspt_data.go (single source of truth). The only new weights
+// are the empty-onset weights (word-initial and medial) and the empty-coda weight
+// below; like the base weights, their exact values are ordinal estimates
+// (flagged), while their ordering encodes authoritative pt-PT facts: the language
+// strongly prefers consonant onsets and open (CV) syllables (Mateus, M. H. &
+// d'Andrade, E., "The Phonology of Portuguese", Oxford, 2000; Cunha & Cintra), and
+// it strongly avoids word-internal vowel hiatus (a coda-less syllable directly
+// followed by a vowel-initial one). The values change only how often onsetless or
+// closed syllables appear; they never affect the conformance validators.
+//
+// Hiatus and the two empty-onset weights
+//
+// A medial syllable with an absent (empty) onset is exactly what produces a
+// word-internal vowel-vowel junction: because the Maximum Onset Principle forces
+// the preceding syllable's coda empty before a vowel-initial onset (see the pass-2
+// coda draw below), an empty medial onset always leaves the previous syllable
+// vowel-final, so the two nuclei meet with no consonant between them. Runs of
+// three or four vowels (a diphthong meeting a vowel-initial syllable) follow the
+// same way. pt-PT largely avoids such medial hiatus, so the medial empty-onset
+// weight is kept far below the word-initial one: word-initial vowel onsets stay
+// natural (amor, ave, ilha), while medial vowel onsets — the unnatural junctions —
+// become rare. A small residual is intentional: real pt-PT medial hiatus exists
+// (país, saída, poesia), so the medial weight is small but non-zero, which also
+// keeps the empty onset reachable in the medial inventory. Separating the two
+// weights reduces hiatus while every draw stays a single, rejection-free weighted
+// selection.
 
-// emptyOnsetWeight is the sampling weight of the absent (vowel-initial) onset,
-// relative to the consonant-onset weights in wordspt_data.go. It is an ordinal
-// estimate (flagged), kept below the consonant weights so that vowel-initial
-// syllables stay a minority, matching the pt-PT preference for consonant onsets.
-const emptyOnsetWeight = 90
+// emptyOnsetWeightInitial is the sampling weight of the absent (vowel-initial)
+// onset at word-initial position, relative to the consonant-onset weights in
+// wordspt_data.go. It is an ordinal estimate (flagged), kept below the consonant
+// weights so that vowel-initial words stay a minority, matching the pt-PT
+// preference for consonant onsets while allowing natural vowel-initial words
+// (amor, ave, ilha).
+const emptyOnsetWeightInitial = 90
+
+// emptyOnsetWeightMedial is the sampling weight of the absent (vowel-initial)
+// onset at a non-initial (medial) position. It is an ordinal estimate (flagged),
+// kept far below emptyOnsetWeightInitial because a medial empty onset is precisely
+// what creates the word-internal vowel hiatus that pt-PT avoids (see above). It is
+// small but non-zero: a little real medial hiatus (país, saída) remains, and the
+// empty onset stays a member of the medial onset inventory.
+const emptyOnsetWeightMedial = 12
 
 // emptyCodaWeight is the sampling weight of the absent (open-syllable) coda,
 // relative to the coda weights in wordspt_data.go. It is an ordinal estimate
@@ -64,12 +92,15 @@ const emptyCodaWeight = 520
 // ---------------------------------------------------------------------------
 
 // onsetInitialInv samples a word-initial onset: the empty (absent) onset or any
-// legal onset except the ones forbidden word-initially (lh, nh, ç).
-var onsetInitialInv = deriveInventory(emptyOnsetWeight, onsetAllowedInitial, onsetSingles, onsetClusters)
+// legal onset except the ones forbidden word-initially (lh, nh, ç). It uses the
+// larger word-initial empty-onset weight, because vowel-initial words are natural.
+var onsetInitialInv = deriveInventory(emptyOnsetWeightInitial, onsetAllowedInitial, onsetSingles, onsetClusters)
 
 // onsetMedialInv samples a non-initial onset: the empty onset or any legal onset,
-// including lh, nh and ç, which are legal only between vowels.
-var onsetMedialInv = deriveInventory(emptyOnsetWeight, keepAllForms, onsetSingles, onsetClusters)
+// including lh, nh and ç, which are legal only between vowels. It uses the small
+// medial empty-onset weight, so a medial vowel-initial syllable — the source of
+// word-internal vowel hiatus — is rare, sharply reducing unnatural vowel runs.
+var onsetMedialInv = deriveInventory(emptyOnsetWeightMedial, keepAllForms, onsetSingles, onsetClusters)
 
 // nucleiFrontInv samples a nucleus that begins with a front vowel (e or i). It is
 // the only nucleus set licensed after the qu and gu onsets.

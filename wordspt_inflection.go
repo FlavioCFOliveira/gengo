@@ -132,13 +132,39 @@ func resolveDegree(r *rand.Rand, d Degree) Degree {
 // ---------------------------------------------------------------------------
 
 // runesPerSyllable is the mean rune (character) length of one generated pt-PT
-// syllable on the accented-stem path, measured empirically over the Sprint 7
-// sampler: 200000 samples per syllable count (1..12) yield a stable mean of
-// 2.47–2.51 runes/syllable. It is the inversion constant used to translate a
-// target character window into a target syllable count. Because individual
-// syllables range from 1 to 5 runes, this maps the center of a window; the
-// caller enforces the exact window on the assembled word.
-const runesPerSyllable = 2.48
+// syllable on the accented-stem path, measured empirically over the sampler:
+// 200000 samples per syllable count (1..12) yield a stable mean of 2.51–2.62
+// runes/syllable, converging to ~2.61 for multi-syllable words. It is the
+// inversion constant used to translate a target character window into a target
+// syllable count. Because individual syllables range from 1 to 5 runes, this maps
+// the center of a window; the caller enforces the exact window on the assembled
+// word.
+//
+// This value was re-measured after the hiatus reduction (wordspt_stem.go): the
+// small medial empty-onset weight makes medial syllables carry a consonant onset
+// far more often, so the mean syllable is slightly longer than the 2.48 measured
+// for the original sampler.
+const runesPerSyllable = 2.61
+
+// lengthSkewDecay is the per-character geometric decay of the word-length draw
+// (see [skewedCharTarget]). Within a length window the character target is drawn
+// from a geometric distribution whose weight for an offset of j characters above
+// the window minimum is lengthSkewDecay^j, so shorter, more frequent lengths
+// dominate and long lengths form a thin tail. This matches the strongly
+// right-skewed word-length frequency of Portuguese, where short words vastly
+// outnumber long ones and word-length frequency decays roughly geometrically in
+// the longer-word range (see, for example, the length-frequency distributions of
+// Portuguese corpora such as CETEMPúblico; the exact decay is an ordinal estimate,
+// flagged, chosen so the Big category's mean lands in the realistic ~12-character
+// range instead of the ~19 characters a uniform draw yields). It biases only the
+// mean; every draw stays strictly inside the window, so the strict window
+// guarantees are unchanged.
+const lengthSkewDecay = 0.78
+
+// lengthSkewLnDecay is the natural logarithm of [lengthSkewDecay], precomputed for
+// the inverse-CDF draw in [skewedCharTarget]. It is negative because the decay is
+// below one.
+var lengthSkewLnDecay = math.Log(lengthSkewDecay)
 
 // charRangeOf returns the inclusive character (rune) window of a length category.
 // SmallLengthWord is 1..4, MediumLengthWords is 5..8 and BigLengthWords is 9..30;
@@ -180,11 +206,12 @@ func normalizeLength(l LengthTypeWords, minViable int) LengthTypeWords {
 }
 
 // syllablesForCharRange maps a character (rune) window to a syllable count. It
-// draws a target character count uniformly in [minChars, maxChars] from r and
-// inverts the measured [runesPerSyllable], returning a count of at least one. The
-// uniform draw spreads generated lengths across the window; the returned count is
-// a target, because a generated syllable spans 1..5 runes and the exact length is
-// enforced by the caller on the assembled word.
+// draws a target character count in [minChars, maxChars] from r with a downward
+// (short-biased) skew (see [skewedCharTarget]) and inverts the measured
+// [runesPerSyllable], returning a count of at least one. The skewed draw spreads
+// generated lengths across the window while favoring the shorter, more realistic
+// lengths; the returned count is a target, because a generated syllable spans
+// 1..5 runes and the exact length is enforced by the caller on the assembled word.
 func syllablesForCharRange(r *rand.Rand, minChars, maxChars int) int {
 	if minChars < 1 {
 		minChars = 1
@@ -192,12 +219,41 @@ func syllablesForCharRange(r *rand.Rand, minChars, maxChars int) int {
 	if maxChars < minChars {
 		maxChars = minChars
 	}
-	target := minChars + int(r.Uint32N(uint32(maxChars-minChars+1)))
+	target := skewedCharTarget(r, minChars, maxChars)
 	count := int(math.Round(float64(target) / runesPerSyllable))
 	if count < 1 {
 		count = 1
 	}
 	return count
+}
+
+// skewedCharTarget draws a target character count in [minChars, maxChars] biased
+// toward the shorter end of the window. The offset above minChars follows a
+// geometric distribution truncated to [0, span] with per-step ratio
+// [lengthSkewDecay] (weight of offset j is lengthSkewDecay^j), so short lengths
+// dominate and long lengths taper off, matching the right-skewed word-length
+// frequency of Portuguese. It performs a single random draw and an O(1) closed-form
+// inverse-CDF evaluation: no rejection loop, no allocation, and the result is
+// always inside [minChars, maxChars]. minChars <= maxChars is assumed (the caller
+// guarantees it).
+func skewedCharTarget(r *rand.Rand, minChars, maxChars int) int {
+	span := maxChars - minChars
+	if span <= 0 {
+		return minChars
+	}
+	// Draw u in the open interval (0,1) so both logarithms below are finite.
+	u := (float64(r.Uint32()) + 0.5) / 4294967296.0
+	// Inverse CDF of the truncated geometric: the CDF at offset k is
+	// (1 - d^(k+1)) / (1 - d^(span+1)) with d = lengthSkewDecay, so the smallest
+	// offset k with CDF(k) >= u is ceil(ln(1 - u*denom)/ln d) - 1.
+	denom := 1 - math.Pow(lengthSkewDecay, float64(span+1))
+	offset := int(math.Ceil(math.Log(1-u*denom)/lengthSkewLnDecay)) - 1
+	if offset < 0 {
+		offset = 0
+	} else if offset > span {
+		offset = span
+	}
+	return minChars + offset
 }
 
 // stemSyllablesFor sizes the syllabic stem for a nominal word of length category

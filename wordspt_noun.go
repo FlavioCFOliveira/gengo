@@ -315,8 +315,8 @@ func selectNounEnding(r *rand.Rand, g Gender, maxChars int) *nounEnding {
 // ---------------------------------------------------------------------------
 
 // nounMaxSyllables bounds the syllable buffer sized on the caller's stack. A Big
-// word tops out near 30 characters, which is at most ~13 syllables at the
-// measured ~2.48 runes per syllable; 24 leaves generous headroom for the ending
+// word tops out near 30 characters, which is at most ~12 syllables at the
+// measured ~2.61 runes per syllable; 24 leaves generous headroom for the ending
 // and keeps the array off the heap.
 const nounMaxSyllables = 24
 

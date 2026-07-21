@@ -197,12 +197,14 @@ func TestSyllablesForCharRange(t *testing.T) {
 		l              LengthTypeWords
 		loWant, hiWant int
 	}
-	// Bounds derived from runesPerSyllable = 2.48 and each category window.
+	// Bounds derived from runesPerSyllable = 2.61 and each category window. The
+	// downward length skew changes how often each count occurs but not the window
+	// endpoints, so these min/max bounds still hold; only the mean shifts down.
 	bounds := []bound{
-		{SmallLengthWord, 1, 2},   // targets 1..4 -> counts 1..2
-		{MediumLengthWords, 2, 3}, // targets 5..8 -> counts 2..3
-		{BigLengthWords, 4, 12},   // targets 9..30 -> counts 4..12
-		{AnyLengthWord, 1, 12},    // targets 1..30 -> counts 1..12
+		{SmallLengthWord, 1, 2},   // targets 1..4 -> counts 1..2  (round(4/2.61)=2)
+		{MediumLengthWords, 2, 3}, // targets 5..8 -> counts 2..3  (round(8/2.61)=3)
+		{BigLengthWords, 3, 12},   // targets 9..30 -> counts 3..11 (round(9/2.61)=3, round(30/2.61)=11)
+		{AnyLengthWord, 1, 12},    // targets 1..30 -> counts 1..11
 	}
 	prevMax := 0
 	for _, b := range bounds {
