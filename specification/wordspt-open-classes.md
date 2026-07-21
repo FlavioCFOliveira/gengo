@@ -23,7 +23,7 @@ Nouns and adjectives share the same gender and number inflection rules.
   `-ico` becomes `-ica`, `-ivo` becomes `-iva`, `-or` becomes `-ora`).
 - Endings that are invariable for gender keep the same form for masculine and
   feminine (`-ção`, `-dade`, `-agem`, `-mento`, `-al`, `-ável`, `-ível`,
-  `-ente`, and the common-gender `-ista`).
+  `-ente`, `-ante`, and the common-gender `-ista`).
 - When a caller requests a specific gender, the generator selects a class ending
   whose grammatical gender is compatible with the request. For gender-inflecting
   endings it applies the requested gender form. For gender-fixed endings it uses
@@ -79,9 +79,27 @@ form within length category `l`.
 
 ### Endings
 
-A generated adjective uses one of the following typical pt-PT adjective endings:
-`-oso` / `-osa`, `-ável`, `-ível`, `-al`, `-ico` / `-ica`, `-ente`,
-`-ivo` / `-iva`.
+A generated adjective uses one of the following typical pt-PT adjective endings.
+The thematic `-o` / `-a` ending is the primary class, and the remaining endings
+are the common derivational classes.
+
+- **Thematic `-o` / `-a`**: the most common adjective class in European
+  Portuguese (for example `belo` / `bela`, `alto` / `alta`, `novo` / `nova`,
+  `rico` / `rica`, `longo` / `longa`). Its masculine form ends in `-o` and its
+  feminine form ends in `-a`. It inflects for gender, it is paroxytone, and it
+  forms the regular plural by adding `s`.
+- **Derivational endings**: `-oso` / `-osa`, `-ável`, `-ível`, `-al`,
+  `-ico` / `-ica`, `-ente`, `-ante`, `-ivo` / `-iva`. The `-ante` ending is
+  common gender: it is invariable for gender, it is paroxytone, and it forms the
+  regular plural by adding `s` (for example `elegante` / `elegante`,
+  `elegantes`).
+
+The thematic `-o` / `-a` class is what makes the synthetic superlative `g` to
+`gu` hardening reachable: a thematic base ending in `-go` produces forms such as
+`longo` to `longuíssimo`. It complements the `c` to `qu` hardening already
+reachable through the `-ico` / `-ica` ending (`rico` to `riquíssimo`). Both
+adjustments are defined under Orthographic adjustments for the superlative
+below.
 
 ### Inflection
 

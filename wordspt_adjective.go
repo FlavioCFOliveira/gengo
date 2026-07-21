@@ -25,6 +25,7 @@ import (
 //
 // Adjective ending inventory and stress (specification/wordspt-open-classes.md):
 //
+//	-o / -a       gender-inflecting, paroxytone, no graphic accent (belo/bela)
 //	-oso / -osa   gender-inflecting, paroxytone, no graphic accent (famoso)
 //	-ico / -ica   gender-inflecting, PROPAROXYTONE, accented antepenult (básico)
 //	-ivo / -iva   gender-inflecting, paroxytone, no graphic accent (ativo)
@@ -58,10 +59,13 @@ import (
 //
 // Formation, from the bare combined stem (Acordo Ortográfico; Cunha & Cintra):
 //
-//   - Base whose last syllable is vowel-final (its coda is empty: -oso, -ico,
+//   - Base whose last syllable is vowel-final (its coda is empty: -o, -oso, -ico,
 //     -ivo, -ente, -ante): drop that final nucleus vowel, then keep the exposed
-//     onset consonant, EXCEPT c -> qu (rico -> riquíssimo) and g -> gu (longo ->
-//     longuíssimo), which preserve the hard /k/,/g/ before the front í. Append
+//     onset consonant, with three orthographic adjustments before the front í:
+//     c -> qu (rico -> riquíssimo) and g -> gu (longo -> longuíssimo) preserve the
+//     hard /k/,/g/; and ç -> c (a ç onset exposed by the thematic -o/-a, as in a
+//     -ço base) keeps the soft /s/ while obeying the cedilla rule, since ç is never
+//     written before e or i (the standard pt-PT alternation caçar -> cacei). Append
 //     -íssim + the gender vowel (+ the plural s).
 //   - Base whose last syllable is consonant-final (its coda is non-empty: -al,
 //     -ável, -ível): keep the whole base and append -íssim + gender (+ plural)
@@ -78,12 +82,12 @@ import (
 //     amabilíssimo, fácil -> facílimo, célebre -> celebérrimo). Those -ílimo and
 //     -érrimo variants are lexical, not productive; for an invented word the
 //     REGULAR -íssimo is applied (amável -> amavelíssimo), as the task specifies.
-//   - The g -> gu adjustment is implemented and unit-tested (longo ->
-//     longuíssimo), but no ending in the specification's authoritative adjective
-//     inventory ends in a vowel-final -g- syllable, so g -> gu is not reachable
-//     through generation; c -> qu is reachable through -ico/-ica (básico ->
-//     basiquíssimo, the riquíssimo pattern). This is a property of the ending
-//     list, not of the transform.
+//   - The thematic -o/-a ending draws the onset before its (back) thematic vowel,
+//     so a c or g onset occurs (rico, longo). Its superlative drops the vowel and
+//     exposes that onset before the front í, so BOTH orthographic hardenings are
+//     reachable through generation: c -> qu (rico -> riquíssimo) and g -> gu (longo
+//     -> longuíssimo). The proparoxytone -ico/-ica ending, whose final syllable has
+//     a fixed c onset, additionally exercises c -> qu (básico -> basiquíssimo).
 //
 // Allocation. The positive singular assembles in exactly one allocation (Layer
 // 3's builder); the positive plural adds one tail concatenation in the shared
@@ -112,6 +116,26 @@ import (
 // its stress distance from the word end, and its rune/plural costs — with no
 // noun-specific behavior beyond the unused fixedCaoPlural flag (false here).
 var (
+	// endAdjMascO is the masculine thematic -o (belo, alto, novo, rico, longo): the
+	// most common adjective class in pt-PT. It is paroxytone, a single final
+	// syllable with a sampled onset before the (back) thematic vowel o, plural +s.
+	// It mirrors the noun thematic -o (endMascO) exactly, reusing the shared ending
+	// machinery with no noun-specific behavior. Because its onset is sampled, a c or
+	// g may precede the o (rico, longo), so its -íssimo superlative makes both the
+	// c -> qu (riquíssimo) and the g -> gu (longuíssimo) hardening reachable through
+	// generation.
+	endAdjMascO = nounEnding{
+		label: "-o", syllables: []syllable{{nucleus: "o"}},
+		sampleOnset: true, frontOnset: false,
+		stressFromEnd: 1, affixRunes: 2, pluralRuneDelta: 1,
+	}
+	// endAdjFemA is the feminine counterpart -a (bela, alta, nova, rica, longa),
+	// mirroring the noun thematic -a (endFemA).
+	endAdjFemA = nounEnding{
+		label: "-a", syllables: []syllable{{nucleus: "a"}},
+		sampleOnset: true, frontOnset: false,
+		stressFromEnd: 1, affixRunes: 2, pluralRuneDelta: 1,
+	}
 	// endAdjMascOso is the masculine -oso (famoso): paroxytone, syllables o+so
 	// with a sampled onset before the first (back) vowel, plural +s.
 	endAdjMascOso = nounEnding{
@@ -196,9 +220,12 @@ var (
 
 // masculineAdjectiveEndings lists the endings a masculine request may realize: the
 // masculine gender-inflecting forms and every gender-invariable ending. Weights
-// are ordinal estimates (flagged): the productive -oso, -al, -ico and -ente
-// dominate.
+// are ordinal estimates (flagged): the thematic -o is the single most common
+// adjective class, so it leads, while the productive derivational -oso, -al, -ico
+// and -ente remain well represented (the thematic weight leads but does not
+// overwhelm them).
 var masculineAdjectiveEndings = []weightedNounEnding{
+	{&endAdjMascO, 30},
 	{&endAdjMascOso, 22},
 	{&endAdjMascIco, 14},
 	{&endAdjMascIvo, 12},
@@ -213,6 +240,7 @@ var masculineAdjectiveEndings = []weightedNounEnding{
 // feminine gender-inflecting forms and every gender-invariable ending. Weights
 // mirror masculineAdjectiveEndings (ordinal estimates, flagged).
 var feminineAdjectiveEndings = []weightedNounEnding{
+	{&endAdjFemA, 30},
 	{&endAdjFemOsa, 22},
 	{&endAdjFemIca, 14},
 	{&endAdjFemIva, 12},
@@ -299,9 +327,14 @@ func endingSuperlativeDropsVowel(end *nounEnding) bool {
 
 // endingSuperlativeHardens reports whether dropping the final vowel exposes a c or
 // g onset that must become qu or gu to preserve the hard /k/,/g/ before the front
-// í of -íssimo (rico -> riquíssimo, longo -> longuíssimo). It inspects the
-// ending's last syllable onset and is meaningful only when
-// [endingSuperlativeDropsVowel] is true.
+// í of -íssimo (rico -> riquíssimo, longo -> longuíssimo). It inspects the ending's
+// last syllable onset and is meaningful only when [endingSuperlativeDropsVowel] is
+// true. It exists solely to account for the one extra RUNE that qu/gu adds when
+// sizing the static minimum-viable length (the ç -> c hardening is length-neutral,
+// one rune to one rune, so it is intentionally excluded). The exact per-word length
+// after sampling, which does account for a sampled c/g onset, is computed by
+// [superlativeStemRuneLen]. It reports false for a sampled-onset ending such as the
+// thematic -o/-a, whose stored onset is empty because it is drawn at build time.
 func endingSuperlativeHardens(end *nounEnding) bool {
 	onset := end.syllables[len(end.syllables)-1].onset
 	return onset == "c" || onset == "g"
@@ -323,18 +356,28 @@ func superlativeAffixRunes(end *nounEnding) int {
 	return a + adjSuperlativeSuffixRunes
 }
 
-// superlativeRuneLen returns the character (rune) length of the superlative a base
-// of baseRunes characters assembles to for this ending and number, without
-// assembling it. It applies the same final-vowel drop, c/g hardening and suffix
-// accounting as [superlativeWord], so the length window can be enforced from a
-// closed-form count with no allocation.
-func superlativeRuneLen(baseRunes int, end *nounEnding, plural bool) int {
-	n := baseRunes
-	if endingSuperlativeDropsVowel(end) {
-		n--
-		if endingSuperlativeHardens(end) {
-			n++
-		}
+// superlativeStemRuneLen returns the exact character (rune) length of the
+// superlative that a sampled combined stem assembles to for the given number,
+// without assembling it. It mirrors [superlativeWord] on the actual stem: every
+// syllable before the last contributes in full, the last syllable contributes its
+// whole self when it is consonant-final or only its (possibly hardened) onset when
+// it is vowel-final, and the -íssim suffix, the gender vowel and the plural s are
+// added. Because it inspects the sampled last-syllable onset directly, it accounts
+// for the c -> qu / g -> gu hardening even for the thematic -o/-a ending, whose
+// onset is drawn at build time and is therefore invisible to a static estimate.
+// The length window can thus be enforced from a closed-form count with no
+// allocation.
+func superlativeStemRuneLen(stem syllabicStem, plural bool) int {
+	syllables := stem.syllables
+	last := len(syllables) - 1
+	n := stemRuneLen(syllables[:last])
+	if syllables[last].coda == "" {
+		// Vowel-final: only the exposed onset survives, after hardening. Every
+		// hardened onset (qu, gu, c, or an unchanged onset) is ASCII, so its byte
+		// length equals its rune length.
+		n += hardenedOnsetLen(syllables[last].onset)
+	} else {
+		n += stemRuneLen(syllables[last : last+1])
 	}
 	n += adjSuperlativeSuffixRunes
 	if plural {
@@ -347,10 +390,10 @@ func superlativeRuneLen(baseRunes int, end *nounEnding, plural bool) int {
 // single allocation. It writes every base syllable straight from the bare
 // (unaccented) stem — so the word carries no base graphic accent, only the acute í
 // of the suffix — and treats the last syllable per the formation rule: a
-// vowel-final last syllable contributes its onset only (with c -> qu, g -> gu),
-// while a consonant-final one contributes in full. It then appends -íssim, the
-// gender vowel (o for masculine, a for feminine) and, in the plural, a final s. g
-// and n are the resolved gender and number.
+// vowel-final last syllable contributes its onset only (with c -> qu, g -> gu,
+// ç -> c), while a consonant-final one contributes in full. It then appends -íssim,
+// the gender vowel (o for masculine, a for feminine) and, in the plural, a final s.
+// g and n are the resolved gender and number.
 func superlativeWord(stem syllabicStem, g Gender, n Number) string {
 	syllables := stem.syllables
 	last := len(syllables) - 1
@@ -400,27 +443,34 @@ func superlativeWord(stem syllabicStem, g Gender, n Number) string {
 }
 
 // hardenedOnsetLen returns the byte length the onset occupies before the front í
-// of -íssimo, applying the c -> qu and g -> gu hardening. Every adjective ending
-// whose superlative drops the final vowel has a single-consonant final onset, so a
-// c or g becomes the two-byte qu or gu and any other onset keeps its own length.
+// of -íssimo, applying the c -> qu, g -> gu and ç -> c hardening. A c or g becomes
+// the two-byte qu or gu; the two-byte ç becomes the one-byte c (the cedilla rule
+// forbids ç before a front vowel, and c already spells /s/ there); any other onset,
+// being ASCII, keeps its own length. Every result is ASCII, so this byte length
+// also equals the onset's rune length after hardening.
 func hardenedOnsetLen(onset string) int {
 	switch onset {
 	case "c", "g":
 		return 2
+	case "ç":
+		return 1
 	default:
 		return len(onset)
 	}
 }
 
-// writeHardenedOnset writes the exposed final onset before -íssimo, turning c into
-// qu and g into gu (to keep the hard sound before the front í) and writing any
-// other onset unchanged.
+// writeHardenedOnset writes the exposed final onset before -íssimo: c becomes qu
+// and g becomes gu (keeping the hard /k/,/g/ sound), ç becomes c (keeping the soft
+// /s/ sound while obeying the cedilla rule, which never writes ç before e or i),
+// and any other onset is written unchanged.
 func writeHardenedOnset(b *strings.Builder, onset string) {
 	switch onset {
 	case "c":
 		b.WriteString("qu")
 	case "g":
 		b.WriteString("gu")
+	case "ç":
+		b.WriteString("c")
 	default:
 		b.WriteString(onset)
 	}
@@ -482,11 +532,10 @@ func adjectiveCore(r *rand.Rand, buf []syllable, g Gender, n Number, d Degree, l
 		buf = stem.syllables
 
 		var runes int
-		baseRunes := stemRuneLen(stem.syllables)
 		if rd == Superlative {
-			runes = superlativeRuneLen(baseRunes, end, rn == Plural)
+			runes = superlativeStemRuneLen(stem, rn == Plural)
 		} else {
-			runes = baseRunes
+			runes = stemRuneLen(stem.syllables)
 			if rn == Plural {
 				runes += end.pluralRuneDelta
 			}

@@ -220,6 +220,86 @@ func TestAdjectivePTSuperlativeOrthography(t *testing.T) {
 	}
 }
 
+// TestAdjectivePTThematicOAProduced verifies the task's coverage goal: AdjectivePT
+// actually produces plain thematic -o/-a adjectives (belo, alta) at a plausible
+// frequency, not merely the derivational and invariable endings. A plain thematic
+// -o adjective ends in a vowel o but not in the derivational -oso, -ico or -ivo; a
+// plain thematic -a ends in a vowel a but not in -osa, -ica or -iva. The invariable
+// endings (-al, -ável, -ível, -ente, -ante) end in neither vowel, so they cannot be
+// mistaken for the thematic class. With the flagged weight the thematic class is
+// the single most common ending (~22% of each gender), so a small lower bound is a
+// robust, non-flaky floor.
+func TestAdjectivePTThematicOAProduced(t *testing.T) {
+	g := New(0x0A0A)
+	plainO, plainA := 0, 0
+	for i := 0; i < adjSampleSize; i++ {
+		m := g.AdjectivePTOf(Masculine, Singular, Positive, AnyLengthWord)
+		if strings.HasSuffix(m, "o") &&
+			!strings.HasSuffix(m, "oso") && !strings.HasSuffix(m, "ico") && !strings.HasSuffix(m, "ivo") {
+			plainO++
+		}
+		f := g.AdjectivePTOf(Feminine, Singular, Positive, AnyLengthWord)
+		if strings.HasSuffix(f, "a") &&
+			!strings.HasSuffix(f, "osa") && !strings.HasSuffix(f, "ica") && !strings.HasSuffix(f, "iva") {
+			plainA++
+		}
+	}
+	// A conservative floor: the thematic class is ~22% of each gender, so 5% is far
+	// below the expectation yet still proves the class is generated in quantity.
+	floor := adjSampleSize / 20
+	if plainO < floor {
+		t.Errorf("plain thematic -o adjectives too rare: got %d of %d, want >= %d", plainO, adjSampleSize, floor)
+	}
+	if plainA < floor {
+		t.Errorf("plain thematic -a adjectives too rare: got %d of %d, want >= %d", plainA, adjSampleSize, floor)
+	}
+}
+
+// TestAdjectivePTSuperlativeHardeningViaGeneration verifies that the -íssimo
+// orthographic hardenings are reachable through GENERATION (not only through the
+// direct builder), which is the coverage the thematic -o/-a ending unlocks: because
+// its onset is sampled before the back thematic vowel, a c, g or ç can precede that
+// vowel, and dropping the vowel then exposes the onset before the front í. The
+// superlative surface therefore shows -quíssimo (c -> qu, riquíssimo), -guíssimo
+// (g -> gu, longuíssimo) and -císsimo (ç -> c, the cedilla alternation, macíssimo).
+// The -guíssimo and -císsimo markers are unambiguous: qu and gu are never sampled
+// before a back vowel, so a qu/gu immediately before -íssimo can only come from the
+// c->qu / g->gu hardening, and a ç can never stand before the front í, so a c
+// immediately before -íssimo (that is not the c->qu case) can only come from ç->c.
+// The sample size is set so every path is hit many times over, keeping the fixed-
+// seed run deterministic and non-flaky.
+func TestAdjectivePTSuperlativeHardeningViaGeneration(t *testing.T) {
+	g := New(0x9110)
+	const samples = 60000
+	sawQu, sawGu, sawCedilla := false, false, false
+	for i := 0; i < samples; i++ {
+		w := g.AdjectivePTOf(AnyGender, AnyNumber, Superlative, AnyLengthWord)
+		assertAdjectiveOrthographyConformant(t, w)
+		switch {
+		case strings.Contains(w, "quíss"):
+			sawQu = true
+		case strings.Contains(w, "guíss"):
+			sawGu = true
+		case strings.Contains(w, "císs"):
+			// Reached only via ç -> c: a plain c before the back vowel would have
+			// hardened to qu, and ç is illegal before the front í.
+			sawCedilla = true
+		}
+		if sawQu && sawGu && sawCedilla {
+			break
+		}
+	}
+	if !sawQu {
+		t.Errorf("c->qu superlative (quíss...) never observed through generation")
+	}
+	if !sawGu {
+		t.Errorf("g->gu superlative (guíss...) never observed through generation")
+	}
+	if !sawCedilla {
+		t.Errorf("ç->c superlative (císs...) never observed through generation")
+	}
+}
+
 // TestAdjectiveSuperlativeHardeningRule verifies the c->qu and g->gu orthographic
 // adjustments directly on the superlative builder, using the specification's exact
 // examples. It builds bare stems for rico, longo, banal and amável and checks that
@@ -255,6 +335,19 @@ func TestAdjectiveSuperlativeHardeningRule(t *testing.T) {
 			gen:  Masculine, num: Plural, want: "longuíssimos",
 		},
 		{
+			// A ç onset is exposed when the thematic -o/-a drops its back vowel; ç is
+			// illegal before the front í, so it becomes c (the caçar -> cacei
+			// alternation), keeping the soft /s/ and obeying the cedilla rule.
+			name: "maço->macíssimo (ç->c)",
+			stem: syllabicStem{syllables: []syllable{{onset: "m", nucleus: "a"}, {onset: "ç", nucleus: "o"}}, tonic: 0},
+			gen:  Masculine, num: Singular, want: "macíssimo",
+		},
+		{
+			name: "maça->macíssima (ç->c, feminine)",
+			stem: syllabicStem{syllables: []syllable{{onset: "m", nucleus: "a"}, {onset: "ç", nucleus: "a"}}, tonic: 0},
+			gen:  Feminine, num: Singular, want: "macíssima",
+		},
+		{
 			name: "banal->banalíssimo (consonant-final, direct)",
 			stem: syllabicStem{syllables: []syllable{{onset: "b", nucleus: "a"}, {onset: "n", nucleus: "a", coda: "l"}}, tonic: 1},
 			gen:  Masculine, num: Singular, want: "banalíssimo",
@@ -283,11 +376,13 @@ func TestAdjectiveSuperlativeHardeningRule(t *testing.T) {
 }
 
 // TestAdjectivePTLengthHonored verifies that every output of a concrete
-// length/degree/number request lands within the expected character window. No
-// pt-PT adjective is shorter than five characters (the shortest ending, -al, plus
-// the CV stem floor), so a Small positive request normalizes upward to the Medium
-// window. Every superlative exceeds the Medium ceiling, so any Superlative request
-// lands in the Big window. Length is measured in runes.
+// length/degree/number request lands within the expected character window. The
+// thematic -o/-a is the shortest adjective ending (its minimum viable word is four
+// characters, as in belo/bela), so a Small positive singular fits the Small window
+// directly. A Small positive plural adds the -s inflection, whose minimum viable
+// length exceeds four characters, so it normalizes upward to the Medium window.
+// Every superlative exceeds the Medium ceiling, so any Superlative request lands in
+// the Big window. Length is measured in runes.
 func TestAdjectivePTLengthHonored(t *testing.T) {
 	g := New(29)
 	cases := []struct {
@@ -297,7 +392,7 @@ func TestAdjectivePTLengthHonored(t *testing.T) {
 		lo, hi   int
 		describe string
 	}{
-		{SmallLengthWord, Singular, Positive, 5, 8, "Small positive normalizes up to Medium"},
+		{SmallLengthWord, Singular, Positive, 1, 4, "Small positive singular fits Small"},
 		{SmallLengthWord, Plural, Positive, 5, 8, "Small positive plural normalizes up to Medium"},
 		{MediumLengthWords, Singular, Positive, 5, 8, "Medium positive fits Medium"},
 		{MediumLengthWords, Plural, Positive, 5, 8, "Medium positive plural fits Medium"},
@@ -375,27 +470,27 @@ func TestAdjectivePTAnyDegreeVaried(t *testing.T) {
 }
 
 // TestAdjectivePTAnyLengthVaried verifies that AnyLengthWord yields positive
-// adjectives spread across the length buckets, in particular the medium (5-8) and
-// big (9+) ranges. The structural minimum adjective is four characters (a
-// bare-vowel leading syllable plus the -al ending, for example "egal"): no pt-PT
-// adjective in the inventory is shorter than that, so the smallest words are
-// four-character -al forms and no output is ever three characters or fewer.
+// adjectives spread across the small (<=4), medium (5-8) and big (9+) character
+// buckets. The thematic -o/-a ending admits short adjectives (belo, alta, and even
+// three-character bare-vowel forms such as "alo"), so the small bucket is now
+// reachable, exactly as it is for nouns; the derivational and invariable endings
+// keep the medium and big buckets populated.
 func TestAdjectivePTAnyLengthVaried(t *testing.T) {
 	g := New(404)
-	sawMedium, sawBig := false, false
+	counts := map[int]int{}
 	for i := 0; i < adjSampleSize; i++ {
 		n := utf8.RuneCountInString(g.AdjectivePTOf(AnyGender, Singular, Positive, AnyLengthWord))
 		switch {
-		case n < 4:
-			t.Fatalf("observed an adjective shorter than the four-character structural floor: %d runes", n)
+		case n <= 4:
+			counts[1]++
 		case n <= 8:
-			sawMedium = true
+			counts[2]++
 		default:
-			sawBig = true
+			counts[3]++
 		}
 	}
-	if !sawMedium || !sawBig {
-		t.Errorf("Any length not varied: medium=%v big=%v", sawMedium, sawBig)
+	if counts[1] == 0 || counts[2] == 0 || counts[3] == 0 {
+		t.Errorf("Any length not varied: small=%d medium=%d big=%d", counts[1], counts[2], counts[3])
 	}
 }
 
@@ -471,21 +566,25 @@ func TestAdjectivePTReproducible(t *testing.T) {
 }
 
 // TestAdjectiveEndingLengthAwareSelection verifies the length-aware ending
-// selection: when a category is too short for any adjective ending (Small, whose
-// ceiling of four characters is below every ending's minimum viable length), the
-// selector falls back to the shortest ending (-al), and the core then normalizes
-// the category upward; with a Big ceiling every ending is reachable.
+// selection: only the thematic -o (masculine) and -a (feminine) fit the Small
+// ceiling of four characters, so a Small request selects only that thematic ending
+// and the longer derivational and invariable endings are excluded; with a Big
+// ceiling every ending is reachable.
 func TestAdjectiveEndingLengthAwareSelection(t *testing.T) {
 	r := rand.New(rand.NewPCG(1, 2))
 
-	// No adjective ending fits the Small ceiling of 4 characters, so the fallback
-	// is always the shortest ending, -al.
+	// Only the thematic -o (masc) and -a (fem) fit the Small ceiling of 4 characters.
 	smallMasc := map[string]bool{}
+	smallFem := map[string]bool{}
 	for i := 0; i < 5000; i++ {
 		smallMasc[selectFittingEnding(r, masculineAdjectiveEndings, 4).label] = true
+		smallFem[selectFittingEnding(r, feminineAdjectiveEndings, 4).label] = true
 	}
-	if len(smallMasc) != 1 || !smallMasc["-al"] {
-		t.Errorf("Small masculine selection = %v, want only -al", smallMasc)
+	if len(smallMasc) != 1 || !smallMasc["-o"] {
+		t.Errorf("Small masculine selection = %v, want only -o", smallMasc)
+	}
+	if len(smallFem) != 1 || !smallFem["-a"] {
+		t.Errorf("Small feminine selection = %v, want only -a", smallFem)
 	}
 
 	// Every masculine ending must be reachable once the ceiling is the Big range.
@@ -493,7 +592,7 @@ func TestAdjectiveEndingLengthAwareSelection(t *testing.T) {
 	for i := 0; i < 5000; i++ {
 		bigMasc[selectFittingEnding(r, masculineAdjectiveEndings, 30).label] = true
 	}
-	for _, want := range []string{"-oso", "-ico", "-ivo", "-al", "-ável", "-ível", "-ente", "-ante"} {
+	for _, want := range []string{"-o", "-oso", "-ico", "-ivo", "-al", "-ável", "-ível", "-ente", "-ante"} {
 		if !bigMasc[want] {
 			t.Errorf("Big masculine selection missing ending %q (got %v)", want, bigMasc)
 		}
