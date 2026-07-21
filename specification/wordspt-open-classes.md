@@ -336,7 +336,7 @@ that minimum. Length is never normalized downward.
 Consequences that hold regardless of the concrete data:
 
 - **Adverb.** A `-mente` adverb is the feminine singular adjective base plus the
-  six characters `mente`. Its shortest form exceeds the four-character ceiling of
+  five characters `mente`. Its shortest form exceeds the four-character ceiling of
   `SmallLengthWord`, so a `-mente` adverb requested in `SmallLengthWord` always
   normalizes upward to the smallest viable category.
 - **Superlative adjective.** The `-íssimo` suffix adds several characters to the
