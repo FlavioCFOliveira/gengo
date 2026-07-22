@@ -5,6 +5,11 @@ import "math/rand/v2"
 // LengthTypeWords classifies a word by its character length category.
 type LengthTypeWords uint8
 
+// AnyLengthWord is the zero value of [LengthTypeWords] and selects the full
+// length range (any category). It is the length counterpart of the Any zero
+// value used by the WordsPT flexion enums ([Gender], [Number], [Degree]).
+const AnyLengthWord LengthTypeWords = 0
+
 // SmallLengthWord represents small length words, 1 to 4 chars.
 const SmallLengthWord LengthTypeWords = 1
 
