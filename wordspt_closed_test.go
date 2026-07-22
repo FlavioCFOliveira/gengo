@@ -122,6 +122,43 @@ var wantInterjectionsPT = map[string]struct{}{
 	"upa": {}, "eia": {}, "salve": {}, "ora": {}, "apre": {},
 }
 
+// wantNumeralsPT is the authoritative reference set of the curated pt-PT
+// single-word numerals across all four subtypes (cardinal, ordinal,
+// multiplicative, fractional), written independently of numeralsPT to guard
+// against drift. It is duplicate-free: the fractional names that coincide with the
+// ordinals ("quarto" through "décimo") appear once.
+var wantNumeralsPT = map[string]struct{}{
+	// Cardinal.
+	"zero": {}, "um": {}, "uma": {}, "dois": {}, "duas": {}, "três": {},
+	"quatro": {}, "cinco": {}, "seis": {}, "sete": {}, "oito": {}, "nove": {}, "dez": {},
+	"onze": {}, "doze": {}, "treze": {}, "catorze": {}, "quinze": {},
+	"dezasseis": {}, "dezassete": {}, "dezoito": {}, "dezanove": {},
+	"vinte": {}, "trinta": {}, "quarenta": {}, "cinquenta": {}, "sessenta": {},
+	"setenta": {}, "oitenta": {}, "noventa": {},
+	"cem": {}, "cento": {},
+	"duzentos": {}, "duzentas": {}, "trezentos": {}, "trezentas": {},
+	"quatrocentos": {}, "quatrocentas": {}, "quinhentos": {}, "quinhentas": {},
+	"seiscentos": {}, "seiscentas": {}, "setecentos": {}, "setecentas": {},
+	"oitocentos": {}, "oitocentas": {}, "novecentos": {}, "novecentas": {},
+	"mil": {}, "milhão": {}, "milhões": {}, "bilião": {}, "biliões": {},
+	// Ordinal.
+	"primeiro": {}, "primeira": {}, "segundo": {}, "segunda": {},
+	"terceiro": {}, "terceira": {}, "quarto": {}, "quarta": {},
+	"quinto": {}, "quinta": {}, "sexto": {}, "sexta": {},
+	"sétimo": {}, "sétima": {}, "oitavo": {}, "oitava": {},
+	"nono": {}, "nona": {}, "décimo": {}, "décima": {},
+	"vigésimo": {}, "vigésima": {}, "trigésimo": {}, "trigésima": {},
+	"quadragésimo": {}, "quadragésima": {}, "quinquagésimo": {}, "quinquagésima": {},
+	"sexagésimo": {}, "sexagésima": {}, "septuagésimo": {}, "septuagésima": {},
+	"octogésimo": {}, "octogésima": {}, "nonagésimo": {}, "nonagésima": {},
+	"centésimo": {}, "centésima": {}, "milésimo": {}, "milésima": {},
+	"milionésimo": {}, "milionésima": {}, //nolint:misspell // real pt-PT ordinals for the millionth; US misspell reads the pt spelling as English
+	// Multiplicative.
+	"dobro": {}, "triplo": {}, "quádruplo": {}, "quíntuplo": {}, "duplo": {},
+	// Fractional (unique forms only).
+	"meio": {}, "meia": {}, "terço": {},
+}
+
 // assertClosedClassMember fails t when word is not a valid-UTF-8, all-lowercase
 // member of want. It enforces the encoding/case rule (AC7) and the membership rule
 // (AC4) for a single output.
@@ -154,6 +191,7 @@ func TestClosedClassListsCuration(t *testing.T) {
 		{"conjunction", conjunctionsPT},
 		{"pronoun", pronounsPT},
 		{"interjection", interjectionsPT},
+		{"numeral", numeralsPT},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -201,6 +239,7 @@ func TestClosedClassListsMatchReference(t *testing.T) {
 		{"conjunction", conjunctionsPT, wantConjunctionsPT},
 		{"pronoun", pronounsPT, wantPronounsPT},
 		{"interjection", interjectionsPT, wantInterjectionsPT},
+		{"numeral", numeralsPT, wantNumeralsPT},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -240,6 +279,7 @@ func TestClosedClassMembershipAndReachability(t *testing.T) {
 		{"conjunction", (*Generator).ConjunctionPT, wantConjunctionsPT},
 		{"pronoun", (*Generator).PronounPT, wantPronounsPT},
 		{"interjection", (*Generator).InterjectionPT, wantInterjectionsPT},
+		{"numeral", (*Generator).NumeralPT, wantNumeralsPT},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -273,6 +313,7 @@ func TestClosedClassPackageLevelMembership(t *testing.T) {
 		assertClosedClassMember(t, "conjunction", ConjunctionPT(), wantConjunctionsPT)
 		assertClosedClassMember(t, "pronoun", PronounPT(), wantPronounsPT)
 		assertClosedClassMember(t, "interjection", InterjectionPT(), wantInterjectionsPT)
+		assertClosedClassMember(t, "numeral", NumeralPT(), wantNumeralsPT)
 	}
 }
 
@@ -292,6 +333,7 @@ func TestClosedClassReproducibility(t *testing.T) {
 		{"conjunction", (*Generator).ConjunctionPT},
 		{"pronoun", (*Generator).PronounPT},
 		{"interjection", (*Generator).InterjectionPT},
+		{"numeral", (*Generator).NumeralPT},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -321,11 +363,13 @@ func TestClosedClassNoAllocation(t *testing.T) {
 		{"ConjunctionPT", func() { _ = ConjunctionPT() }},
 		{"PronounPT", func() { _ = PronounPT() }},
 		{"InterjectionPT", func() { _ = InterjectionPT() }},
+		{"NumeralPT", func() { _ = NumeralPT() }},
 		{"Generator.ArticlePT", func() { _ = g.ArticlePT() }},
 		{"Generator.PrepositionPT", func() { _ = g.PrepositionPT() }},
 		{"Generator.ConjunctionPT", func() { _ = g.ConjunctionPT() }},
 		{"Generator.PronounPT", func() { _ = g.PronounPT() }},
 		{"Generator.InterjectionPT", func() { _ = g.InterjectionPT() }},
+		{"Generator.NumeralPT", func() { _ = g.NumeralPT() }},
 	}
 	for _, c := range checks {
 		if got := testing.AllocsPerRun(1000, c.fn); got != 0 {
@@ -389,6 +433,21 @@ func BenchmarkGeneratorPronounPT(b *testing.B) {
 	}
 }
 
+func BenchmarkNumeralPT(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = NumeralPT()
+	}
+}
+
+func BenchmarkGeneratorNumeralPT(b *testing.B) {
+	g := New(1)
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = g.NumeralPT()
+	}
+}
+
 // TestPronounPTSubtypeCoverage asserts, member by member, that the curated pronoun
 // list spans every subtype required by the task and specification/wordspt-closed-
 // classes.md: personal subject, personal atonic oblique, personal tonic oblique,
@@ -434,6 +493,58 @@ func TestPronounPTIncludesVosForms(t *testing.T) {
 	for _, f := range vosForms {
 		if _, ok := got[f]; !ok {
 			t.Errorf("required vós-related form %q is missing from pronounsPT", f)
+		}
+	}
+}
+
+// TestNumeralPTSubtypeCoverage asserts, member by member, that the curated numeral
+// list spans every subtype required by the task and specification/wordspt-closed-
+// classes.md: cardinal, ordinal, multiplicative, and fractional. It checks a
+// representative sentinel from each subtype directly against the production list,
+// so a whole subtype cannot silently disappear.
+func TestNumeralPTSubtypeCoverage(t *testing.T) {
+	got := make(map[string]struct{}, len(numeralsPT))
+	for _, w := range numeralsPT {
+		got[w] = struct{}{}
+	}
+	subtypes := map[string][]string{
+		"cardinal":       {"zero", "um", "três", "dez", "quinze", "vinte", "cem", "cento", "duzentas", "mil", "milhão", "milhões", "bilião", "biliões"},
+		"ordinal":        {"primeiro", "primeira", "segundo", "sétimo", "décimo", "décima", "vigésimo", "quinquagésima", "septuagésimo", "centésimo", "milésimo", "milionésima"}, //nolint:misspell // real pt-PT ordinals for the millionth; US misspell reads the pt spelling as English
+		"multiplicative": {"dobro", "triplo", "quádruplo", "quíntuplo", "duplo"},
+		"fractional":     {"meio", "meia", "terço"},
+	}
+	for subtype, members := range subtypes {
+		for _, m := range members {
+			if _, ok := got[m]; !ok {
+				t.Errorf("numeral subtype %q: required member %q is missing from numeralsPT", subtype, m)
+			}
+		}
+	}
+}
+
+// TestNumeralPTPortugueseSpelling guards the task's explicit European-Portuguese
+// spelling requirement: the pt-PT forms must be present and their Brazilian
+// counterparts must be absent. This is the AC that distinguishes pt-PT from pt-BR
+// (dezasseis present, dezesseis absent).
+func TestNumeralPTPortugueseSpelling(t *testing.T) {
+	got := make(map[string]struct{}, len(numeralsPT))
+	for _, w := range numeralsPT {
+		got[w] = struct{}{}
+	}
+
+	// pt-PT forms that MUST be present.
+	requiredPT := []string{"catorze", "dezasseis", "dezassete", "dezanove", "bilião", "biliões"}
+	for _, w := range requiredPT {
+		if _, ok := got[w]; !ok {
+			t.Errorf("required pt-PT numeral %q is missing from numeralsPT", w)
+		}
+	}
+
+	// Brazilian forms that MUST be absent (the pt-PT form is used instead).
+	forbiddenBR := []string{"quatorze", "dezesseis", "dezessete", "dezenove", "bilhão", "bilhões"}
+	for _, w := range forbiddenBR {
+		if _, ok := got[w]; ok {
+			t.Errorf("Brazilian numeral %q must not appear in numeralsPT (pt-PT spelling only)", w)
 		}
 	}
 }
