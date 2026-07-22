@@ -29,6 +29,46 @@ re-tagging an existing one.
 
 ---
 
+## [v0.2.0] — 2026-07-22
+
+A **minor** release under the Versioning Policy above. This cycle adds
+**WordsPT**, a European Portuguese (pt-PT) word generator. Every change is
+additive: the existing public API is unchanged, so upgrading from `v0.1.0`
+requires no code changes.
+
+### Added
+- **WordsPT — European Portuguese (pt-PT) word generation.** A syllabic engine
+  that produces morphologically inflected pseudo-words for the open word classes
+  and draws from curated single-word lists for the closed classes. It is
+  correct-by-construction, applies full pt-PT graphic accentuation (Acordo
+  Ortográfico), performs roughly one allocation per generated word, and adds no
+  external dependencies. The public API adds 17 functions, each mirrored by a
+  `*Generator` method for reproducible, seeded output:
+  - Top-level orchestration — `WordPT`, `WordPTByLengthType`, and `WordsPT`.
+  - Open classes (morphologically inflected):
+    - `NounPT` / `NounPTOf` — nouns with gender and number inflection.
+    - `AdjectivePT` / `AdjectivePTOf` — adjectives, including the synthetic
+      absolute superlative (`-íssimo`).
+    - `VerbPT` / `VerbPTOf` — regular verb conjugation across all moods, tenses,
+      and persons (indicative, subjunctive, imperative, and the non-finite
+      forms); no *vós*, and the pt-PT `falámos` vs. `falamos` distinction is
+      preserved.
+    - `AdverbPT` / `AdverbPTByLengthType` — productive `-mente` adverbs.
+  - Closed classes (curated single words) — `ArticlePT`, `PronounPT`,
+    `NumeralPT`, `PrepositionPT`, `ConjunctionPT`, and `InterjectionPT`.
+- Inflection enums, each with an `Any…` zero value meaning "choose a valid value
+  at random": `Gender`, `Number`, `Degree`, `Mood`, `Tense`, and `Person`.
+- `AnyLengthWord` — the zero value of `LengthTypeWords`, selecting the full
+  length range; the length counterpart of the `Any…` inflection zero values.
+- Functional specification for WordsPT under `specification/`, and a project
+  knowledge model (`knowledge-model.md`).
+
+### Changed
+- `README.md` gained a WordsPT section with runnable examples; `TEST_REPORT.md`
+  and `CLAUDE.md` were updated. No public API was changed.
+
+---
+
 ## [v0.1.0] — 2026-05-29
 
 The first release under the Versioning Policy above. This cycle bumps the
