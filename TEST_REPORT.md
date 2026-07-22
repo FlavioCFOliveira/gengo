@@ -344,3 +344,94 @@ The **gengo** library demonstrates excellent test coverage and optimized perform
 - **Consistency** between functions with and without custom ranges
 
 The library achieves its design goals of simplicity and performance, prioritizing execution speed and memory efficiency as documented in the project philosophy.
+
+---
+
+# WordsPT Allocation & Benchmark Audit (Task #37)
+
+**Date:** 2026-07-22
+**Package:** github.com/FlavioCFOliveira/gengo
+**Platform:** linux/amd64 (AMD Ryzen 9 5900HX, 16 threads) · Go go1.26.5
+**Command:** `go test -run=^$ -bench 'PT' -benchmem -benchtime 2s -count 1 .`
+
+This section covers the pt-PT word generators (the `WordsPT` feature) that were added after the original report above. It records the full allocation/benchmark surface of every public `WordsPT` function and documents the Task #37 optimization: building an **additive** noun/adjective plural in a single allocation.
+
+## 1. Optimization: single-allocation additive plural
+
+The noun and adjective plural path used to be two allocations: assemble the singular word (one allocation), then apply a tail string transform (`pluralize`) to it (a second allocation). Task #37 splits the plural into two build strategies decided up front from each ending's own metadata (`additivePluralSuffix`):
+
+- **Additive plural** — a pure suffix append: a regular `+s` for vowel/diphthong endings, or `+es` for `-r`/`-z`/`-n`/oxytone-`-s` endings. The suffix is now written into the **same** `strings.Builder` that assembles the word (`accentedWordSuffixed`), so the plural is **one allocation**. Reachable additive endings: nouns `-o`, `-a`, `-eiro`, `-eira`, `-or` (the only `+es` case), `-ora`, `-mento`, `-dade`, `-ista`; adjectives `-o`, `-a`, `-oso`, `-osa`, `-ico`, `-ica`, `-ivo`, `-iva`, `-ente`, `-ante`.
+- **Substitutive plural** — a tail rewrite that cannot be a suffix append: `-ão→-ões/-ães/-ãos` (incl. the fixed `-ção→-ções`), `-m→-ns` (`-agem→-agens`), and the vowel+`l` endings `-al/-ável/-ível→-ais/-áveis/-íveis`. These **keep the post-assembly `pluralize` transform** and stay **two allocations**, because they modify graphemes inside the word (e.g. `-agens` carries the `ns` coda cluster that no single-coda syllable can represent).
+
+The produced plural **string is unchanged** — only how it is built changed. The additive classifier draws no randomness, and the substitutive endings it defers (fixed `-ção`, `-m`, `-l`) draw none either, so the random stream is byte-for-byte identical: same-seed reproducibility is preserved. This equivalence is locked by regression tests in `wordspt_plural_optimization_test.go` (`TestAdditivePluralClassificationMatchesPluralize`, `TestAccentedWordSuffixedMatchesPluralize`, `TestPluralBuildAllocationBudget`, `TestAdditivePluralSuffixClassification`).
+
+### Before / After (plural benchmarks, `-benchtime 2s`)
+
+| Benchmark (Generator surface) | Allocs before | Allocs after | B/op before | B/op after | ns/op before | ns/op after |
+|-------------------------------|:-------------:|:------------:|:-----------:|:----------:|:------------:|:-----------:|
+| `BenchmarkNounPTOfPlural` | 2 | **1** | 25 | **15** | 451.3 | **404.4** |
+| `BenchmarkAdjectivePTOfPositivePlural` | 2 | **1** | 27 | **17** | 477.9 | **450.1** |
+
+`testing`'s reported `allocs/op` is the integer-truncated **average** over the benchmark's random mix of endings (both benchmarks force `Plural` but pick the ending at random). The average now truncates to 1 because additive endings dominate (~87% of noun plurals, ~75% of adjective plurals). The exact per-path costs are pinned by `TestPluralBuildAllocationBudget`: an additive build is **exactly 1** allocation and a substitutive build is **exactly 2**.
+
+## 2. Full public-function benchmark surface
+
+`ns/op`, `B/op` and `allocs/op` for every public `WordsPT` function, on the package-level (global source) and `*Generator` surfaces. `*Of…` and `Generator…` rows use a seeded `New(1)` generator.
+
+### Open classes (noun, adjective, verb, adverb)
+
+| Benchmark | Surface | ns/op | B/op | allocs/op |
+|-----------|---------|------:|-----:|:---------:|
+| `BenchmarkNounPT` | package | 457.4 | 13 | 1 |
+| `BenchmarkNounPTOfSingular` | Generator | 405.4 | 12 | 1 |
+| `BenchmarkNounPTOfPlural` | Generator | 405.3 | 15 | 1 (avg; additive 1 / substitutive 2) |
+| `BenchmarkAdjectivePT` | package | 491.4 | 17 | 1 |
+| `BenchmarkAdjectivePTOfPositiveSingular` | Generator | 430.6 | 13 | 1 |
+| `BenchmarkAdjectivePTOfPositivePlural` | Generator | 448.2 | 17 | 1 (avg; additive 1 / substitutive 2) |
+| `BenchmarkAdjectivePTOfSuperlativeSingular` | Generator | 398.7 | 19 | 1 |
+| `BenchmarkVerbPT` | package | 444.1 | 13 | 1 |
+| `BenchmarkVerbPTOfPresentIndicative` | Generator | 381.0 | 12 | 1 |
+| `BenchmarkVerbPTOfImperfectSubjunctive` | Generator | 363.5 | 18 | 1 |
+| `BenchmarkVerbPTOfInfinitive` | Generator | 371.6 | 12 | 1 |
+| `BenchmarkAdverbPT` | package | 405.6 | 18 | 1 |
+| `BenchmarkAdverbPTByLengthType` | Generator (Big) | 385.6 | 18 | 1 |
+
+### Closed classes (curated selectors)
+
+| Benchmark | Surface | ns/op | B/op | allocs/op |
+|-----------|---------|------:|-----:|:---------:|
+| `BenchmarkArticlePT` | package | 8.567 | 0 | 0 |
+| `BenchmarkGeneratorArticlePT` | Generator | 4.584 | 0 | 0 |
+| `BenchmarkPrepositionPT` | package | 8.430 | 0 | 0 |
+| `BenchmarkConjunctionPT` | package | 8.922 | 0 | 0 |
+| `BenchmarkPronounPT` | package | 8.487 | 0 | 0 |
+| `BenchmarkGeneratorPronounPT` | Generator | 4.579 | 0 | 0 |
+| `BenchmarkInterjectionPT` | package | 8.582 | 0 | 0 |
+| `BenchmarkNumeralPT` | package | 8.240 | 0 | 0 |
+| `BenchmarkGeneratorNumeralPT` | Generator | 4.740 | 0 | 0 |
+
+### Orchestration (`WordPT` / `WordsPT`)
+
+| Benchmark | Surface | ns/op | B/op | allocs/op |
+|-----------|---------|------:|-----:|:---------:|
+| `BenchmarkWordPT` | package | 454.2 | 11 | 0 (avg; see note) |
+| `BenchmarkGeneratorWordPT` | Generator | 414.8 | 11 | 0 (avg; see note) |
+| `BenchmarkWordsPT` | Generator (16 words) | 6646 | 436 | 15 (≈0.94/word) |
+
+## 3. Allocation classification (0 / 1 / 2 allocations, and why)
+
+- **0 allocations — the six closed-class selectors** (`ArticlePT`, `PrepositionPT`, `ConjunctionPT`, `PronounPT`, `InterjectionPT`, `NumeralPT`). They return a string that already lives in a package-level `[]string`; the selector only indexes into the shared backing array, copying no bytes (asserted at 0 allocs by `TestClosedClassNoAllocation`). The `*Generator` variants are ~2× faster than the package-level ones (~4.6 ns vs ~8.5 ns) because the package-level path goes through the `globalSource` wrapper over the concurrency-safe global `math/rand/v2` generator, while a `*Generator` draws from its own unsynchronized PCG source.
+- **1 allocation — every open-class singular, the additive plural, the superlative, verbs, and adverbs.** The syllable buffer is a stack array (reused across length attempts with no heap cost), so the only allocation is the final assembled string. The additive plural (Task #37) keeps this to one allocation by appending its suffix into the assembling builder.
+- **2 allocations — the substitutive noun/adjective plural only.** The singular is assembled (one allocation) and then its tail is rewritten by `pluralize`/`pluralizeNoun` (a second allocation). This is inherent: `-ões`, `-ns`, `-ais` and friends change graphemes inside the word, so they cannot be produced by appending to the singular.
+- **`WordPT` averages 0 allocations (truncated).** `WordPT` dispatches across the open and closed classes by type; the frequent zero-allocation closed-class words pull the truncated per-word average below one (`TestWordPTAllocationBudget` asserts the average stays below two). `WordsPT(16)` reports 15 allocs for 16 words (≈0.94/word) for the same reason, reusing one syllable buffer across the whole slice.
+
+## 4. Gate results (Task #37)
+
+| Gate | Result |
+|------|--------|
+| `gofmt -l .` | clean (no files) |
+| `go vet ./...` | clean |
+| `golangci-lint run` | 0 issues |
+| `go test -race -count=1 .` | ok (full suite, no regression) |
+| `go mod tidy -diff` | clean |
+| `govulncheck ./...` | No vulnerabilities found |

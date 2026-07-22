@@ -183,7 +183,20 @@ func accentedVowel(base rune, circumflex bool) rune {
 // [assembleStem]. Every part and every substituted rune is lowercase and valid
 // UTF-8, so the result is lowercase, valid UTF-8.
 func assembleAccentedStem(syllables []syllable, plan accentPlan) string {
-	total := 0
+	return assembleAccentedStemSuffixed(syllables, plan, "")
+}
+
+// assembleAccentedStemSuffixed is [assembleAccentedStem] with an optional
+// trailing suffix written into the SAME pre-sized builder, so an additive pt-PT
+// plural marker (a bare "s" or "es"; see [additivePluralSuffix]) costs no extra
+// allocation over the singular assembly. The suffix is appended verbatim after
+// the last syllable's coda, which is exactly where the string-level [pluralize]
+// would concatenate it for an additive ending, so the result is byte-identical
+// to pluralizing the assembled word. An empty suffix reproduces
+// [assembleAccentedStem]'s output exactly (WriteString of "" writes nothing and
+// adds no allocation).
+func assembleAccentedStemSuffixed(syllables []syllable, plan accentPlan, suffix string) string {
+	total := len(suffix)
 	for i := range syllables {
 		total += len(syllables[i].onset) + len(syllables[i].nucleus) + len(syllables[i].coda)
 	}
@@ -206,6 +219,7 @@ func assembleAccentedStem(syllables []syllable, plan accentPlan) string {
 		}
 		b.WriteString(syllables[i].coda)
 	}
+	b.WriteString(suffix)
 	return b.String()
 }
 
@@ -215,4 +229,16 @@ func assembleAccentedStem(syllables []syllable, plan accentPlan) string {
 // the single allocation of the whole build path.
 func accentedWord(stem syllabicStem) string {
 	return assembleAccentedStem(stem.syllables, accentuateStem(stem))
+}
+
+// accentedWordSuffixed is [accentedWord] with an additive pt-PT plural suffix
+// appended in the SAME single allocation. It is the one-allocation plural path
+// for endings whose plural is a pure suffix append (the additive endings
+// classified by [additivePluralSuffix]): the stem is accentuated and assembled
+// exactly as [accentedWord] does, with suffix written into the same builder. The
+// output equals accentedWord(stem)+suffix, which for an additive ending is
+// exactly pluralize(accentedWord(stem)); passing an empty suffix reproduces
+// [accentedWord].
+func accentedWordSuffixed(stem syllabicStem, suffix string) string {
+	return assembleAccentedStemSuffixed(stem.syllables, accentuateStem(stem), suffix)
 }

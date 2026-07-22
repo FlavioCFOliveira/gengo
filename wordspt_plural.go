@@ -131,6 +131,57 @@ func pluralize(r *rand.Rand, singular string, oxytone bool) string {
 	}
 }
 
+// additivePluralSuffix reports how a noun or adjective ending forms its pt-PT
+// plural on the assembled word: the suffix to append and whether that plural is
+// ADDITIVE — a pure suffix append onto the singular — as opposed to
+// SUBSTITUTIVE, a tail rewrite that only [pluralize]/[pluralizeNoun] can perform.
+//
+// It is the single up-front decision that mirrors [pluralize]'s string dispatch,
+// but reads the classification from the ending's OWN final-grapheme metadata (its
+// last syllable's coda and nucleus, plus the fixedCaoPlural flag) instead of from
+// an already-assembled string. That lets an additive plural be appended in the
+// SAME builder that assembles the word — one allocation, via
+// [accentedWordSuffixed] — while a substitutive plural keeps the post-assembly
+// string transform (a second allocation).
+//
+// Additive endings and their suffix (Cunha & Cintra; the rule table above): an
+// ending closed by a vowel or an oral diphthong adds -s (gato->gatos,
+// famoso->famosos); an ending closed by -r, -z or -n adds -es
+// (flor->flores); an oxytone ending closed by -s adds -es
+// (país->países). Substitutive endings (additive == false), left to the tail
+// rewrite: the nasal -ão (-ões/-ães/-ãos, including the fixed -ção->-ções via
+// fixedCaoPlural), the -m ending (-ns) and the vowel+l endings
+// (-ais/-éis/-óis/-uis/-is/-eis). The invariable endings (-x, unstressed -s) are
+// additive with an empty suffix; no WordsPT ending realizes them, but appending
+// nothing still reproduces [pluralize]'s invariable result. The additive
+// classification never draws randomness, and the substitutive endings it defers
+// (fixed -ção, -m, -l) do not draw either, so routing an additive ending around
+// [pluralize] leaves the random stream byte-for-byte unchanged.
+func additivePluralSuffix(end *nounEnding) (suffix string, additive bool) {
+	if end.fixedCaoPlural {
+		return "", false // -ção -> -ções: substitutive tail rewrite
+	}
+	last := end.syllables[len(end.syllables)-1]
+	switch last.coda {
+	case "":
+		if nucleusIsNasal(last.nucleus) {
+			return "", false // -ão -> -ões/-ães/-ãos: substitutive
+		}
+		return "s", true // vowel or oral diphthong -> +s
+	case "r", "z", "n":
+		return "es", true // -r/-z/-n -> +es
+	case "s":
+		if end.oxytone() {
+			return "es", true // oxytone -s -> +es (país->países)
+		}
+		return "", true // paroxytone -s: invariable (additive, empty suffix)
+	case "x":
+		return "", true // -x: invariable (additive, empty suffix)
+	default: // "m" and "l": substitutive tail rewrites
+		return "", false
+	}
+}
+
 // applyAoPlural replaces a singular -ão ending with the chosen plural outcome. It
 // strips the two final runes ("ã" + "o") and appends the -ões, -ães or -ãos
 // ending. It is the pure, deterministic transform behind the weighted

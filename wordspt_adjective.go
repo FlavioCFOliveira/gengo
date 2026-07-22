@@ -90,12 +90,16 @@ import (
 //     a fixed c onset, additionally exercises c -> qu (básico -> basiquíssimo).
 //
 // Allocation. The positive singular assembles in exactly one allocation (Layer
-// 3's builder); the positive plural adds one tail concatenation in the shared
-// pluralizer. The superlative is also a single allocation: it is written straight
-// from the bare syllables into one pre-sized builder, with no separate base
-// assembly. The length-window search reuses the stack syllable buffer and measures
-// the superlative length from a closed-form rune count, so it allocates nothing
-// per attempt.
+// 3's builder). An ADDITIVE positive plural (the +s of the vowel- and
+// diphthong-final endings -o, -oso, -ico, -ivo, -ente, -ante) is also a single
+// allocation: the s is written into the same assembling builder (see
+// accentedWordSuffixed and additivePluralSuffix). A SUBSTITUTIVE positive plural
+// (the vowel+l endings -al, -ável, -ível -> -ais/-áveis/-íveis) adds one tail
+// concatenation in the shared pluralizer. The superlative is also a single
+// allocation: it is written straight from the bare syllables into one pre-sized
+// builder, with no separate base assembly. The length-window search reuses the
+// stack syllable buffer and measures the superlative length from a closed-form
+// rune count, so it allocates nothing per attempt.
 //
 // Sources: Cunha, C. & Cintra, L., "Nova Gramática do Português Contemporâneo"
 // (adjective formation, gender of suffixes, the -íssimo absolute superlative and
@@ -548,11 +552,18 @@ func adjectiveCore(r *rand.Rand, buf []syllable, g Gender, n Number, d Degree, l
 	if rd == Superlative {
 		return superlativeWord(stem, rg, rn)
 	}
-	word := accentedWord(stem)
 	if rn == Plural {
-		word = pluralize(r, word, end.oxytone())
+		// The vowel- and diphthong-final adjective endings (-o, -oso, -ico, -ivo,
+		// -ente, -ante) take a regular +s, appended into the SAME builder that
+		// assembles the word: one allocation. The substitutive vowel+l endings (-al,
+		// -ável, -ível -> -ais/-áveis/-íveis) rewrite the word's tail, so they keep the
+		// post-assembly string transform: two allocations. See [additivePluralSuffix].
+		if suffix, additive := additivePluralSuffix(end); additive {
+			return accentedWordSuffixed(stem, suffix)
+		}
+		return pluralize(r, accentedWord(stem), end.oxytone())
 	}
-	return word
+	return accentedWord(stem)
 }
 
 // ---------------------------------------------------------------------------

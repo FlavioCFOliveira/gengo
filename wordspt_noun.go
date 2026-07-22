@@ -33,11 +33,15 @@ import (
 // Allocation. The syllable buffer is a fixed-size array on the caller's stack, so
 // it does not allocate on the heap; a rejected length attempt is measured from
 // the buffer with no allocation. A singular noun therefore performs exactly one
-// string allocation (the final assembly). A plural noun performs one additional
-// tail concatenation in the shared pluralizer (wordspt_plural.go), because a
-// pt-PT plural such as -agens carries a coda cluster ("ns") that lies outside the
-// single-coda syllable inventory and cannot be represented as a syllable; the
-// plural is therefore a string transform applied after assembly.
+// string allocation (the final assembly). An ADDITIVE plural — the regular +s (or
+// +es for the -or ending), which merely appends a suffix — is also a single
+// allocation: the suffix is written into the same assembling builder (see
+// accentedWordSuffixed and additivePluralSuffix). A SUBSTITUTIVE plural performs
+// one additional tail concatenation in the shared pluralizer (wordspt_plural.go),
+// because a pt-PT plural such as -agens (-m -> -ns), -ção -> -ções or -al -> -ais
+// rewrites the word's tail — carrying, for -agens, a coda cluster ("ns") that
+// lies outside the single-coda syllable inventory and cannot be represented as a
+// syllable — so it is a string transform applied after assembly.
 //
 // Sources for the ending inventory, the inherent gender of each ending and the
 // stress each ending carries: Cunha, C. & Cintra, L., "Nova Gramática do
@@ -526,11 +530,19 @@ func nounCore(r *rand.Rand, buf []syllable, g Gender, n Number, l LengthTypeWord
 		}
 	}
 
-	word := accentedWord(stem)
 	if rn == Plural {
-		word = pluralizeNoun(r, word, end)
+		// Additive plurals (a regular +s, or +es for -r/-z/-n/oxytone -s) append a
+		// bare suffix onto the singular, so they are written into the SAME builder
+		// that assembles the word: one allocation. Substitutive plurals (-ão, -m and
+		// the vowel+l endings, plus the fixed -ção) rewrite the word's tail, so they
+		// keep the post-assembly string transform: two allocations. See
+		// [additivePluralSuffix].
+		if suffix, additive := additivePluralSuffix(end); additive {
+			return accentedWordSuffixed(stem, suffix)
+		}
+		return pluralizeNoun(r, accentedWord(stem), end)
 	}
-	return word
+	return accentedWord(stem)
 }
 
 // ---------------------------------------------------------------------------
