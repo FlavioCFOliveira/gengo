@@ -10,10 +10,11 @@ import (
 // flexion enums (Mood, Tense, Person) shared by every verb slot, and the internal,
 // reusable regular-verb machinery for the NON-FINITE forms of all three
 // conjugations — the impersonal infinitive, the inflected personal infinitive, the
-// gerund and the participle — and for the finite INDICATIVE forms (present,
-// imperfect, preterite, future and conditional). Later tasks build the finite
-// subjunctive and imperative forms, and the public VerbPT/VerbPTOf API, on top of
-// this machinery; only the enums are public here.
+// gerund and the participle — for the finite INDICATIVE forms (present, imperfect,
+// preterite, future and conditional), for the finite SUBJUNCTIVE forms (present,
+// imperfect and future) and for the IMPERATIVE (affirmative and negative). A later
+// task builds the public VerbPT/VerbPTOf API on top of this machinery; only the
+// enums are public here.
 //
 // Every generated verb is REGULAR (pt-PT pseudo-verbs are always regular), so the
 // regular paradigm of the chosen conjugation applies uniformly and the forms are
@@ -690,4 +691,308 @@ func indicativeVerbForm(r *rand.Rand, radical string, c *verbConjugation, t Tens
 	rt := resolveIndicativeTense(r, t)
 	vp := resolveVerbPerson(r, p, n)
 	return conjugateIndicative(radical, c, rt, vp)
+}
+
+// ---------------------------------------------------------------------------
+// Subjunctive-mood desinence data (Cunha & Cintra conjugation tables)
+// ---------------------------------------------------------------------------
+
+// The finite SUBJUNCTIVE (conjuntivo) forms of a regular verb are assembled
+// exactly like the indicative forms — from a BARE radical plus a fixed desinence
+// that carries the tense/person marking and any graphic accent — so the radical
+// is still written bare and the assembly never invokes the Layer 3 accentuation
+// (wordspt_accent.go). The desinences are literal, authoritative strings and the
+// assembled form is correct by construction.
+//
+// The subjunctive has exactly three tenses (present, imperfect, future); the
+// preterite and the conditional do not exist in this mood (specification
+// Normalization rule N3, resolved by resolveSubjunctiveTense). Two properties of
+// the tables are worth stating explicitly:
+//
+//   - The present subjunctive swaps the theme vowel relative to the infinitive:
+//     the first conjugation (theme a) takes e-endings (fale, fales, falemos),
+//     while the second and third (themes e, i) take a-endings (coma, parta,
+//     comamos, partamos). The second and third conjugations therefore share the
+//     same present-subjunctive desinences.
+//   - The imperfect subjunctive first person plural is PROPAROXYTONE and carries a
+//     graphic accent on the theme vowel: falássemos (acute á), comêssemos
+//     (CIRCUMFLEX ê — the closed quality of the second-conjugation theme vowel,
+//     not an acute) and partíssemos (acute í). The accent is baked into the
+//     desinence string (-ássemos, -êssemos, -íssemos).
+//
+// The regular future subjunctive coincides with the inflected personal
+// infinitive (falar, falares, falarmos; comer, comeres; partir, partires), so its
+// desinences mirror the personal-infinitive suffixes with the theme vowel folded
+// in.
+//
+// Persons follow the same five-slot paradigm as the other finite moods (1s, 2s,
+// 3s, 1p, 3p; no vós), so each tense is a [5]string indexed by verbPerson.
+//
+// Source: Cunha, C. & Cintra, L., "Nova Gramática do Português Contemporâneo"
+// (the regular subjunctive conjugation tables); Acordo Ortográfico da Língua
+// Portuguesa (graphic-accent spelling).
+
+// subjunctiveParadigm holds the three subjunctive desinence tables of one regular
+// conjugation. Each field is the desinence set of one tense: a [5]string indexed
+// by verbPerson (1s, 2s, 3s, 1p, 3p). A desinence is appended directly to the
+// bare radical; it embeds the theme vowel and any graphic accent, so it is a
+// complete, lowercase, valid-UTF-8 suffix.
+type subjunctiveParadigm struct {
+	present   [5]string
+	imperfect [5]string
+	future    [5]string
+}
+
+// The subjunctive desinence tables of the three regular conjugations, model verbs
+// falar (-ar), comer (-er) and partir (-ir). Read against a model radical
+// (fal/com/part) each entry reproduces the textbook form exactly; the graphic
+// accents (the acute á/í and the circumflex ê of the proparoxytone imperfect
+// first person plural) are part of the desinence string.
+var (
+	// subjunctiveAr is the first conjugation (-ar): e-endings in the present, the
+	// -ássemos proparoxytone in the imperfect 1p, and the -ar future that mirrors
+	// the personal infinitive.
+	subjunctiveAr = subjunctiveParadigm{
+		present:   [5]string{verbP1s: "e", verbP2s: "es", verbP3s: "e", verbP1p: "emos", verbP3p: "em"},
+		imperfect: [5]string{verbP1s: "asse", verbP2s: "asses", verbP3s: "asse", verbP1p: "ássemos", verbP3p: "assem"},
+		future:    [5]string{verbP1s: "ar", verbP2s: "ares", verbP3s: "ar", verbP1p: "armos", verbP3p: "arem"},
+	}
+	// subjunctiveEr is the second conjugation (-er): a-endings in the present and
+	// the -êssemos proparoxytone (CIRCUMFLEX) in the imperfect 1p.
+	subjunctiveEr = subjunctiveParadigm{
+		present:   [5]string{verbP1s: "a", verbP2s: "as", verbP3s: "a", verbP1p: "amos", verbP3p: "am"},
+		imperfect: [5]string{verbP1s: "esse", verbP2s: "esses", verbP3s: "esse", verbP1p: "êssemos", verbP3p: "essem"},
+		future:    [5]string{verbP1s: "er", verbP2s: "eres", verbP3s: "er", verbP1p: "ermos", verbP3p: "erem"},
+	}
+	// subjunctiveIr is the third conjugation (-ir): a-endings in the present (shared
+	// with the second conjugation) and the -íssemos proparoxytone in the imperfect 1p.
+	subjunctiveIr = subjunctiveParadigm{
+		present:   [5]string{verbP1s: "a", verbP2s: "as", verbP3s: "a", verbP1p: "amos", verbP3p: "am"},
+		imperfect: [5]string{verbP1s: "isse", verbP2s: "isses", verbP3s: "isse", verbP1p: "íssemos", verbP3p: "issem"},
+		future:    [5]string{verbP1s: "ir", verbP2s: "ires", verbP3s: "ir", verbP1p: "irmos", verbP3p: "irem"},
+	}
+)
+
+// subjunctiveParadigmFor returns the subjunctive desinence tables of conjugation
+// c, selected by its theme vowel (a, e or i), mirroring indicativeParadigmFor. a
+// is the default.
+func subjunctiveParadigmFor(c *verbConjugation) *subjunctiveParadigm {
+	switch c.themeVowel {
+	case "e":
+		return &subjunctiveEr
+	case "i":
+		return &subjunctiveIr
+	default: // "a"
+		return &subjunctiveAr
+	}
+}
+
+// desinences returns the [5]string desinence table of subjunctive tense t within
+// the paradigm. Only Present, Imperfect and Future exist in the subjunctive;
+// AnyTense (and any other value) falls back to the present. A caller that must
+// honor an Any request, or normalize an indicative-only tense, resolves it first
+// with resolveSubjunctiveTense.
+func (sp *subjunctiveParadigm) desinences(t Tense) *[5]string {
+	switch t {
+	case Imperfect:
+		return &sp.imperfect
+	case Future:
+		return &sp.future
+	default: // Present
+		return &sp.present
+	}
+}
+
+// subjunctiveSuffix returns the desinence appended to the bare radical for
+// conjugation c, subjunctive tense t and person p. The returned string is a
+// package-level table entry (no allocation): the theme vowel and any graphic
+// accent are already part of it.
+func subjunctiveSuffix(c *verbConjugation, t Tense, p verbPerson) string {
+	return subjunctiveParadigmFor(c).desinences(t)[p]
+}
+
+// conjugateSubjunctive assembles a finite subjunctive verb form from a bare
+// RADICAL string in exactly one allocation: radical + desinence. It is the
+// paradigm-exact assembler for the subjunctive mood — given the model radical
+// "fal", "com" or "part", the conjugation, a concrete tense and a concrete person
+// it produces the textbook form (falássemos, comêssemos, partirem) — and is what
+// the unit tests verify against the authoritative tables. It parallels
+// conjugateIndicative and shares the same single-allocation, bare-radical
+// discipline; because every desinence is lowercase, valid UTF-8 and carries its
+// own graphic accent, the result is lowercase, valid UTF-8 and correctly
+// accented, with no call into the Layer 3 accentuation.
+func conjugateSubjunctive(radical string, c *verbConjugation, t Tense, p verbPerson) string {
+	suffix := subjunctiveSuffix(c, t, p)
+
+	var b strings.Builder
+	b.Grow(len(radical) + len(suffix))
+	b.WriteString(radical)
+	b.WriteString(suffix)
+	return b.String()
+}
+
+// resolveSubjunctiveTense resolves t to a concrete subjunctive tense, drawing
+// from the injectable source r for an unspecified request and normalizing the two
+// tenses the subjunctive lacks (specification Normalization rule N3). Present,
+// Imperfect and Future pass through unchanged; a requested Preterite becomes
+// Imperfect (the nearest past) and a requested Conditional becomes Future (the
+// nearest prospective form); AnyTense (and any undefined value) becomes one of
+// Present, Imperfect or Future with equal probability. The draw is a single
+// bounded selection, without allocation or rejection.
+func resolveSubjunctiveTense(r *rand.Rand, t Tense) Tense {
+	switch t {
+	case Present, Imperfect, Future:
+		return t
+	case Preterite:
+		return Imperfect // N3: the subjunctive has no preterite; the nearest past is the imperfect
+	case Conditional:
+		return Future // N3: the subjunctive has no conditional; the nearest prospective form is the future
+	default: // AnyTense or undefined
+		switch r.Uint32N(3) {
+		case 0:
+			return Present
+		case 1:
+			return Imperfect
+		default:
+			return Future
+		}
+	}
+}
+
+// subjunctiveVerbForm assembles a finite subjunctive verb form from a bare
+// radical, resolving an Any (or indicative-only) tense, person and number from the
+// injectable source r before appending the desinence. It is the
+// injectable-*rand.Rand assembler layered over conjugateSubjunctive:
+// resolveSubjunctiveTense picks the tense (applying the N3 tense normalization),
+// resolveVerbPerson picks the person/number slot (applying the N1
+// second-person-plural normalization), and conjugateSubjunctive produces the form
+// in a single allocation. The radical is supplied by the caller — the
+// radical-sampling and length machinery of the public verb generator is a later
+// task — so this function samples nothing beyond the option resolution and stays
+// reproducible under a seeded source.
+func subjunctiveVerbForm(r *rand.Rand, radical string, c *verbConjugation, t Tense, p Person, n Number) string {
+	rt := resolveSubjunctiveTense(r, t)
+	vp := resolveVerbPerson(r, p, n)
+	return conjugateSubjunctive(radical, c, rt, vp)
+}
+
+// ---------------------------------------------------------------------------
+// Imperative-mood assembly (derived from the present subjunctive and the
+// present indicative — Cunha & Cintra)
+// ---------------------------------------------------------------------------
+
+// The IMPERATIVE (imperativo) has no independent desinence data: every regular
+// imperative form is grammatically DEFINED in terms of the present indicative and
+// the present subjunctive, so it is assembled by borrowing the right present-tense
+// desinence rather than by adding a fourth table. The rule (Cunha & Cintra) is:
+//
+//   - Affirmative second singular (tu) borrows the present INDICATIVE third
+//     singular form: fala, come, parte.
+//   - Every other imperative person — affirmative 3s/1p/3p and ALL negative
+//     persons — borrows the present SUBJUNCTIVE form: fale/coma/parta (3s),
+//     falemos/comamos/partamos (1p), falem/comam/partam (3p); the negative second
+//     singular is the present subjunctive fales/comas/partas.
+//
+// The imperative has NO first person singular. A verbP1s request is normalized to
+// the first person plural (specification Normalization rule N2: the imperative's
+// first person exists only in the plural, the "let us" form) inside
+// conjugateImperative, so the assembler is total and never emits a bare radical.
+//
+// The negative imperative in pt-PT is periphrastic ("não" + present subjunctive);
+// WordsPT, a single-word generator, emits only the verb form, without the negating
+// particle "não" (a confirmed specification decision). The bare form the negative
+// imperative produces coincides with the present subjunctive for the imperative
+// persons.
+//
+// Because the imperative reuses the present indicative and present subjunctive
+// desinences verbatim, it cannot diverge from those tables, and every imperative
+// form inherits their lowercase, valid-UTF-8, correctly accented spelling (in
+// practice the regular present tenses carry no graphic accent, so the imperative
+// is plain ASCII).
+
+// imperativePolarity is the affirmative/negative polarity of an imperative form.
+// It is the imperative's counterpart of the tense selector of the other finite
+// moods, kept unexported like the rest of the conjugation machinery; the public
+// VerbPT/VerbPTOf API (a later task) maps [ImperativeAffirmative] and
+// [ImperativeNegative] onto it.
+type imperativePolarity uint8
+
+const (
+	// imperativeAff is the affirmative imperative (fala, fale, falemos, falem).
+	imperativeAff imperativePolarity = iota
+	// imperativeNeg is the negative imperative verb form, without the "não"
+	// particle (fales, fale, falemos, falem).
+	imperativeNeg
+)
+
+// imperativeSuffix returns the desinence appended to the bare radical for
+// conjugation c, imperative polarity pol and person p, borrowed from the present
+// indicative or the present subjunctive per the derivation rule. p is never
+// verbP1s here: conjugateImperative normalizes the non-existent imperative first
+// singular to the first plural before calling this function. The returned string
+// is a package-level table entry (no allocation).
+func imperativeSuffix(c *verbConjugation, pol imperativePolarity, p verbPerson) string {
+	if pol == imperativeAff && p == verbP2s {
+		// Affirmative second singular (tu) = present indicative third singular.
+		return indicativeParadigmFor(c).present[verbP3s]
+	}
+	// Affirmative 3s/1p/3p and every negative person = present subjunctive.
+	return subjunctiveParadigmFor(c).present[p]
+}
+
+// conjugateImperative assembles an imperative verb form from a bare RADICAL string
+// in exactly one allocation: radical + desinence. It is the paradigm-exact
+// assembler for the imperative mood — given the model radical "fal", "com" or
+// "part", the conjugation, a polarity and a concrete person it produces the
+// textbook form (fala, fale, comam, partas) — and is what the unit tests verify
+// against the authoritative paradigm. The imperative has no first person
+// singular, so a verbP1s request is normalized to the first person plural
+// (Normalization rule N2) before the desinence is looked up, keeping the assembler
+// total. It parallels conjugateIndicative and conjugateSubjunctive and shares the
+// same single-allocation, bare-radical discipline; the result is lowercase and
+// valid UTF-8.
+func conjugateImperative(radical string, c *verbConjugation, pol imperativePolarity, p verbPerson) string {
+	if p == verbP1s {
+		p = verbP1p // N2: the imperative has no first person singular; it relaxes to the first plural
+	}
+	suffix := imperativeSuffix(c, pol, p)
+
+	var b strings.Builder
+	b.Grow(len(radical) + len(suffix))
+	b.WriteString(radical)
+	b.WriteString(suffix)
+	return b.String()
+}
+
+// resolveImperativePerson maps a public [Person] and [Number] to a concrete
+// imperative verbPerson slot, drawing from the injectable source r for any
+// unspecified trait. It layers the imperative-specific Normalization rule N2 on
+// top of resolveVerbPerson: the imperative has no first person singular, so a
+// resolved verbP1s (a First + Singular request) relaxes to the first person plural
+// verbP1p, while every other slot — including the N1 second-person-plural
+// normalization already applied by resolveVerbPerson — passes through unchanged.
+// The result is therefore always one of the four imperative slots (2s, 3s, 1p, 3p)
+// and never verbP1s.
+func resolveImperativePerson(r *rand.Rand, p Person, n Number) verbPerson {
+	vp := resolveVerbPerson(r, p, n)
+	if vp == verbP1s {
+		return verbP1p // N2: First + Singular relaxes to First + Plural (no imperative 1s)
+	}
+	return vp
+}
+
+// imperativeVerbForm assembles an imperative verb form from a bare radical,
+// resolving an Any person and number from the injectable source r before appending
+// the desinence. It is the injectable-*rand.Rand assembler layered over
+// conjugateImperative: resolveImperativePerson picks the person/number slot
+// (applying the N1 second-person-plural and N2 first-person-singular
+// normalizations), and conjugateImperative produces the form in a single
+// allocation. The imperative takes no tense (specification Normalization rule N3),
+// so no tense is resolved. The radical is supplied by the caller — the
+// radical-sampling and length machinery of the public verb generator is a later
+// task — so this function samples nothing beyond the person resolution and stays
+// reproducible under a seeded source.
+func imperativeVerbForm(r *rand.Rand, radical string, c *verbConjugation, pol imperativePolarity, p Person, n Number) string {
+	vp := resolveImperativePerson(r, p, n)
+	return conjugateImperative(radical, c, pol, vp)
 }

@@ -659,3 +659,562 @@ func BenchmarkIndicativeVerbForm(b *testing.B) {
 		_ = indicativeVerbForm(r, "fal", &conjAr, AnyTense, AnyPerson, AnyNumber)
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Subjunctive and imperative moods (task #30)
+// ---------------------------------------------------------------------------
+
+// The five imperative slots reduce to the four the mood actually has (no first
+// person singular); this list drives the imperative exact-form and conformance
+// tests.
+var imperativePersons = [4]verbPerson{verbP2s, verbP3s, verbP1p, verbP3p}
+
+// subjunctiveTenseName returns a readable label for a subjunctive Tense, for test
+// failure messages only.
+func subjunctiveTenseName(t Tense) string {
+	switch t {
+	case Present:
+		return "present"
+	case Imperfect:
+		return "imperfect"
+	case Future:
+		return "future"
+	default:
+		return "any"
+	}
+}
+
+// polarityName returns a readable label for an imperativePolarity, for test
+// failure messages only.
+func polarityName(pol imperativePolarity) string {
+	if pol == imperativeNeg {
+		return "negative"
+	}
+	return "affirmative"
+}
+
+// TestSubjunctiveExactForms is the core acceptance test for the subjunctive mood.
+// For each conjugation, built from its model radical (fal/com/part), every
+// subjunctive cell — 3 tenses x 5 persons per conjugation, 45 in total — must
+// equal the textbook value exactly. This proves every desinence, and every
+// baked-in graphic accent, against the Cunha & Cintra paradigm: the theme-vowel
+// swap of the present (fale vs coma/parta), the proparoxytone imperfect first
+// plural (falássemos, comêssemos, partíssemos) and the personal-infinitive future
+// (falarmos, comeres, partir).
+func TestSubjunctiveExactForms(t *testing.T) {
+	type tenseRow struct {
+		tense Tense
+		forms [5]string // indexed 1s, 2s, 3s, 1p, 3p
+	}
+	cases := []struct {
+		conj    *verbConjugation
+		radical string
+		rows    []tenseRow
+	}{
+		{
+			conj: &conjAr, radical: "fal",
+			rows: []tenseRow{
+				{Present, [5]string{"fale", "fales", "fale", "falemos", "falem"}},
+				{Imperfect, [5]string{"falasse", "falasses", "falasse", "falássemos", "falassem"}},
+				{Future, [5]string{"falar", "falares", "falar", "falarmos", "falarem"}},
+			},
+		},
+		{
+			conj: &conjEr, radical: "com",
+			rows: []tenseRow{
+				{Present, [5]string{"coma", "comas", "coma", "comamos", "comam"}},
+				{Imperfect, [5]string{"comesse", "comesses", "comesse", "comêssemos", "comessem"}},
+				{Future, [5]string{"comer", "comeres", "comer", "comermos", "comerem"}},
+			},
+		},
+		{
+			conj: &conjIr, radical: "part",
+			rows: []tenseRow{
+				{Present, [5]string{"parta", "partas", "parta", "partamos", "partam"}},
+				{Imperfect, [5]string{"partisse", "partisses", "partisse", "partíssemos", "partissem"}},
+				{Future, [5]string{"partir", "partires", "partir", "partirmos", "partirem"}},
+			},
+		},
+	}
+
+	persons := [5]verbPerson{verbP1s, verbP2s, verbP3s, verbP1p, verbP3p}
+	asserted := 0
+	for _, tc := range cases {
+		for _, row := range tc.rows {
+			for i, vp := range persons {
+				got := conjugateSubjunctive(tc.radical, tc.conj, row.tense, vp)
+				want := row.forms[i]
+				if got != want {
+					t.Errorf("%s subjunctive %s person %d = %q, want %q",
+						tc.conj.label, subjunctiveTenseName(row.tense), vp, got, want)
+				}
+				asserted++
+			}
+		}
+	}
+	if asserted != 45 {
+		t.Fatalf("asserted %d subjunctive cells, want 45 (3 conjugations x 3 tenses x 5 persons)", asserted)
+	}
+}
+
+// TestSubjunctiveImperfectFirstPlural pins the accent on the proparoxytone
+// imperfect subjunctive first person plural, which is the one subjunctive cell
+// that carries a graphic accent. In particular the second conjugation takes the
+// CIRCUMFLEX ê (comêssemos, closed quality), not the acute é or a bare e, while
+// the first and third take the acute á and í (falássemos, partíssemos). A revert
+// to the wrong accent (or none) fails this guard.
+func TestSubjunctiveImperfectFirstPlural(t *testing.T) {
+	cases := []struct {
+		conj    *verbConjugation
+		radical string
+		want    string
+		accent  rune // the graphic accent the form must carry
+	}{
+		{&conjAr, "fal", "falássemos", 'á'},
+		{&conjEr, "com", "comêssemos", 'ê'}, // circumflex, not acute
+		{&conjIr, "part", "partíssemos", 'í'},
+	}
+	for _, tc := range cases {
+		got := conjugateSubjunctive(tc.radical, tc.conj, Imperfect, verbP1p)
+		if got != tc.want {
+			t.Errorf("%s imperfect subjunctive 1p = %q, want %q", tc.conj.label, got, tc.want)
+		}
+		if !strings.ContainsRune(got, tc.accent) {
+			t.Errorf("%s imperfect subjunctive 1p %q lacks the expected accent %q",
+				tc.conj.label, got, tc.accent)
+		}
+	}
+	// Explicitly reject the two wrong spellings of the second-conjugation cell: the
+	// bare e (comessemos) and the acute é (coméssemos). Only the circumflex is correct.
+	com := conjugateSubjunctive("com", &conjEr, Imperfect, verbP1p)
+	if com == "comessemos" || com == "coméssemos" {
+		t.Errorf("second-conjugation imperfect subjunctive 1p = %q, want the circumflex form %q", com, "comêssemos")
+	}
+}
+
+// TestSubjunctiveFutureEqualsPersonalInfinitive certifies the grammatical identity
+// that the regular future subjunctive coincides with the inflected personal
+// infinitive, so the two assemblers must agree cell by cell for every conjugation
+// and person.
+func TestSubjunctiveFutureEqualsPersonalInfinitive(t *testing.T) {
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	persons := []verbPerson{verbP1s, verbP2s, verbP3s, verbP1p, verbP3p}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, vp := range persons {
+			fut := conjugateSubjunctive(radicals[c], c, Future, vp)
+			inf := conjugateNonFinite(radicals[c], c, formPersonalInfinitive, vp)
+			if fut != inf {
+				t.Errorf("%s future subjunctive person %d = %q, but personal infinitive = %q (must coincide)",
+					c.label, vp, fut, inf)
+			}
+		}
+	}
+}
+
+// TestImperativeExactForms is the core acceptance test for the imperative mood.
+// For each conjugation, built from its model radical (fal/com/part), every
+// imperative cell — 2 polarities x 4 valid persons (no first singular) per
+// conjugation, 24 in total — must equal the textbook value exactly. This proves
+// the derivation rule (affirmative 2s = present indicative 3s; every other person,
+// and all negatives = present subjunctive) against the authoritative paradigm.
+func TestImperativeExactForms(t *testing.T) {
+	cases := []struct {
+		conj    *verbConjugation
+		radical string
+		// indexed by verbPerson; the verbP1s slot is unused (no imperative 1s).
+		affirmative [5]string
+		negative    [5]string
+	}{
+		{
+			conj: &conjAr, radical: "fal",
+			affirmative: [5]string{verbP2s: "fala", verbP3s: "fale", verbP1p: "falemos", verbP3p: "falem"},
+			negative:    [5]string{verbP2s: "fales", verbP3s: "fale", verbP1p: "falemos", verbP3p: "falem"},
+		},
+		{
+			conj: &conjEr, radical: "com",
+			affirmative: [5]string{verbP2s: "come", verbP3s: "coma", verbP1p: "comamos", verbP3p: "comam"},
+			negative:    [5]string{verbP2s: "comas", verbP3s: "coma", verbP1p: "comamos", verbP3p: "comam"},
+		},
+		{
+			conj: &conjIr, radical: "part",
+			affirmative: [5]string{verbP2s: "parte", verbP3s: "parta", verbP1p: "partamos", verbP3p: "partam"},
+			negative:    [5]string{verbP2s: "partas", verbP3s: "parta", verbP1p: "partamos", verbP3p: "partam"},
+		},
+	}
+
+	asserted := 0
+	for _, tc := range cases {
+		for _, vp := range imperativePersons {
+			if got := conjugateImperative(tc.radical, tc.conj, imperativeAff, vp); got != tc.affirmative[vp] {
+				t.Errorf("%s affirmative imperative person %d = %q, want %q",
+					tc.conj.label, vp, got, tc.affirmative[vp])
+			}
+			asserted++
+			if got := conjugateImperative(tc.radical, tc.conj, imperativeNeg, vp); got != tc.negative[vp] {
+				t.Errorf("%s negative imperative person %d = %q, want %q",
+					tc.conj.label, vp, got, tc.negative[vp])
+			}
+			asserted++
+		}
+	}
+	if asserted != 24 {
+		t.Fatalf("asserted %d imperative cells, want 24 (3 conjugations x 2 polarities x 4 persons)", asserted)
+	}
+}
+
+// TestImperativeDerivationRule verifies, independently of the hard-coded reference
+// table above, that the derivation rule holds against the present indicative and
+// present subjunctive assemblers: the affirmative second singular equals the
+// present indicative third singular, and every other imperative cell equals the
+// present subjunctive for that person.
+func TestImperativeDerivationRule(t *testing.T) {
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		radical := radicals[c]
+		// Affirmative 2s = present indicative 3s.
+		if got, want := conjugateImperative(radical, c, imperativeAff, verbP2s),
+			conjugateIndicative(radical, c, Present, verbP3s); got != want {
+			t.Errorf("%s affirmative imperative 2s = %q, want present indicative 3s %q", c.label, got, want)
+		}
+		// Affirmative 3s/1p/3p = present subjunctive.
+		for _, vp := range []verbPerson{verbP3s, verbP1p, verbP3p} {
+			if got, want := conjugateImperative(radical, c, imperativeAff, vp),
+				conjugateSubjunctive(radical, c, Present, vp); got != want {
+				t.Errorf("%s affirmative imperative person %d = %q, want present subjunctive %q",
+					c.label, vp, got, want)
+			}
+		}
+		// All negative persons = present subjunctive.
+		for _, vp := range imperativePersons {
+			if got, want := conjugateImperative(radical, c, imperativeNeg, vp),
+				conjugateSubjunctive(radical, c, Present, vp); got != want {
+				t.Errorf("%s negative imperative person %d = %q, want present subjunctive %q",
+					c.label, vp, got, want)
+			}
+		}
+	}
+}
+
+// TestImperativeNormalizesFirstSingular verifies the N2 normalization baked into
+// the assembler: the imperative has no first person singular, so a verbP1s request
+// must produce the first person plural form for both polarities.
+func TestImperativeNormalizesFirstSingular(t *testing.T) {
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		radical := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}[c]
+		for _, pol := range []imperativePolarity{imperativeAff, imperativeNeg} {
+			got := conjugateImperative(radical, c, pol, verbP1s)
+			want := conjugateImperative(radical, c, pol, verbP1p)
+			if got != want {
+				t.Errorf("%s %s imperative 1s = %q, want the 1p form %q (N2)",
+					c.label, polarityName(pol), got, want)
+			}
+		}
+	}
+}
+
+// TestConjugateSubjunctiveSingleAllocation asserts that the paradigm-exact
+// subjunctive assembler performs exactly one allocation (the returned string) for
+// every tense and person.
+func TestConjugateSubjunctiveSingleAllocation(t *testing.T) {
+	tenses := []Tense{Present, Imperfect, Future}
+	persons := []verbPerson{verbP1s, verbP2s, verbP3s, verbP1p, verbP3p}
+	for _, tt := range tenses {
+		for _, vp := range persons {
+			allocs := testing.AllocsPerRun(1000, func() {
+				_ = conjugateSubjunctive("part", &conjIr, tt, vp)
+			})
+			if allocs != 1 {
+				t.Errorf("conjugateSubjunctive(%s, person %d) allocated %.0f times, want 1",
+					subjunctiveTenseName(tt), vp, allocs)
+			}
+		}
+	}
+}
+
+// TestConjugateImperativeSingleAllocation asserts that the paradigm-exact
+// imperative assembler performs exactly one allocation (the returned string) for
+// every polarity and person.
+func TestConjugateImperativeSingleAllocation(t *testing.T) {
+	persons := []verbPerson{verbP2s, verbP3s, verbP1p, verbP3p}
+	for _, pol := range []imperativePolarity{imperativeAff, imperativeNeg} {
+		for _, vp := range persons {
+			allocs := testing.AllocsPerRun(1000, func() {
+				_ = conjugateImperative("part", &conjIr, pol, vp)
+			})
+			if allocs != 1 {
+				t.Errorf("conjugateImperative(%s, person %d) allocated %.0f times, want 1",
+					polarityName(pol), vp, allocs)
+			}
+		}
+	}
+}
+
+// TestSubjunctiveOrthographicConformance asserts that every subjunctive cell of the
+// three model conjugations is an orthographically well-formed, lowercase,
+// valid-UTF-8 pt-PT word (the Sprint 7 string oracles). This certifies the
+// baked-in accents: only the acute (á, í) and the circumflex (ê) appear, and no
+// cedilla, diaeresis or grave is ever produced.
+func TestSubjunctiveOrthographicConformance(t *testing.T) {
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	tenses := []Tense{Present, Imperfect, Future}
+	persons := []verbPerson{verbP1s, verbP2s, verbP3s, verbP1p, verbP3p}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, tt := range tenses {
+			for _, vp := range persons {
+				w := conjugateSubjunctive(radicals[c], c, tt, vp)
+				assertVerbOrthographyConformant(t, w)
+				if !strings.HasPrefix(w, radicals[c]) {
+					t.Errorf("%s subjunctive %s person %d = %q does not start with radical %q",
+						c.label, subjunctiveTenseName(tt), vp, w, radicals[c])
+				}
+			}
+		}
+	}
+}
+
+// TestImperativeOrthographicConformance asserts that every imperative cell of the
+// three model conjugations is an orthographically well-formed, lowercase,
+// valid-UTF-8 pt-PT word and starts with the model radical. The regular imperative
+// carries no graphic accent, so these are plain ASCII forms.
+func TestImperativeOrthographicConformance(t *testing.T) {
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, pol := range []imperativePolarity{imperativeAff, imperativeNeg} {
+			for _, vp := range imperativePersons {
+				w := conjugateImperative(radicals[c], c, pol, vp)
+				assertVerbOrthographyConformant(t, w)
+				if !strings.HasPrefix(w, radicals[c]) {
+					t.Errorf("%s %s imperative person %d = %q does not start with radical %q",
+						c.label, polarityName(pol), vp, w, radicals[c])
+				}
+			}
+		}
+	}
+}
+
+// TestResolveSubjunctiveTense verifies the subjunctive tense resolution: the three
+// existing tenses pass through unchanged, the N3 normalization maps the two
+// indicative-only tenses to the nearest subjunctive tense (Preterite -> Imperfect,
+// Conditional -> Future), and AnyTense reaches all three subjunctive tenses and
+// never yields Preterite or Conditional.
+func TestResolveSubjunctiveTense(t *testing.T) {
+	r := rand.New(rand.NewPCG(11, 13))
+	for _, tt := range []Tense{Present, Imperfect, Future} {
+		if got := resolveSubjunctiveTense(r, tt); got != tt {
+			t.Errorf("resolveSubjunctiveTense(%s) = %s, want passthrough",
+				subjunctiveTenseName(tt), subjunctiveTenseName(got))
+		}
+	}
+	if got := resolveSubjunctiveTense(r, Preterite); got != Imperfect {
+		t.Errorf("resolveSubjunctiveTense(Preterite) = %s, want Imperfect (N3)", tenseName(got))
+	}
+	if got := resolveSubjunctiveTense(r, Conditional); got != Future {
+		t.Errorf("resolveSubjunctiveTense(Conditional) = %s, want Future (N3)", tenseName(got))
+	}
+	seen := map[Tense]bool{}
+	for i := 0; i < 20000; i++ {
+		got := resolveSubjunctiveTense(r, AnyTense)
+		if got == Preterite || got == Conditional {
+			t.Fatalf("AnyTense resolved to %s, which the subjunctive lacks", tenseName(got))
+		}
+		seen[got] = true
+	}
+	for _, tt := range []Tense{Present, Imperfect, Future} {
+		if !seen[tt] {
+			t.Errorf("AnyTense never resolved to %s", subjunctiveTenseName(tt))
+		}
+	}
+}
+
+// TestResolveImperativePerson verifies the imperative person resolution: the N2
+// normalization (First + Singular -> First + Plural, since there is no imperative
+// first singular), the inherited N1 normalization (Second + Plural -> Third
+// Plural), that verbP1s is never produced, and that AnyPerson/AnyNumber reaches
+// all four imperative slots.
+func TestResolveImperativePerson(t *testing.T) {
+	r := rand.New(rand.NewPCG(17, 19))
+
+	concrete := []struct {
+		p    Person
+		n    Number
+		want verbPerson
+	}{
+		{First, Singular, verbP1p}, // N2: no imperative 1s -> 1p
+		{Second, Singular, verbP2s},
+		{Third, Singular, verbP3s},
+		{First, Plural, verbP1p},
+		{Third, Plural, verbP3p},
+		{Second, Plural, verbP3p}, // N1: vós -> vocês (third plural)
+	}
+	for _, tc := range concrete {
+		if got := resolveImperativePerson(r, tc.p, tc.n); got != tc.want {
+			t.Errorf("resolveImperativePerson(%d,%d) = %d, want %d", tc.p, tc.n, got, tc.want)
+		}
+	}
+
+	// verbP1s must never be produced, and every imperative slot must be reachable.
+	seen := map[verbPerson]bool{}
+	for i := 0; i < 40000; i++ {
+		got := resolveImperativePerson(r, AnyPerson, AnyNumber)
+		if got == verbP1s {
+			t.Fatalf("resolveImperativePerson produced verbP1s, which the imperative lacks")
+		}
+		seen[got] = true
+	}
+	for _, vp := range imperativePersons {
+		if !seen[vp] {
+			t.Errorf("Any person/number never reached imperative slot %d", vp)
+		}
+	}
+}
+
+// TestSubjunctiveVerbFormConformance exercises the injectable-*rand.Rand assembler
+// over every conjugation, tense (including AnyTense and the two indicative-only
+// tenses that normalize under N3), person and number, asserting that each form is
+// orthographically conformant and starts with the supplied radical.
+func TestSubjunctiveVerbFormConformance(t *testing.T) {
+	r := rand.New(rand.NewPCG(0x5B, 0x5C))
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	tenses := []Tense{AnyTense, Present, Imperfect, Future, Preterite, Conditional}
+	persons := []Person{AnyPerson, First, Second, Third}
+	numbers := []Number{AnyNumber, Singular, Plural}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, tt := range tenses {
+			for _, p := range persons {
+				for _, n := range numbers {
+					for i := 0; i < 200; i++ {
+						w := subjunctiveVerbForm(r, radicals[c], c, tt, p, n)
+						assertVerbOrthographyConformant(t, w)
+						if !strings.HasPrefix(w, radicals[c]) {
+							t.Fatalf("%s form %q does not start with radical %q", c.label, w, radicals[c])
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// TestImperativeVerbFormConformance exercises the injectable-*rand.Rand imperative
+// assembler over every conjugation, polarity, person (including the First +
+// Singular request that normalizes under N2) and number, asserting that each form
+// is orthographically conformant and starts with the supplied radical.
+func TestImperativeVerbFormConformance(t *testing.T) {
+	r := rand.New(rand.NewPCG(0x1319, 0x2337))
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	persons := []Person{AnyPerson, First, Second, Third}
+	numbers := []Number{AnyNumber, Singular, Plural}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, pol := range []imperativePolarity{imperativeAff, imperativeNeg} {
+			for _, p := range persons {
+				for _, n := range numbers {
+					for i := 0; i < 200; i++ {
+						w := imperativeVerbForm(r, radicals[c], c, pol, p, n)
+						assertVerbOrthographyConformant(t, w)
+						if !strings.HasPrefix(w, radicals[c]) {
+							t.Fatalf("%s form %q does not start with radical %q", c.label, w, radicals[c])
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// TestSubjunctiveVerbFormReproducible verifies that the injectable-*rand.Rand
+// subjunctive assembler is deterministic: two sources with the same seed produce
+// identical sequences for the same arguments.
+func TestSubjunctiveVerbFormReproducible(t *testing.T) {
+	a := rand.New(rand.NewPCG(77, 77))
+	b := rand.New(rand.NewPCG(77, 77))
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	tenses := []Tense{AnyTense, Present, Imperfect, Future, Preterite, Conditional}
+	persons := []Person{AnyPerson, First, Second, Third}
+	numbers := []Number{AnyNumber, Singular, Plural}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, tt := range tenses {
+			for _, p := range persons {
+				for _, n := range numbers {
+					for i := 0; i < 50; i++ {
+						x := subjunctiveVerbForm(a, radicals[c], c, tt, p, n)
+						y := subjunctiveVerbForm(b, radicals[c], c, tt, p, n)
+						if x != y {
+							t.Fatalf("subjunctiveVerbForm diverged (%s, %s, p %d, n %d) at %d: %q != %q",
+								c.label, subjunctiveTenseName(tt), p, n, i, x, y)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// TestImperativeVerbFormReproducible verifies that the injectable-*rand.Rand
+// imperative assembler is deterministic: two sources with the same seed produce
+// identical sequences for the same arguments.
+func TestImperativeVerbFormReproducible(t *testing.T) {
+	a := rand.New(rand.NewPCG(88, 88))
+	b := rand.New(rand.NewPCG(88, 88))
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	persons := []Person{AnyPerson, First, Second, Third}
+	numbers := []Number{AnyNumber, Singular, Plural}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, pol := range []imperativePolarity{imperativeAff, imperativeNeg} {
+			for _, p := range persons {
+				for _, n := range numbers {
+					for i := 0; i < 50; i++ {
+						x := imperativeVerbForm(a, radicals[c], c, pol, p, n)
+						y := imperativeVerbForm(b, radicals[c], c, pol, p, n)
+						if x != y {
+							t.Fatalf("imperativeVerbForm diverged (%s, %s, p %d, n %d) at %d: %q != %q",
+								c.label, polarityName(pol), p, n, i, x, y)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// BenchmarkConjugateSubjunctive measures the paradigm-exact subjunctive assembler
+// and its allocation budget: a subjunctive form must assemble in exactly one
+// string allocation. The accented proparoxytone imperfect first plural is the
+// worst case (a multi-byte accent in the desinence).
+func BenchmarkConjugateSubjunctive(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = conjugateSubjunctive("com", &conjEr, Imperfect, verbP1p)
+	}
+}
+
+// BenchmarkSubjunctiveVerbForm measures the injectable-*rand.Rand subjunctive
+// assembler, including the tense and person/number resolution, for a fully
+// unspecified request.
+func BenchmarkSubjunctiveVerbForm(b *testing.B) {
+	r := rand.New(rand.NewPCG(1, 1))
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = subjunctiveVerbForm(r, "fal", &conjAr, AnyTense, AnyPerson, AnyNumber)
+	}
+}
+
+// BenchmarkConjugateImperative measures the paradigm-exact imperative assembler
+// and its allocation budget: an imperative form must assemble in exactly one
+// string allocation.
+func BenchmarkConjugateImperative(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = conjugateImperative("fal", &conjAr, imperativeNeg, verbP2s)
+	}
+}
+
+// BenchmarkImperativeVerbForm measures the injectable-*rand.Rand imperative
+// assembler, including the person/number resolution, for a fully unspecified
+// request.
+func BenchmarkImperativeVerbForm(b *testing.B) {
+	r := rand.New(rand.NewPCG(1, 1))
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = imperativeVerbForm(r, "fal", &conjAr, imperativeAff, AnyPerson, AnyNumber)
+	}
+}
