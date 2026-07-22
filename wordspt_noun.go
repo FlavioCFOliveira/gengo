@@ -118,6 +118,14 @@ type nounEnding struct {
 	// -ções (the productive Latin -tionem outcome), rather than a weighted choice
 	// among the -ão plural forms used for arbitrary words.
 	fixedCaoPlural bool
+	// onsetInvOverride optionally replaces, when sampleOnset is true, the
+	// front/back onset inventory that syllables[0]'s drawn onset is taken from. It
+	// is nil for every noun and adjective ending (they keep the default front/back
+	// inventory selected by frontOnset), and is set only by the verb radical ending
+	// (wordspt_verb_public.go), which needs an onset inventory that excludes the
+	// frontness-sensitive onsets so a stripped radical stays orthographically valid
+	// before any desinence vowel.
+	onsetInvOverride *weightedInventory
 }
 
 // oxytone reports whether the ending stresses the last syllable of the word,
@@ -380,6 +388,9 @@ func sampleNounStem(r *rand.Rand, buf []syllable, leadingCount int, end *nounEnd
 		onsetInv := &nounOnsetBeforeBackInv
 		if end.frontOnset {
 			onsetInv = &nounOnsetBeforeFrontInv
+		}
+		if end.onsetInvOverride != nil {
+			onsetInv = end.onsetInvOverride
 		}
 		firstOnset = sampleForm(r, onsetInv)
 		buf[leadingCount].onset = firstOnset
