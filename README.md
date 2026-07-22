@@ -69,6 +69,7 @@ func main() {
 - [Date & Time](#date--time)
 - [Booleans](#booleans)
 - [Words & Text](#words--text)
+- [European Portuguese Words (pt-PT)](#european-portuguese-words-pt-pt)
 - [Reproducible Output](#reproducible-output)
 - [Character Sets](#character-sets)
 - [Safety & Limits](#safety--limits)
@@ -302,6 +303,89 @@ words := gengo.Words(5)
 // ~26% small words (1–4 chars)
 // ~52% medium words (5–8 chars)
 // ~22% big words (9–30 chars)
+```
+
+---
+
+## European Portuguese Words (pt-PT)
+
+Beyond the ASCII words above, gengo generates European-Portuguese (pt-PT) words with full grammatical inflection — handy for seeding realistic Portuguese text, testing search and collation, or filling forms.
+
+Words fall into two families:
+
+- **Open classes** (noun, adjective, verb, adverb) are **generated pseudo-words**: morphologically well-formed, phonotactically valid, and correctly accented, but not guaranteed to be real dictionary entries.
+- **Closed classes** (article, pronoun, numeral, preposition, conjunction, interjection) are **real, curated words** drawn uniformly from hand-checked lists.
+
+Every result is always **lowercase** and valid UTF-8. No function ever returns an error or panics.
+
+### Inflection Options
+
+Inflection is controlled by six enums. Each has an `Any…` zero value that means "choose a valid value at random"; the length category adds its own `AnyLengthWord` zero value that means "any length".
+
+| Enum | Zero value (random) | Concrete values |
+|------|---------------------|-----------------|
+| `Gender` | `AnyGender` | `Masculine`, `Feminine` |
+| `Number` | `AnyNumber` | `Singular`, `Plural` |
+| `Degree` | `AnyDegree` | `Positive`, `Superlative` (synthetic absolute superlative, -íssimo) |
+| `Mood` | `AnyMood` | `Indicative`, `Subjunctive`, `ImperativeAffirmative`, `ImperativeNegative`, `Infinitive`, `Gerund`, `Participle` |
+| `Tense` | `AnyTense` | `Present`, `Imperfect`, `Preterite`, `Future`, `Conditional` |
+| `Person` | `AnyPerson` | `First`, `Second`, `Third` |
+| `LengthTypeWords` | `AnyLengthWord` | `SmallLengthWord`, `MediumLengthWords`, `BigLengthWords` |
+
+A grammatically impossible request never panics: it normalizes to the nearest valid form (for example, a second-person-plural verb becomes third-person plural, matching current pt-PT usage), and a length category too small for the chosen word is widened **upward**, never downward.
+
+### Open Classes (generated pseudo-words)
+
+```go
+// Nouns — random gender, number, and length, or fully specified
+n := gengo.NounPT()
+n = gengo.NounPTOf(gengo.Feminine, gengo.Plural, gengo.MediumLengthWords)
+
+// Adjectives — including the synthetic superlative (-íssimo)
+a := gengo.AdjectivePT()
+a = gengo.AdjectivePTOf(gengo.Masculine, gengo.Singular, gengo.Superlative, gengo.AnyLengthWord)
+
+// Verbs — any mood, tense, person, and number
+v := gengo.VerbPT()
+v = gengo.VerbPTOf(gengo.Indicative, gengo.Present, gengo.First, gengo.Singular, gengo.AnyLengthWord)
+
+// Adverbs — productive -mente forms (invariable)
+adv := gengo.AdverbPT()
+adv = gengo.AdverbPTByLengthType(gengo.MediumLengthWords)
+```
+
+### Closed Classes (real curated words)
+
+Closed-class selectors return genuine pt-PT words in European spelling. They take **no length parameter**, because the length concept does not apply.
+
+```go
+art  := gengo.ArticlePT()      // e.g. "a", "do", "pelas"
+pron := gengo.PronounPT()      // e.g. "eu", "aquilo", "cujo"
+num  := gengo.NumeralPT()      // e.g. "três", "primeiro", "meio"
+prep := gengo.PrepositionPT()  // e.g. "de", "para", "perante"
+conj := gengo.ConjunctionPT()  // e.g. "e", "mas", "porque"
+intj := gengo.InterjectionPT() // e.g. "olá", "caramba", "psiu"
+```
+
+### Any Word
+
+`WordPT` returns a random word of a random class, following a natural distribution across word classes. `WordsPT` returns a slice of them.
+
+```go
+w := gengo.WordPT()                                // any class, any length
+w = gengo.WordPTByLengthType(gengo.BigLengthWords) // length applies to open classes only
+list := gengo.WordsPT(5)                           // slice of 5 random pt-PT words
+```
+
+### Reproducible pt-PT Output
+
+Every function above is also a `*Generator` method, so a seeded generator produces a reproducible sequence — ideal for golden tests:
+
+```go
+g := gengo.New(7)
+fmt.Println(g.NounPTOf(gengo.Feminine, gengo.Plural, gengo.MediumLengthWords))
+fmt.Println(g.VerbPTOf(gengo.Indicative, gengo.Present, gengo.First, gengo.Singular, gengo.AnyLengthWord))
+// Same seed → same words, every run.
 ```
 
 ---

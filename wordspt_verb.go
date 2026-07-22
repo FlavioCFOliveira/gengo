@@ -71,10 +71,12 @@ import (
 // ---------------------------------------------------------------------------
 
 // Mood is the grammatical mood option of a generated pt-PT verb. Its zero value,
-// [AnyMood], means "choose a valid mood at random". The non-finite moods
-// ([Infinitive], [Gerund], [Participle]) take no tense; the finite moods
-// ([Indicative], [Subjunctive], [ImperativeAffirmative], [ImperativeNegative]) are
-// built by later tasks.
+// [AnyMood], means "choose a valid mood at random". The finite moods
+// ([Indicative], [Subjunctive], [ImperativeAffirmative], [ImperativeNegative])
+// inflect for person and number; the indicative and subjunctive additionally
+// inflect for [Tense]. The non-finite moods ([Infinitive], [Gerund],
+// [Participle]) take no tense; of these, only the personal infinitive inflects
+// for person and number.
 type Mood uint8
 
 const (

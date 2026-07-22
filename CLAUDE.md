@@ -199,6 +199,24 @@ The package follows a flat file structure where each file handles a specific dat
 - **bool.go** - Boolean generation via `Bool()`
 - **words.go** - Word generation with length categories (Small/Medium/Big) via `LengthTypeWords` enum
 
+#### WordsPT (European Portuguese words)
+
+WordsPT generates European-Portuguese (pt-PT) words: morphologically inflected pseudo-words for the open classes (noun, adjective, verb, adverb) and real curated words for the closed classes (article, pronoun, numeral, preposition, conjunction, interjection). It is split across the following files:
+
+- **wordspt.go** - Phonotactic and accentuation conformance validators (the test oracle for the feature)
+- **wordspt_data.go** - Static linguistic data: phoneme/grapheme inventories, weights, and positional constraints
+- **wordspt_stem.go** - Random syllabic stem sampler
+- **wordspt_accent.go** - Graphic accentuation (acute, circumflex, tilde) of a generated stem
+- **wordspt_inflection.go** - Public flexion enums (`Gender`, `Number`, `Degree`) and the shared Any-resolution and length machinery
+- **wordspt_plural.go** - Portuguese plural-formation engine
+- **wordspt_noun.go** - Noun generation (`NounPT`, `NounPTOf`)
+- **wordspt_adjective.go** - Adjective generation, including the synthetic superlative (`AdjectivePT`, `AdjectivePTOf`)
+- **wordspt_adverb.go** - Productive -mente adverb generation (`AdverbPT`, `AdverbPTByLengthType`)
+- **wordspt_verb.go** - Verb conjugation engine and the `Mood`, `Tense`, `Person` enums
+- **wordspt_verb_public.go** - Public verb API (`VerbPT`, `VerbPTOf`)
+- **wordspt_closed.go** - Closed-class selectors (`ArticlePT`, `PronounPT`, `NumeralPT`, `PrepositionPT`, `ConjunctionPT`, `InterjectionPT`)
+- **wordspt_word.go** - Top-level orchestration (`WordPT`, `WordPTByLengthType`, `WordsPT`)
+
 ### Key Patterns
 
 1. **Range Handling**: Functions accepting min/max parameters swap values if `min > max` to ensure valid ranges
