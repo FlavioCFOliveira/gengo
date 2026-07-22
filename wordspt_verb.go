@@ -10,9 +10,10 @@ import (
 // flexion enums (Mood, Tense, Person) shared by every verb slot, and the internal,
 // reusable regular-verb machinery for the NON-FINITE forms of all three
 // conjugations — the impersonal infinitive, the inflected personal infinitive, the
-// gerund and the participle. Later tasks build the finite indicative, subjunctive
-// and imperative forms, and the public VerbPT/VerbPTOf API, on top of this
-// machinery; only the enums are public here.
+// gerund and the participle — and for the finite INDICATIVE forms (present,
+// imperfect, preterite, future and conditional). Later tasks build the finite
+// subjunctive and imperative forms, and the public VerbPT/VerbPTOf API, on top of
+// this machinery; only the enums are public here.
 //
 // Every generated verb is REGULAR (pt-PT pseudo-verbs are always regular), so the
 // regular paradigm of the chosen conjugation applies uniformly and the forms are
@@ -505,4 +506,188 @@ func nonFiniteVerbCore(r *rand.Rand, buf []syllable, form nonFiniteForm, p Perso
 	}
 
 	return assembleNonFiniteVerb(stem, suffix)
+}
+
+// ---------------------------------------------------------------------------
+// Indicative-mood desinence data (Cunha & Cintra conjugation tables)
+// ---------------------------------------------------------------------------
+
+// The finite INDICATIVE forms of a regular verb are assembled exactly like the
+// non-finite forms — from a BARE radical plus a fixed desinence — but the
+// desinence now carries the tense/person marking AND any graphic accent the form
+// needs. Every indicative graphic accent falls on the theme vowel or on a
+// person-ending vowel INSIDE the desinence (the preterite falámos, the imperfect
+// falávamos/comíamos/partíamos, the future falarás/falará/falarão, the
+// conditional falaríamos/comeríamos/partiríamos), never on the radical, so the
+// accent is BAKED INTO the desinence string and the radical is still written
+// bare. Assembly therefore never invokes the Layer 3 accentuation
+// (wordspt_accent.go); the desinences are literal, authoritative strings and the
+// assembled form is correct by construction.
+//
+// The pt-PT distinction between the present first person plural (falamos, no
+// accent) and the preterite first person plural (falámos, acute on the theme
+// vowel) is encoded directly in the two first-conjugation desinences: the present
+// -amos versus the preterite -ámos. Both are produced as shown, in line with
+// pt-PT usage (specification: WordsPT Open Classes, verb paradigm).
+//
+// Persons follow the same five-slot paradigm as the non-finite forms (1s, 2s, 3s,
+// 1p, 3p; no vós), so each tense is a [5]string indexed by verbPerson.
+//
+// Note on the present tense: unlike the imperfect, preterite, future and
+// conditional, the present indicative stresses the RADICAL in four of its five
+// slots (falo, falas, fala, falam), so its desinences are unaccented and a
+// radical whose stressed vowel would need a graphic accent is the concern of the
+// (later) radical-sampling generator, not of this desinence table. The model
+// radicals fal/com/part need none.
+//
+// Source: Cunha, C. & Cintra, L., "Nova Gramática do Português Contemporâneo"
+// (the regular indicative conjugation tables); Acordo Ortográfico da Língua
+// Portuguesa (graphic-accent spelling).
+
+// indicativeParadigm holds the five indicative desinence tables of one regular
+// conjugation. Each field is the desinence set of one tense: a [5]string indexed
+// by verbPerson (1s, 2s, 3s, 1p, 3p). A desinence is appended directly to the
+// bare radical; it embeds the theme vowel (where the tense keeps one) and any
+// graphic accent, so it is a complete, lowercase, valid-UTF-8 suffix.
+type indicativeParadigm struct {
+	present     [5]string
+	imperfect   [5]string
+	preterite   [5]string
+	future      [5]string
+	conditional [5]string
+}
+
+// The indicative desinence tables of the three regular conjugations, model verbs
+// falar (-ar), comer (-er) and partir (-ir). Read against a model radical
+// (fal/com/part) each entry reproduces the textbook form exactly; the graphic
+// accents (á, í, and the nasal ã of the -ão third-plural future) are part of the
+// desinence string.
+var (
+	// indicativeAr is the first conjugation (-ar). It keeps the falámos (preterite
+	// 1p, -ámos) versus falamos (present 1p, -amos) acute distinction.
+	indicativeAr = indicativeParadigm{
+		present:     [5]string{verbP1s: "o", verbP2s: "as", verbP3s: "a", verbP1p: "amos", verbP3p: "am"},
+		imperfect:   [5]string{verbP1s: "ava", verbP2s: "avas", verbP3s: "ava", verbP1p: "ávamos", verbP3p: "avam"},
+		preterite:   [5]string{verbP1s: "ei", verbP2s: "aste", verbP3s: "ou", verbP1p: "ámos", verbP3p: "aram"},
+		future:      [5]string{verbP1s: "arei", verbP2s: "arás", verbP3s: "ará", verbP1p: "aremos", verbP3p: "arão"},
+		conditional: [5]string{verbP1s: "aria", verbP2s: "arias", verbP3s: "aria", verbP1p: "aríamos", verbP3p: "ariam"},
+	}
+	// indicativeEr is the second conjugation (-er).
+	indicativeEr = indicativeParadigm{
+		present:     [5]string{verbP1s: "o", verbP2s: "es", verbP3s: "e", verbP1p: "emos", verbP3p: "em"},
+		imperfect:   [5]string{verbP1s: "ia", verbP2s: "ias", verbP3s: "ia", verbP1p: "íamos", verbP3p: "iam"},
+		preterite:   [5]string{verbP1s: "i", verbP2s: "este", verbP3s: "eu", verbP1p: "emos", verbP3p: "eram"},
+		future:      [5]string{verbP1s: "erei", verbP2s: "erás", verbP3s: "erá", verbP1p: "eremos", verbP3p: "erão"},
+		conditional: [5]string{verbP1s: "eria", verbP2s: "erias", verbP3s: "eria", verbP1p: "eríamos", verbP3p: "eriam"},
+	}
+	// indicativeIr is the third conjugation (-ir).
+	indicativeIr = indicativeParadigm{
+		present:     [5]string{verbP1s: "o", verbP2s: "es", verbP3s: "e", verbP1p: "imos", verbP3p: "em"},
+		imperfect:   [5]string{verbP1s: "ia", verbP2s: "ias", verbP3s: "ia", verbP1p: "íamos", verbP3p: "iam"},
+		preterite:   [5]string{verbP1s: "i", verbP2s: "iste", verbP3s: "iu", verbP1p: "imos", verbP3p: "iram"},
+		future:      [5]string{verbP1s: "irei", verbP2s: "irás", verbP3s: "irá", verbP1p: "iremos", verbP3p: "irão"},
+		conditional: [5]string{verbP1s: "iria", verbP2s: "irias", verbP3s: "iria", verbP1p: "iríamos", verbP3p: "iriam"},
+	}
+)
+
+// indicativeParadigmFor returns the indicative desinence tables of conjugation c,
+// selected by its theme vowel (a, e or i), mirroring themeEndingFor. a is the
+// default.
+func indicativeParadigmFor(c *verbConjugation) *indicativeParadigm {
+	switch c.themeVowel {
+	case "e":
+		return &indicativeEr
+	case "i":
+		return &indicativeIr
+	default: // "a"
+		return &indicativeAr
+	}
+}
+
+// desinences returns the [5]string desinence table of tense t within the
+// paradigm. AnyTense (and any undefined value) falls back to the present; a caller
+// that must honor an Any request resolves it first with resolveIndicativeTense.
+func (ip *indicativeParadigm) desinences(t Tense) *[5]string {
+	switch t {
+	case Imperfect:
+		return &ip.imperfect
+	case Preterite:
+		return &ip.preterite
+	case Future:
+		return &ip.future
+	case Conditional:
+		return &ip.conditional
+	default: // Present
+		return &ip.present
+	}
+}
+
+// indicativeSuffix returns the desinence appended to the bare radical for
+// conjugation c, tense t and person p. The returned string is a package-level
+// table entry (no allocation): the theme vowel and any graphic accent are already
+// part of it.
+func indicativeSuffix(c *verbConjugation, t Tense, p verbPerson) string {
+	return indicativeParadigmFor(c).desinences(t)[p]
+}
+
+// conjugateIndicative assembles a finite indicative verb form from a bare RADICAL
+// string in exactly one allocation: radical + desinence. It is the paradigm-exact
+// assembler for the indicative mood — given the model radical "fal", "com" or
+// "part", the conjugation, a concrete tense and a concrete person it produces the
+// textbook form (falámos, comíamos, partirão) — and is what the unit tests verify
+// against the authoritative tables. It parallels conjugateNonFinite and shares the
+// same single-allocation, bare-radical discipline; because every desinence is
+// lowercase, valid UTF-8 and carries its own graphic accent, the result is
+// lowercase, valid UTF-8 and correctly accented, with no call into the Layer 3
+// accentuation.
+func conjugateIndicative(radical string, c *verbConjugation, t Tense, p verbPerson) string {
+	suffix := indicativeSuffix(c, t, p)
+
+	var b strings.Builder
+	b.Grow(len(radical) + len(suffix))
+	b.WriteString(radical)
+	b.WriteString(suffix)
+	return b.String()
+}
+
+// resolveIndicativeTense resolves t to a concrete indicative tense, drawing from
+// the injectable source r for an unspecified request. All five tenses exist in
+// the indicative (specification Normalization rule N3), so AnyTense (and any
+// undefined value) becomes one of Present, Imperfect, Preterite, Future or
+// Conditional with equal probability; a concrete tense is returned unchanged. The
+// draw is a single bounded selection, without allocation or rejection.
+func resolveIndicativeTense(r *rand.Rand, t Tense) Tense {
+	switch t {
+	case Present, Imperfect, Preterite, Future, Conditional:
+		return t
+	default:
+		switch r.Uint32N(5) {
+		case 0:
+			return Present
+		case 1:
+			return Imperfect
+		case 2:
+			return Preterite
+		case 3:
+			return Future
+		default:
+			return Conditional
+		}
+	}
+}
+
+// indicativeVerbForm assembles a finite indicative verb form from a bare radical,
+// resolving an Any tense, person and number from the injectable source r before
+// appending the desinence. It is the injectable-*rand.Rand assembler layered over
+// conjugateIndicative: resolveIndicativeTense picks the tense, resolveVerbPerson
+// picks the person/number slot (applying the N1 second-person-plural
+// normalization), and conjugateIndicative produces the form in a single
+// allocation. The radical is supplied by the caller — the radical-sampling and
+// length machinery of the public verb generator is a later task — so this function
+// samples nothing beyond the option resolution and stays reproducible under a
+// seeded source.
+func indicativeVerbForm(r *rand.Rand, radical string, c *verbConjugation, t Tense, p Person, n Number) string {
+	rt := resolveIndicativeTense(r, t)
+	vp := resolveVerbPerson(r, p, n)
+	return conjugateIndicative(radical, c, rt, vp)
 }

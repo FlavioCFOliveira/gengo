@@ -410,3 +410,252 @@ func BenchmarkNonFiniteVerbParticiple(b *testing.B) {
 		_ = nonFiniteVerbCore(r, buf[:0], formParticiple, AnyPerson, AnyNumber, AnyLengthWord)
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Indicative mood (task #29)
+// ---------------------------------------------------------------------------
+
+// tenseName returns a readable label for an indicative Tense, for test failure
+// messages only.
+func tenseName(t Tense) string {
+	switch t {
+	case Present:
+		return "present"
+	case Imperfect:
+		return "imperfect"
+	case Preterite:
+		return "preterite"
+	case Future:
+		return "future"
+	case Conditional:
+		return "conditional"
+	default:
+		return "any"
+	}
+}
+
+// TestIndicativeExactForms is the core acceptance test for the indicative mood.
+// For each conjugation, built from its model radical (fal/com/part), every
+// indicative cell — 5 tenses x 5 persons per conjugation, 75 in total — must equal
+// the textbook value exactly. This proves every desinence, and every baked-in
+// graphic accent, against the Cunha & Cintra paradigm, including the pt-PT
+// falámos (preterite 1p) versus falamos (present 1p) acute distinction, which is
+// also asserted explicitly below.
+func TestIndicativeExactForms(t *testing.T) {
+	type tenseRow struct {
+		tense Tense
+		forms [5]string // indexed 1s, 2s, 3s, 1p, 3p
+	}
+	cases := []struct {
+		conj    *verbConjugation
+		radical string
+		rows    []tenseRow
+	}{
+		{
+			conj: &conjAr, radical: "fal",
+			rows: []tenseRow{
+				{Present, [5]string{"falo", "falas", "fala", "falamos", "falam"}},
+				{Imperfect, [5]string{"falava", "falavas", "falava", "falávamos", "falavam"}},
+				{Preterite, [5]string{"falei", "falaste", "falou", "falámos", "falaram"}},
+				{Future, [5]string{"falarei", "falarás", "falará", "falaremos", "falarão"}},
+				{Conditional, [5]string{"falaria", "falarias", "falaria", "falaríamos", "falariam"}},
+			},
+		},
+		{
+			conj: &conjEr, radical: "com",
+			rows: []tenseRow{
+				{Present, [5]string{"como", "comes", "come", "comemos", "comem"}},
+				{Imperfect, [5]string{"comia", "comias", "comia", "comíamos", "comiam"}},
+				{Preterite, [5]string{"comi", "comeste", "comeu", "comemos", "comeram"}},
+				{Future, [5]string{"comerei", "comerás", "comerá", "comeremos", "comerão"}},
+				{Conditional, [5]string{"comeria", "comerias", "comeria", "comeríamos", "comeriam"}},
+			},
+		},
+		{
+			conj: &conjIr, radical: "part",
+			rows: []tenseRow{
+				{Present, [5]string{"parto", "partes", "parte", "partimos", "partem"}},
+				{Imperfect, [5]string{"partia", "partias", "partia", "partíamos", "partiam"}},
+				{Preterite, [5]string{"parti", "partiste", "partiu", "partimos", "partiram"}},
+				{Future, [5]string{"partirei", "partirás", "partirá", "partiremos", "partirão"}},
+				{Conditional, [5]string{"partiria", "partirias", "partiria", "partiríamos", "partiriam"}},
+			},
+		},
+	}
+
+	persons := [5]verbPerson{verbP1s, verbP2s, verbP3s, verbP1p, verbP3p}
+	asserted := 0
+	for _, tc := range cases {
+		for _, row := range tc.rows {
+			for i, vp := range persons {
+				got := conjugateIndicative(tc.radical, tc.conj, row.tense, vp)
+				want := row.forms[i]
+				if got != want {
+					t.Errorf("%s %s person %d = %q, want %q",
+						tc.conj.label, tenseName(row.tense), vp, got, want)
+				}
+				asserted++
+			}
+		}
+	}
+	if asserted != 75 {
+		t.Fatalf("asserted %d indicative cells, want 75 (3 conjugations x 5 tenses x 5 persons)", asserted)
+	}
+}
+
+// TestIndicativePreteriteVsPresentFirstPlural pins the pt-PT distinction between
+// the first-conjugation present first person plural falamos (no accent) and the
+// preterite first person plural falámos (acute on the theme vowel): they differ
+// only by that accent, and both must be produced as shown.
+func TestIndicativePreteriteVsPresentFirstPlural(t *testing.T) {
+	present := conjugateIndicative("fal", &conjAr, Present, verbP1p)
+	preterite := conjugateIndicative("fal", &conjAr, Preterite, verbP1p)
+	if present != "falamos" {
+		t.Errorf("present 1p = %q, want %q", present, "falamos")
+	}
+	if preterite != "falámos" {
+		t.Errorf("preterite 1p = %q, want %q", preterite, "falámos")
+	}
+	if present == preterite {
+		t.Errorf("present and preterite 1p must differ (falamos vs falámos), both = %q", present)
+	}
+}
+
+// TestConjugateIndicativeSingleAllocation asserts that the paradigm-exact
+// indicative assembler performs exactly one allocation (the returned string) for
+// every tense and person.
+func TestConjugateIndicativeSingleAllocation(t *testing.T) {
+	tenses := []Tense{Present, Imperfect, Preterite, Future, Conditional}
+	persons := []verbPerson{verbP1s, verbP2s, verbP3s, verbP1p, verbP3p}
+	for _, tt := range tenses {
+		for _, vp := range persons {
+			allocs := testing.AllocsPerRun(1000, func() {
+				_ = conjugateIndicative("part", &conjIr, tt, vp)
+			})
+			if allocs != 1 {
+				t.Errorf("conjugateIndicative(%s, person %d) allocated %.0f times, want 1",
+					tenseName(tt), vp, allocs)
+			}
+		}
+	}
+}
+
+// TestIndicativeOrthographicConformance asserts that every indicative cell of the
+// three model conjugations is an orthographically well-formed, lowercase,
+// valid-UTF-8 pt-PT word (the Sprint 7 string oracles). This certifies the
+// baked-in accents: only the acute (á, í) and the nasal tilde (ã of -ão) appear,
+// and no cedilla, diaeresis or grave is ever produced.
+func TestIndicativeOrthographicConformance(t *testing.T) {
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	tenses := []Tense{Present, Imperfect, Preterite, Future, Conditional}
+	persons := []verbPerson{verbP1s, verbP2s, verbP3s, verbP1p, verbP3p}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, tt := range tenses {
+			for _, vp := range persons {
+				w := conjugateIndicative(radicals[c], c, tt, vp)
+				assertVerbOrthographyConformant(t, w)
+				if !strings.HasPrefix(w, radicals[c]) {
+					t.Errorf("%s %s person %d = %q does not start with radical %q",
+						c.label, tenseName(tt), vp, w, radicals[c])
+				}
+			}
+		}
+	}
+}
+
+// TestResolveIndicativeTense verifies that a concrete tense passes through
+// unchanged and that AnyTense reaches all five indicative tenses.
+func TestResolveIndicativeTense(t *testing.T) {
+	r := rand.New(rand.NewPCG(5, 7))
+	for _, tt := range []Tense{Present, Imperfect, Preterite, Future, Conditional} {
+		if got := resolveIndicativeTense(r, tt); got != tt {
+			t.Errorf("resolveIndicativeTense(%s) = %s, want passthrough", tenseName(tt), tenseName(got))
+		}
+	}
+	seen := map[Tense]bool{}
+	for i := 0; i < 20000; i++ {
+		seen[resolveIndicativeTense(r, AnyTense)] = true
+	}
+	for _, tt := range []Tense{Present, Imperfect, Preterite, Future, Conditional} {
+		if !seen[tt] {
+			t.Errorf("AnyTense never resolved to %s", tenseName(tt))
+		}
+	}
+}
+
+// TestIndicativeVerbFormConformance exercises the injectable-*rand.Rand assembler
+// over every conjugation, tense (including AnyTense), person and number, asserting
+// that each form is orthographically conformant and starts with the supplied
+// radical. It validates the option-resolution path (tense, person/number with the
+// N1 normalization) on top of the exact desinences.
+func TestIndicativeVerbFormConformance(t *testing.T) {
+	r := rand.New(rand.NewPCG(0x1D, 0x1CA))
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	tenses := []Tense{AnyTense, Present, Imperfect, Preterite, Future, Conditional}
+	persons := []Person{AnyPerson, First, Second, Third}
+	numbers := []Number{AnyNumber, Singular, Plural}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, tt := range tenses {
+			for _, p := range persons {
+				for _, n := range numbers {
+					for i := 0; i < 200; i++ {
+						w := indicativeVerbForm(r, radicals[c], c, tt, p, n)
+						assertVerbOrthographyConformant(t, w)
+						if !strings.HasPrefix(w, radicals[c]) {
+							t.Fatalf("%s form %q does not start with radical %q", c.label, w, radicals[c])
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// TestIndicativeVerbFormReproducible verifies that the injectable-*rand.Rand
+// assembler is deterministic: two sources with the same seed produce identical
+// indicative sequences for the same arguments.
+func TestIndicativeVerbFormReproducible(t *testing.T) {
+	a := rand.New(rand.NewPCG(99, 99))
+	b := rand.New(rand.NewPCG(99, 99))
+	radicals := map[*verbConjugation]string{&conjAr: "fal", &conjEr: "com", &conjIr: "part"}
+	tenses := []Tense{AnyTense, Present, Imperfect, Preterite, Future, Conditional}
+	persons := []Person{AnyPerson, First, Second, Third}
+	numbers := []Number{AnyNumber, Singular, Plural}
+	for _, c := range []*verbConjugation{&conjAr, &conjEr, &conjIr} {
+		for _, tt := range tenses {
+			for _, p := range persons {
+				for _, n := range numbers {
+					for i := 0; i < 50; i++ {
+						x := indicativeVerbForm(a, radicals[c], c, tt, p, n)
+						y := indicativeVerbForm(b, radicals[c], c, tt, p, n)
+						if x != y {
+							t.Fatalf("indicativeVerbForm diverged (%s, %s, p %d, n %d) at %d: %q != %q",
+								c.label, tenseName(tt), p, n, i, x, y)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// BenchmarkConjugateIndicative measures the paradigm-exact indicative assembler
+// and its allocation budget: an indicative form must assemble in exactly one
+// string allocation.
+func BenchmarkConjugateIndicative(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = conjugateIndicative("fal", &conjAr, Preterite, verbP1p)
+	}
+}
+
+// BenchmarkIndicativeVerbForm measures the injectable-*rand.Rand assembler,
+// including the tense and person/number resolution, for a fully unspecified
+// request.
+func BenchmarkIndicativeVerbForm(b *testing.B) {
+	r := rand.New(rand.NewPCG(1, 1))
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = indicativeVerbForm(r, "fal", &conjAr, AnyTense, AnyPerson, AnyNumber)
+	}
+}
