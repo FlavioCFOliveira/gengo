@@ -66,6 +66,62 @@ var wantConjunctionsPT = map[string]struct{}{
 	"conforme": {}, "consoante": {}, "segundo": {}, "salvo": {},
 }
 
+// wantPronounsPT is the authoritative reference set of pt-PT pronouns across every
+// subtype, written independently of pronounsPT so that any drift on either side
+// (a typo, a missing form, a wrong diacritic, a lost vós form) is caught. It is
+// duplicate-free: pronouns belonging to more than one subtype appear once.
+var wantPronounsPT = map[string]struct{}{
+	// Personal — subject.
+	"eu": {}, "tu": {}, "ele": {}, "ela": {}, "nós": {}, "vós": {}, "eles": {}, "elas": {}, //nolint:misspell // real pt-PT pronouns; US misspell mistakes the plural form for the English "eels"
+	// Personal — oblique atonic.
+	"me": {}, "te": {}, "se": {}, "o": {}, "a": {}, "lhe": {}, "nos": {}, "vos": {}, "os": {}, "as": {}, "lhes": {},
+	// Personal — oblique tonic.
+	"mim": {}, "ti": {}, "si": {}, "comigo": {}, "contigo": {}, "consigo": {}, "connosco": {}, "convosco": {},
+	// Possessive.
+	"meu": {}, "minha": {}, "meus": {}, "minhas": {},
+	"teu": {}, "tua": {}, "teus": {}, "tuas": {},
+	"seu": {}, "sua": {}, "seus": {}, "suas": {},
+	"nosso": {}, "nossa": {}, "nossos": {}, "nossas": {},
+	"vosso": {}, "vossa": {}, "vossos": {}, "vossas": {},
+	// Demonstrative.
+	"este": {}, "esta": {}, "estes": {}, "estas": {}, "isto": {},
+	"esse": {}, "essa": {}, "esses": {}, "essas": {}, "isso": {},
+	"aquele": {}, "aquela": {}, "aqueles": {}, "aquelas": {}, "aquilo": {},
+	"mesmo": {}, "mesma": {}, "mesmos": {}, "mesmas": {},
+	"próprio": {}, "própria": {}, "próprios": {}, "próprias": {},
+	"tal": {}, "tais": {},
+	"semelhante": {}, "semelhantes": {},
+	// Indefinite.
+	"algum": {}, "alguma": {}, "alguns": {}, "algumas": {},
+	"nenhum": {}, "nenhuma": {}, "nenhuns": {}, "nenhumas": {},
+	"todo": {}, "toda": {}, "todos": {}, "todas": {},
+	"outro": {}, "outra": {}, "outros": {}, "outras": {},
+	"muito": {}, "muita": {}, "muitos": {}, "muitas": {},
+	"pouco": {}, "pouca": {}, "poucos": {}, "poucas": {},
+	"tanto": {}, "tanta": {}, "tantos": {}, "tantas": {},
+	"quanto": {}, "quanta": {}, "quantos": {}, "quantas": {},
+	"vário": {}, "vária": {}, "vários": {}, "várias": {},
+	"certo": {}, "certa": {}, "certos": {}, "certas": {},
+	"qualquer": {}, "quaisquer": {},
+	"alguém": {}, "ninguém": {}, "tudo": {}, "nada": {}, "algo": {}, "cada": {}, "outrem": {},
+	// Relative.
+	"que": {}, "quem": {}, "qual": {}, "quais": {},
+	"cujo": {}, "cuja": {}, "cujos": {}, "cujas": {},
+	// Interrogative: every interrogative pronoun is also relative or indefinite
+	// (quem/que/qual/quais and the quanto series), so no member is unique here.
+}
+
+// wantInterjectionsPT is the authoritative reference set of the curated pt-PT
+// single-word interjections, written independently of interjectionsPT to guard
+// against drift.
+var wantInterjectionsPT = map[string]struct{}{
+	"ah": {}, "oh": {}, "ó": {}, "olá": {}, "oi": {}, "ui": {}, "ai": {}, "eh": {},
+	"hã": {}, "hum": {}, "uf": {}, "ufa": {}, "oxalá": {}, "tomara": {}, "viva": {},
+	"bravo": {}, "olé": {}, "chiu": {}, "psiu": {}, "bolas": {}, "caramba": {},
+	"credo": {}, "coitado": {}, "adeus": {}, "alto": {}, "avante": {}, "arre": {},
+	"upa": {}, "eia": {}, "salve": {}, "ora": {}, "apre": {},
+}
+
 // assertClosedClassMember fails t when word is not a valid-UTF-8, all-lowercase
 // member of want. It enforces the encoding/case rule (AC7) and the membership rule
 // (AC4) for a single output.
@@ -96,6 +152,8 @@ func TestClosedClassListsCuration(t *testing.T) {
 		{"article", articlesPT},
 		{"preposition", prepositionsPT},
 		{"conjunction", conjunctionsPT},
+		{"pronoun", pronounsPT},
+		{"interjection", interjectionsPT},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -141,6 +199,8 @@ func TestClosedClassListsMatchReference(t *testing.T) {
 		{"article", articlesPT, wantArticlesPT},
 		{"preposition", prepositionsPT, wantPrepositionsPT},
 		{"conjunction", conjunctionsPT, wantConjunctionsPT},
+		{"pronoun", pronounsPT, wantPronounsPT},
+		{"interjection", interjectionsPT, wantInterjectionsPT},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -178,6 +238,8 @@ func TestClosedClassMembershipAndReachability(t *testing.T) {
 		{"article", (*Generator).ArticlePT, wantArticlesPT},
 		{"preposition", (*Generator).PrepositionPT, wantPrepositionsPT},
 		{"conjunction", (*Generator).ConjunctionPT, wantConjunctionsPT},
+		{"pronoun", (*Generator).PronounPT, wantPronounsPT},
+		{"interjection", (*Generator).InterjectionPT, wantInterjectionsPT},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -209,6 +271,8 @@ func TestClosedClassPackageLevelMembership(t *testing.T) {
 		assertClosedClassMember(t, "article", ArticlePT(), wantArticlesPT)
 		assertClosedClassMember(t, "preposition", PrepositionPT(), wantPrepositionsPT)
 		assertClosedClassMember(t, "conjunction", ConjunctionPT(), wantConjunctionsPT)
+		assertClosedClassMember(t, "pronoun", PronounPT(), wantPronounsPT)
+		assertClosedClassMember(t, "interjection", InterjectionPT(), wantInterjectionsPT)
 	}
 }
 
@@ -226,6 +290,8 @@ func TestClosedClassReproducibility(t *testing.T) {
 		{"article", (*Generator).ArticlePT},
 		{"preposition", (*Generator).PrepositionPT},
 		{"conjunction", (*Generator).ConjunctionPT},
+		{"pronoun", (*Generator).PronounPT},
+		{"interjection", (*Generator).InterjectionPT},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -253,9 +319,13 @@ func TestClosedClassNoAllocation(t *testing.T) {
 		{"ArticlePT", func() { _ = ArticlePT() }},
 		{"PrepositionPT", func() { _ = PrepositionPT() }},
 		{"ConjunctionPT", func() { _ = ConjunctionPT() }},
+		{"PronounPT", func() { _ = PronounPT() }},
+		{"InterjectionPT", func() { _ = InterjectionPT() }},
 		{"Generator.ArticlePT", func() { _ = g.ArticlePT() }},
 		{"Generator.PrepositionPT", func() { _ = g.PrepositionPT() }},
 		{"Generator.ConjunctionPT", func() { _ = g.ConjunctionPT() }},
+		{"Generator.PronounPT", func() { _ = g.PronounPT() }},
+		{"Generator.InterjectionPT", func() { _ = g.InterjectionPT() }},
 	}
 	for _, c := range checks {
 		if got := testing.AllocsPerRun(1000, c.fn); got != 0 {
@@ -294,5 +364,76 @@ func BenchmarkGeneratorArticlePT(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		_ = g.ArticlePT()
+	}
+}
+
+func BenchmarkPronounPT(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = PronounPT()
+	}
+}
+
+func BenchmarkInterjectionPT(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = InterjectionPT()
+	}
+}
+
+func BenchmarkGeneratorPronounPT(b *testing.B) {
+	g := New(1)
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = g.PronounPT()
+	}
+}
+
+// TestPronounPTSubtypeCoverage asserts, member by member, that the curated pronoun
+// list spans every subtype required by the task and specification/wordspt-closed-
+// classes.md: personal subject, personal atonic oblique, personal tonic oblique,
+// possessive, demonstrative, indefinite, relative, and interrogative. It checks a
+// representative sentinel from each subtype directly against the production list,
+// so a whole subtype cannot silently disappear.
+func TestPronounPTSubtypeCoverage(t *testing.T) {
+	got := make(map[string]struct{}, len(pronounsPT))
+	for _, w := range pronounsPT {
+		got[w] = struct{}{}
+	}
+	subtypes := map[string][]string{
+		"personal-subject":        {"eu", "tu", "ele", "ela", "nós", "vós", "eles", "elas"}, //nolint:misspell // real pt-PT pronouns; US misspell mistakes the plural form for the English "eels"
+		"personal-atonic-oblique": {"me", "te", "se", "lhe", "nos", "vos", "lhes"},
+		"personal-tonic-oblique":  {"mim", "ti", "si", "comigo", "contigo", "consigo", "connosco", "convosco"},
+		"possessive":              {"meu", "minha", "teu", "tua", "seu", "sua", "nosso", "nossa", "vosso", "vossa"},
+		"demonstrative":           {"este", "esta", "isto", "esse", "essa", "isso", "aquele", "aquilo", "mesmo", "próprio", "tal", "semelhante"},
+		"indefinite":              {"algum", "nenhum", "todo", "outro", "muito", "pouco", "tanto", "vário", "certo", "qualquer", "alguém", "ninguém", "tudo", "nada", "algo", "cada", "outrem"},
+		"relative":                {"que", "quem", "qual", "quais", "cujo", "cuja"},
+		// Every interrogative pronoun is also relative or indefinite (there is no
+		// interrogative-unique member); assert the genuine interrogative pronouns
+		// are present rather than requiring a distinct-from-relative one.
+		"interrogative": {"quem", "que", "qual", "quais", "quanto", "quanta", "quantos", "quantas"},
+	}
+	for subtype, members := range subtypes {
+		for _, m := range members {
+			if _, ok := got[m]; !ok {
+				t.Errorf("pronoun subtype %q: required member %q is missing from pronounsPT", subtype, m)
+			}
+		}
+	}
+}
+
+// TestPronounPTIncludesVosForms guards the task's explicit requirement that the
+// archaic-but-real second-person-plural forms related to "vós" are present. These
+// are easy to drop as "obsolete", so they are asserted individually.
+func TestPronounPTIncludesVosForms(t *testing.T) {
+	got := make(map[string]struct{}, len(pronounsPT))
+	for _, w := range pronounsPT {
+		got[w] = struct{}{}
+	}
+	vosForms := []string{"vós", "vos", "convosco", "vosso", "vossa", "vossos", "vossas"}
+	for _, f := range vosForms {
+		if _, ok := got[f]; !ok {
+			t.Errorf("required vós-related form %q is missing from pronounsPT", f)
+		}
 	}
 }
