@@ -183,11 +183,30 @@ type syllabicStem struct {
 }
 
 // sampleForm draws one form from inv using the injectable source r. It performs a
-// single bounded draw in [0,total) followed by the inventory's O(log n) cumulative
-// lookup, so it never rejects a draw. inv must be non-empty (total > 0), which
-// every inventory in this package guarantees.
+// single bounded draw in [0,total) followed by the inventory's O(1) table lookup,
+// so it never rejects a draw. inv must be non-empty (total > 0), which every
+// inventory in this package guarantees.
 func sampleForm(r *rand.Rand, inv *weightedInventory) string {
 	return inv.forms[inv.sampleIndex(r.Uint32N(inv.total))].form
+}
+
+// licensedNuclei maps each [nucleusLicense] to the nucleus inventory it admits:
+// the full inventory, the front-vowel inventory (after qu and gu) or the
+// back-vowel inventory (after ç).
+var licensedNuclei = [...]*weightedInventory{
+	licenseAnyNucleus:   &nuclei,
+	licenseFrontNucleus: &nucleiFrontInv,
+	licenseBackNucleus:  &nucleiBackInv,
+}
+
+// sampleOnsetNucleus draws an onset from onsetInv and then a nucleus from the
+// inventory that the drawn onset licenses, so the onset/nucleus agreement holds
+// by construction. It performs exactly the two draws of two sampleForm calls, in
+// the same order, and selects the nucleus inventory from the license recorded
+// for the onset at package initialization, with no string comparison.
+func sampleOnsetNucleus(r *rand.Rand, onsetInv *weightedInventory) (onset, nucleus string) {
+	i := onsetInv.sampleIndex(r.Uint32N(onsetInv.total))
+	return onsetInv.forms[i].form, sampleForm(r, licensedNuclei[onsetInv.license[i]])
 }
 
 // sampleSyllabicStem builds a correct-by-construction pt-PT stem of syllableCount
@@ -226,17 +245,7 @@ func sampleSyllabicStem(r *rand.Rand, dst []syllable, syllableCount, tonic int) 
 		if i == 0 {
 			onsetInv = &onsetInitialInv
 		}
-		onset := sampleForm(r, onsetInv)
-
-		nucInv := &nuclei
-		if _, front := onsetFrontVowelOnly[onset]; front {
-			nucInv = &nucleiFrontInv
-		} else if _, back := onsetBackVowelOnly[onset]; back {
-			nucInv = &nucleiBackInv
-		}
-
-		dst[i].onset = onset
-		dst[i].nucleus = sampleForm(r, nucInv)
+		dst[i].onset, dst[i].nucleus = sampleOnsetNucleus(r, onsetInv)
 	}
 
 	// Pass 2: coda. Each non-final coda is fixed only after the next syllable's

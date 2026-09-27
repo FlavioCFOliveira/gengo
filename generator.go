@@ -240,6 +240,9 @@ func (g *Generator) Complex128Between(minReal, maxReal, minImag, maxImag float64
 
 // String is the seeded-generator equivalent of [String].
 func (g *Generator) String(length uint32, sourceChars string) string {
+	if length > stackStringMaxLength {
+		return stringLongEntry(length, sourceChars, g.r)
+	}
 	if length == 0 || sourceChars == "" {
 		return ""
 	}

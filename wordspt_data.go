@@ -6,11 +6,11 @@ package gengo
 // classify pt-PT vowels and diacritics.
 //
 // The data model is deliberately organized for fast, correct-by-construction
-// sampling in a later task: every inventory is a [weightedInventory] that
-// precomputes a cumulative-weight (prefix-sum) table, so a downstream sampler
-// draws a single random value and binary-searches the table with no
-// generate-and-reject loop. This file introduces no run-time allocation on the
-// sampling or validation paths and adds no external dependency.
+// sampling: every inventory is a [weightedInventory] that precomputes a
+// value-to-index lookup table, so a sampler draws a single random value and
+// reads the selected form directly, with no search and no generate-and-reject
+// loop. This file introduces no run-time allocation on the sampling or
+// validation paths and adds no external dependency.
 //
 // Linguistic sources (never guessed; see the task report for flagged items):
 //   - Acordo Ortográfico da Língua Portuguesa (1990): the graphic-accent,
@@ -39,43 +39,60 @@ type weightedForm struct {
 }
 
 // weightedInventory is a sampling-ready inventory of weighted forms. It stores a
-// precomputed cumulative-weight table so that a caller can select a form in
-// O(log n) with no rejection loop: draw r in [0,total) and call [sampleIndex].
+// precomputed lookup table that maps every value r in [0,total) to the index of
+// the form selected by r, so that a caller selects a form in O(1) with no
+// rejection loop: draw r in [0,total) and call [weightedInventory.sampleIndex].
+// It also records, for every form, the nucleus class the form licenses when it
+// is used as an onset, so an onset sampler selects the nucleus inventory without
+// comparing strings.
 type weightedInventory struct {
-	forms      []weightedForm
-	cumulative []uint32 // cumulative[i] == sum of weights[0..i]; strictly increasing
-	total      uint32   // total == cumulative[len-1]; the exclusive upper bound for r
+	forms []weightedForm
+	// index maps r in [0,total) to the smallest form index i whose cumulative
+	// weight (the sum of weights[0..i]) is greater than r. Its length is total.
+	// A uint8 entry is sufficient because no inventory holds more than
+	// maxInventoryForms forms, which the tests assert for every inventory.
+	index []uint8
+	// license holds, for every form, the nucleus class it licenses as an onset
+	// (see [onsetNucleusLicense]); it is licenseAnyNucleus for every nucleus and
+	// coda form.
+	license []nucleusLicense
+	total   uint32 // total == sum of all weights; the exclusive upper bound for r
 }
 
+// maxInventoryForms is the largest number of forms an inventory may hold so that
+// every form index fits in the uint8 entries of [weightedInventory.index].
+const maxInventoryForms = 1 << 8
+
 // newWeightedInventory builds a [weightedInventory] from forms, precomputing the
-// cumulative-weight table and the total weight. It is called once, at package
-// initialization, for each static inventory.
+// value-to-index lookup table, the per-form onset nucleus license, and the total
+// weight. It is called once, at package initialization, for each static
+// inventory.
 func newWeightedInventory(forms []weightedForm) weightedInventory {
-	cumulative := make([]uint32, len(forms))
 	var total uint32
 	for i := range forms {
 		total += forms[i].weight
-		cumulative[i] = total
 	}
-	return weightedInventory{forms: forms, cumulative: cumulative, total: total}
+	index := make([]uint8, total)
+	license := make([]nucleusLicense, len(forms))
+	var lo uint32
+	for i := range forms {
+		hi := lo + forms[i].weight
+		for r := lo; r < hi; r++ {
+			index[r] = uint8(i) // i < maxInventoryForms, asserted by the tests
+		}
+		lo = hi
+		license[i] = onsetNucleusLicense(forms[i].form)
+	}
+	return weightedInventory{forms: forms, index: index, license: license, total: total}
 }
 
-// sampleIndex maps r, a value in [0,total), to the index of the selected form.
-// It performs a branch-lean binary search over the cumulative-weight table and
-// never rejects: every r in range yields exactly one valid index, and every
-// form with a positive weight is reachable. The result is the smallest index i
-// for which cumulative[i] > r.
+// sampleIndex maps r, a value in [0,total), to the index of the selected form
+// with a single table read. It never rejects: every r in range yields exactly
+// one valid index, and every form with a positive weight is reachable. The
+// result is the smallest index i for which the cumulative weight of forms[0..i]
+// is greater than r.
 func (w *weightedInventory) sampleIndex(r uint32) int {
-	lo, hi := 0, len(w.cumulative)
-	for lo < hi {
-		mid := int(uint(lo+hi) >> 1)
-		if w.cumulative[mid] <= r {
-			lo = mid + 1
-		} else {
-			hi = mid
-		}
-	}
-	return lo
+	return int(w.index[r])
 }
 
 // ---------------------------------------------------------------------------
@@ -163,13 +180,13 @@ var codas = newWeightedInventory([]weightedForm{
 var onsetSet = mergeFormSet(onsetSingles, onsetClusters)
 
 // nucleusSet holds every legal nucleus form for O(1) membership tests.
-var nucleusSet = formSet(nuclei)
+var nucleusSet = formSet(&nuclei)
 
 // codaSet holds every legal coda form for O(1) membership tests.
-var codaSet = formSet(codas)
+var codaSet = formSet(&codas)
 
 // formSet returns a set of the forms of one inventory.
-func formSet(inv weightedInventory) map[string]struct{} {
+func formSet(inv *weightedInventory) map[string]struct{} {
 	set := make(map[string]struct{}, len(inv.forms))
 	for i := range inv.forms {
 		set[inv.forms[i].form] = struct{}{}
@@ -215,6 +232,35 @@ var onsetFrontVowelOnly = map[string]struct{}{
 // cedilla rule (ç only before a, o or u, never before e or i).
 var onsetBackVowelOnly = map[string]struct{}{
 	"ç": {},
+}
+
+// nucleusLicense classifies the nuclei an onset may precede.
+type nucleusLicense uint8
+
+const (
+	// licenseAnyNucleus marks an onset that may precede any nucleus.
+	licenseAnyNucleus nucleusLicense = iota
+	// licenseFrontNucleus marks an onset that may precede only a nucleus that
+	// begins with a front vowel (the members of [onsetFrontVowelOnly]).
+	licenseFrontNucleus
+	// licenseBackNucleus marks an onset that may precede only a nucleus that
+	// begins with a back or central vowel (the members of [onsetBackVowelOnly]).
+	licenseBackNucleus
+)
+
+// onsetNucleusLicense returns the nucleus class that form licenses when it is
+// used as an onset. It derives the class from [onsetFrontVowelOnly] and
+// [onsetBackVowelOnly], so those sets remain the single source of truth for the
+// onset/nucleus agreement rule. It runs only at package initialization, when
+// [newWeightedInventory] records the license of every form.
+func onsetNucleusLicense(form string) nucleusLicense {
+	if _, front := onsetFrontVowelOnly[form]; front {
+		return licenseFrontNucleus
+	}
+	if _, back := onsetBackVowelOnly[form]; back {
+		return licenseBackNucleus
+	}
+	return licenseAnyNucleus
 }
 
 // ---------------------------------------------------------------------------

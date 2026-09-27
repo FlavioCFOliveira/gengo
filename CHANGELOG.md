@@ -29,6 +29,44 @@ re-tagging an existing one.
 
 ---
 
+## [Unreleased]
+
+### Changed
+- **Performance:** `String` and `(*Generator).String` now allocate exactly once
+  per call at every length. Lengths above 32 bytes previously allocated twice (a
+  heap `[]byte` copied into the returned string). Lengths from 33 to 256 bytes
+  are now built in a stack array, and longer ones in 256-byte chunks written to a
+  pre-sized `strings.Builder`. The output, including seeded `Generator` sequences,
+  is byte-identical. Measured on Go 1.27.1 (see `BENCHMARKS.md`): lengths above
+  32 bytes are 13–16% faster single-threaded (7–16% for `Generator.String`) and
+  31–41% faster under 8–16 concurrent goroutines. A single-character source is
+  up to 73% faster at 4096 bytes. `String` with an 8-byte result measured 3–6% slower; the code for lengths
+  up to 32 bytes is unchanged, and the difference comes from code layout.
+- **Performance:** the WordsPT sampling core no longer searches, hashes, or
+  evaluates logarithms per draw. Each weighted inventory now maps a draw to its
+  form through a precomputed lookup table instead of a binary search. The
+  nucleus inventory an onset licenses is recorded per form at package
+  initialization, replacing two string-keyed map lookups per syllable. The
+  word-length draw counts the thresholds of a generated integer table
+  (`wordspt_skew_table.go`, produced by `go generate`) instead of evaluating
+  `math.Pow`, `math.Log`, and `math.Ceil`. The output, including seeded
+  `Generator` sequences, is byte-identical. Measured on Go 1.27.1 (see
+  `BENCHMARKS.md`): `WordPT` is 34% faster, `(*Generator).WordPT` 38%,
+  `NounPT` 37%, `AdjectivePT` 34%, `VerbPT` 42%, `AdverbPT` 41%, and `WordsPT`
+  38%. Under 16 concurrent goroutines, the open-class functions are 30–36%
+  faster. Package initialization allocates 6.9 KB more (23.9 KB, 98
+  allocations) and takes about 24 µs longer.
+
+### Added
+- `parallel_bench_test.go`: `BenchmarkParallel*` benchmarks that call the
+  package-level functions from `GOMAXPROCS` goroutines through `b.RunParallel`,
+  for measuring behaviour under concurrent use (run with `-cpu`).
+- Regression tests `TestStringAllocs`, `TestGeneratorStringAllocs`,
+  `TestStringSingleCharLong`, and `TestGeneratorStringGolden`, which pin one
+  allocation per `String` call and the seeded `Generator.String` output.
+
+---
+
 ## [v0.2.0] — 2026-07-22
 
 A **minor** release under the Versioning Policy above. This cycle adds
