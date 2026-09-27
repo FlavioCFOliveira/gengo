@@ -162,9 +162,11 @@ const runesPerSyllable = 2.61
 const lengthSkewDecay = 0.78
 
 // lengthSkewLnDecay is the natural logarithm of [lengthSkewDecay], precomputed for
-// the inverse-CDF draw in [skewedCharTarget]. It is negative because the decay is
-// below one.
+// the inverse-CDF offset in [skewOffsetFormula]. It is negative because the decay
+// is below one.
 var lengthSkewLnDecay = math.Log(lengthSkewDecay)
+
+//go:generate go run wordspt_skew_gen.go
 
 // charRangeOf returns the inclusive character (rune) window of a length category.
 // SmallLengthWord is 1..4, MediumLengthWords is 5..8 and BigLengthWords is 9..30;
@@ -232,28 +234,51 @@ func syllablesForCharRange(r *rand.Rand, minChars, maxChars int) int {
 // geometric distribution truncated to [0, span] with per-step ratio
 // [lengthSkewDecay] (weight of offset j is lengthSkewDecay^j), so short lengths
 // dominate and long lengths taper off, matching the right-skewed word-length
-// frequency of Portuguese. It performs a single random draw and an O(1) closed-form
-// inverse-CDF evaluation: no rejection loop, no allocation, and the result is
-// always inside [minChars, maxChars]. minChars <= maxChars is assumed (the caller
-// guarantees it).
+// frequency of Portuguese. It performs a single 32-bit random draw and maps it to
+// the offset of the closed-form inverse CDF ([skewOffsetFormula]): for a span of
+// at most [skewTableMaxSpan], which covers every window of [charRangeOf], it
+// counts the generated integer thresholds of [skewThresholds] that the draw
+// reaches, which yields exactly the formula's offset without any floating-point
+// work; a wider span evaluates the formula directly. There is no rejection loop
+// and no allocation, and the result is always inside [minChars, maxChars].
+// minChars <= maxChars is assumed (the caller guarantees it).
 func skewedCharTarget(r *rand.Rand, minChars, maxChars int) int {
 	span := maxChars - minChars
 	if span <= 0 {
 		return minChars
 	}
-	// Draw u in the open interval (0,1) so both logarithms below are finite.
-	u := (float64(r.Uint32()) + 0.5) / 4294967296.0
-	// Inverse CDF of the truncated geometric: the CDF at offset k is
-	// (1 - d^(k+1)) / (1 - d^(span+1)) with d = lengthSkewDecay, so the smallest
-	// offset k with CDF(k) >= u is ceil(ln(1 - u*denom)/ln d) - 1.
+	x := r.Uint32()
+	if span > skewTableMaxSpan {
+		return minChars + skewOffsetFormula(span, x)
+	}
+	row := skewThresholds[span*(span-1)/2 : span*(span+1)/2]
+	offset := 0
+	for offset < len(row) && x >= row[offset] {
+		offset++
+	}
+	return minChars + offset
+}
+
+// skewOffsetFormula returns the offset in [0, span] of the truncated geometric
+// inverse CDF for the raw 32-bit draw x. The draw is mapped to u in the open
+// interval (0,1), so both logarithms are finite. The CDF at offset k is
+// (1 - d^(k+1)) / (1 - d^(span+1)) with d = lengthSkewDecay, so the offset is the
+// smallest k with CDF(k) >= u, that is ceil(ln(1 - u*denom)/ln d) - 1, clamped to
+// [0, span]. The explicit float64 conversion rounds the product u*denom before the
+// subtraction, so the result never depends on whether the compiler fuses a
+// multiply-add. The offset is non-decreasing in x. It is the definition that
+// wordspt_skew_gen.go tabulates into [skewThresholds] for spans up to
+// [skewTableMaxSpan], and the fallback of [skewedCharTarget] for wider spans.
+func skewOffsetFormula(span int, x uint32) int {
+	u := (float64(x) + 0.5) / 4294967296.0
 	denom := 1 - math.Pow(lengthSkewDecay, float64(span+1))
-	offset := int(math.Ceil(math.Log(1-u*denom)/lengthSkewLnDecay)) - 1
+	offset := int(math.Ceil(math.Log(1-float64(u*denom))/lengthSkewLnDecay)) - 1
 	if offset < 0 {
 		offset = 0
 	} else if offset > span {
 		offset = span
 	}
-	return minChars + offset
+	return offset
 }
 
 // stemSyllablesFor sizes the syllabic stem for a nominal word of length category

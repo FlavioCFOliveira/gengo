@@ -346,7 +346,7 @@ func TestWordContainsGrave(t *testing.T) {
 
 // TestSampleInventoriesNoRejection verifies that every weighted inventory
 // supports correct-by-construction sampling: for every r in [0,total) the index
-// returned partitions the cumulative table correctly, and every form is
+// returned partitions the cumulative weights correctly, and every form is
 // reachable. No value of r is ever rejected. This is the smoke test required by
 // the acceptance criteria.
 func TestSampleInventoriesNoRejection(t *testing.T) {
@@ -366,41 +366,47 @@ func TestSampleInventoriesNoRejection(t *testing.T) {
 	}
 }
 
-// verifyCumulativeTable checks that the cumulative-weight table is a strictly
-// increasing prefix sum of positive weights matching the recorded total.
-func verifyCumulativeTable(t *testing.T, name string, inv *weightedInventory) {
+// cumulativeWeights returns the cumulative-weight (prefix-sum) table of inv,
+// computed independently of the inventory's lookup table so that it serves as the
+// reference the table is checked against. It fails the test when a weight is
+// zero or when the sum disagrees with the recorded total.
+func cumulativeWeights(t *testing.T, name string, inv *weightedInventory) []uint32 {
 	t.Helper()
 	if len(inv.forms) == 0 {
 		t.Fatalf("%s is empty", name)
 	}
+	cumulative := make([]uint32, len(inv.forms))
 	var sum uint32
 	for i := range inv.forms {
 		if inv.forms[i].weight == 0 {
 			t.Errorf("%s[%d] %q has zero weight", name, i, inv.forms[i].form)
 		}
 		sum += inv.forms[i].weight
-		if inv.cumulative[i] != sum {
-			t.Errorf("%s cumulative[%d] = %d, want %d", name, i, inv.cumulative[i], sum)
-		}
+		cumulative[i] = sum
 	}
 	if sum != inv.total {
 		t.Fatalf("%s total = %d, want %d", name, inv.total, sum)
 	}
+	if len(inv.index) != int(inv.total) {
+		t.Fatalf("%s lookup table length = %d, want total %d", name, len(inv.index), inv.total)
+	}
+	return cumulative
 }
 
 // verifySampleIndex checks, for a single r, that sampleIndex returns the index
-// whose cumulative range contains r, proving the mapping never rejects.
-func verifySampleIndex(t *testing.T, name string, inv *weightedInventory, r uint32) {
+// whose cumulative range contains r, that is the smallest i with cumulative[i] >
+// r, proving the mapping never rejects.
+func verifySampleIndex(t *testing.T, name string, inv *weightedInventory, cumulative []uint32, r uint32) {
 	t.Helper()
 	idx := inv.sampleIndex(r)
 	if idx < 0 || idx >= len(inv.forms) {
 		t.Fatalf("%s sampleIndex(%d) = %d out of range [0,%d)", name, r, idx, len(inv.forms))
 	}
-	if inv.cumulative[idx] <= r {
-		t.Fatalf("%s sampleIndex(%d) = %d but cumulative[%d]=%d <= r", name, r, idx, idx, inv.cumulative[idx])
+	if cumulative[idx] <= r {
+		t.Fatalf("%s sampleIndex(%d) = %d but cumulative[%d]=%d <= r", name, r, idx, idx, cumulative[idx])
 	}
-	if idx > 0 && inv.cumulative[idx-1] > r {
-		t.Fatalf("%s sampleIndex(%d) = %d but cumulative[%d]=%d > r", name, r, idx, idx-1, inv.cumulative[idx-1])
+	if idx > 0 && cumulative[idx-1] > r {
+		t.Fatalf("%s sampleIndex(%d) = %d but cumulative[%d]=%d > r", name, r, idx, idx-1, cumulative[idx-1])
 	}
 }
 
@@ -411,16 +417,16 @@ func verifyInventorySampling(t *testing.T, name string, inv *weightedInventory) 
 	if inv.total == 0 {
 		t.Fatalf("%s total weight is 0", name)
 	}
-	verifyCumulativeTable(t, name, inv)
+	cumulative := cumulativeWeights(t, name, inv)
 
 	// Full sweep: every r in [0,total) maps to a correct index with no rejection.
 	for r := uint32(0); r < inv.total; r++ {
-		verifySampleIndex(t, name, inv, r)
+		verifySampleIndex(t, name, inv, cumulative, r)
 	}
 
 	// Reachability: every index is the selection for at least one r.
 	for i := range inv.forms {
-		r := inv.cumulative[i] - 1
+		r := cumulative[i] - 1
 		if got := inv.sampleIndex(r); got != i {
 			t.Errorf("%s form %q (index %d) unreachable: sampleIndex(%d) = %d", name, inv.forms[i].form, i, r, got)
 		}

@@ -172,7 +172,7 @@ func TestBigNounLengthRealistic(t *testing.T) {
 // little real hiatus like país remains and the sampler stays rejection-free), but
 // with a weight far below the word-initial one, so medial vowel onsets are rare.
 func TestMedialOnsetPrefersConsonant(t *testing.T) {
-	if !inventoryContains(onsetMedialInv, "") {
+	if !inventoryContains(&onsetMedialInv, "") {
 		t.Fatal("onsetMedialInv must still offer the empty onset (some real hiatus remains)")
 	}
 	if emptyOnsetWeightMedial >= emptyOnsetWeightInitial {

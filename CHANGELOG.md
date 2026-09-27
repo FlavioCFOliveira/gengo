@@ -29,6 +29,82 @@ re-tagging an existing one.
 
 ---
 
+## [Unreleased]
+
+---
+
+## [v0.2.1] — 2026-09-27
+
+A **patch** release under the Versioning Policy above. This cycle makes
+`String` and the WordsPT generators faster. The public API is unchanged, and
+so is the output, including seeded `Generator` sequences, so upgrading from
+`v0.2.0` requires no code changes.
+
+### Changed
+- **Performance:** `String` and `(*Generator).String` now allocate exactly once
+  per call at every length. Lengths above 32 bytes previously allocated twice (a
+  heap `[]byte` copied into the returned string). Lengths from 33 to 256 bytes
+  are now built in a stack array, and longer ones in 256-byte chunks written to a
+  pre-sized `strings.Builder`. The output, including seeded `Generator` sequences,
+  is byte-identical. Measured on Go 1.27.1 (see `BENCHMARKS.md`): lengths above
+  32 bytes are 13–16% faster single-threaded (7–16% for `Generator.String`) and
+  31–41% faster under 8–16 concurrent goroutines. A single-character source is
+  up to 73% faster at 4096 bytes. `String` with an 8-byte result measured 3–6%
+  slower; the code for lengths up to 32 bytes is unchanged, and the difference
+  comes from code layout.
+- **Performance:** the WordsPT sampling core no longer searches, hashes, or
+  evaluates logarithms per draw. Each weighted inventory now maps a draw to its
+  form through a precomputed lookup table instead of a binary search. The
+  nucleus inventory an onset licenses is recorded per form at package
+  initialization, replacing two string-keyed map lookups per syllable. The
+  word-length draw counts the thresholds of a generated integer table
+  (`wordspt_skew_table.go`, produced by `go generate`) instead of evaluating
+  `math.Pow`, `math.Log`, and `math.Ceil`. The output, including seeded
+  `Generator` sequences, is byte-identical. Measured on Go 1.27.1 (see
+  `BENCHMARKS.md`): `WordPT` is 34% faster, `(*Generator).WordPT` 38%,
+  `NounPT` 37%, `AdjectivePT` 34%, `VerbPT` 42%, `AdverbPT` 41%, and `WordsPT`
+  38%. Under 16 concurrent goroutines, the open-class functions are 30–36%
+  faster. Package initialization allocates 6.9 KB more (23.9 KB, 98
+  allocations) and takes about 24 µs longer.
+- Documentation updated for this release. No public API was changed.
+  - `BENCHMARKS.md` now covers v0.0.26 through v0.2.1: an index of its studies,
+    the former `v0.0.26 → HEAD` report relabelled `v0.0.26 → v0.1.0`, new
+    sections for the `String` single-allocation rewrite and the WordsPT
+    sampling core, and a rewritten "Allocations" section with measured
+    per-call allocation counts for every public function family.
+  - `TEST_REPORT.md` regenerated from a v0.2.1 run on Go 1.27.1 (race
+    detector, coverage, and the 36 core benchmarks); the Task #37 WordsPT audit
+    is kept and marked as historical.
+  - `SECURITY.md` lists `0.2.1` as the supported version.
+  - `README.md` states that `String` allocates exactly once per call and
+    summarizes the rewrite's measured effect.
+  - `CLAUDE.md` and `knowledge-model.md` were updated for the new generated
+    table and the knowledge-graph model.
+
+### Added
+- `parallel_bench_test.go`: `BenchmarkParallel*` benchmarks that call the
+  package-level functions from `GOMAXPROCS` goroutines through `b.RunParallel`,
+  for measuring behavior under concurrent use (run with `-cpu`).
+- Regression tests `TestStringAllocs`, `TestGeneratorStringAllocs`,
+  `TestStringSingleCharLong`, and `TestGeneratorStringGolden`, which pin one
+  allocation per `String` call and the seeded `Generator.String` output.
+- WordsPT regression tests in `wordspt_sampling_tables_test.go`, which prove
+  that the new tables are equivalent to the computations they replace:
+  - `TestInventoryLookupTables` and `TestAllWeightedInventoriesListed` — every
+    lookup-table entry of every weighted inventory matches a binary search over
+    the cumulative weights, and no inventory is left untested.
+  - `TestOnsetNucleusLicenseMatchesSourceSets` and
+    `TestSampleOnsetNucleusMatchesSetLookup` — the per-form nucleus licenses
+    match the source onset sets, and syllable sampling draws the same onset and
+    nucleus, from the same random values, as the previous set lookup.
+  - `TestSkewThresholdsMatchFormula`, `TestSkewTableCoversEveryLengthWindow`,
+    `TestSkewedCharTargetWideSpanUsesFormula`, and `TestSkewTableIsGenerated` —
+    every word-length threshold matches the closed-form formula, the table
+    covers every length window, wider spans fall back to the formula, and
+    `wordspt_skew_table.go` carries the generated-code header.
+
+---
+
 ## [v0.2.0] — 2026-07-22
 
 A **minor** release under the Versioning Policy above. This cycle adds

@@ -173,3 +173,37 @@ func BenchmarkStringNumeric(b *testing.B) {
 		StringNumeric(8)
 	}
 }
+
+// stringAllocSink retains String results in the allocation tests so that the
+// compiler cannot elide or stack-allocate the returned string.
+var stringAllocSink string
+
+// stringAllocLengths spans the three String build paths: the stack-backed
+// []byte up to stackStringMaxLength (8, 32), the stack array up to
+// stringChunkLength (33, 64), and the chunked strings.Builder above it (1024).
+var stringAllocLengths = []uint32{8, 32, 33, 64, 1024}
+
+// TestStringAllocs guards against a regression to the former double allocation
+// (a heap []byte copied into a new string) for lengths above
+// stackStringMaxLength: every String call must allocate exactly once, for the
+// returned string, on both the multi-character and the single-character path.
+func TestStringAllocs(t *testing.T) {
+	for _, n := range stringAllocLengths {
+		for _, src := range []string{Alphanumeric, "x"} {
+			got := testing.AllocsPerRun(1000, func() { stringAllocSink = String(n, src) })
+			if got != 1 {
+				t.Errorf("String(%d, %q): %v allocs/op, want 1", n, src, got)
+			}
+		}
+	}
+}
+
+// TestStringSingleCharLong checks the single-character path above
+// stackStringMaxLength, which is built with strings.Repeat.
+func TestStringSingleCharLong(t *testing.T) {
+	for _, n := range []uint32{33, 64, 1024} {
+		if got, want := String(n, "x"), strings.Repeat("x", int(n)); got != want {
+			t.Fatalf("String(%d, \"x\") = %q, want %q", n, got, want)
+		}
+	}
+}

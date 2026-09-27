@@ -472,6 +472,8 @@ Benchmarks run on an AMD Ryzen 9 5900HX (Go 1.26.2, `-benchtime 5s`). See `make 
 | `Date` | ~7.4 |
 | `Uint64` | ~4.8 |
 
+String functions allocate exactly once per call, for the returned string, at every length. On Go 1.27.1 (same machine) the single-allocation rewrite of `String` made lengths above 32 bytes 13–16% faster single-threaded (7–16% for `Generator.String`) and 31–41% faster under 8–16 concurrent goroutines. It also measured `String` with an 8-byte result 3–6% slower. The code for lengths up to 32 bytes is unchanged; the slowdown comes from code layout.
+
 For the full benchmark report and detailed test results, see [BENCHMARKS.md](BENCHMARKS.md) and [TEST_REPORT.md](TEST_REPORT.md).
 
 ---
