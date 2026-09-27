@@ -19,10 +19,10 @@ in conformance with the live graph.
 | `Feature` | `name` | `status` (`released` \| `in-progress` \| `specified`), `description` |
 | `Component` | `name` | `kind`, `description` |
 | `Type` | `name` | `kind` (`struct` \| `enum` \| `interface`), `exported` (bool) |
-| `Function` | `name` | `signature`, `exported` (bool) |
+| `Function` | `name` (methods: `<Receiver>.<Method>`, e.g. `Generator.String`) | `signature`, `exported` (bool) |
 | `Spec` | `path` | `title` |
 | `Sprint` | `id` | `title`, `status` |
-| `Task` | `id` | `title`, `type`, `status` |
+| `Task` | `id` | `title`, `type`, `status`, `summary` (completion summary) |
 | `Commit` | `hash` | `type` (conventional-commit type), `message` |
 
 ## Edge types
