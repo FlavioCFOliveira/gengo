@@ -1,4 +1,18 @@
-# Performance Report: v0.0.26 → HEAD
+# Performance Report: v0.0.26 → v0.2.1
+
+This report collects the gengo benchmark studies in release order. Each section
+states its own date, platform, Go version, and method; figures from different
+sections are not directly comparable.
+
+| Section | Release | Date | Go |
+|---|---|---|---|
+| [v0.0.26 → v0.1.0](#v0026--v010) | v0.1.0 | 2026-05-29 | go1.26.2 |
+| [String single-allocation rewrite (v0.2.1)](#string-single-allocation-rewrite-v021) | v0.2.1 | 2026-09-27 | go1.27.1 |
+| [WordsPT sampling core (v0.2.1)](#wordspt-sampling-core-v021) | v0.2.1 | 2026-09-27 | go1.27.1 |
+
+---
+
+## v0.0.26 → v0.1.0
 
 **Date:** 2026-05-29  
 **Platform:** linux/amd64 · AMD Ryzen 9 5900HX · 16 threads (GOMAXPROCS=16)  
@@ -7,12 +21,11 @@
 
 > All figures below come from a single benchmark suite run on the reference
 > machine above so that they are internally consistent and reproducible. The
-> same `HEAD` numbers back [TEST_REPORT.md](TEST_REPORT.md). Deltas smaller than
-> roughly ±0.3 ns are within run-to-run measurement noise.
+> same v0.1.0 numbers backed the 2026-05-29 edition of
+> [TEST_REPORT.md](TEST_REPORT.md). Deltas smaller than roughly ±0.3 ns are
+> within run-to-run measurement noise.
 
----
-
-## Summary
+### Summary
 
 The most significant gain is in `String`, which became **2.37× faster** (−58%)
 thanks to the batched PRNG calls introduced in commit `71d7483`. On this platform
@@ -26,11 +39,11 @@ did not exist in v0.0.26.
 
 ---
 
-## Detailed Results
+### Detailed Results
 
-### String generation
+#### String generation
 
-| Benchmark | v0.0.26 | HEAD | Δ ns/op | Speedup |
+| Benchmark | v0.0.26 | v0.1.0 | Δ ns/op | Speedup |
 |---|---|---|---|---|
 | `String` | 65.85 ns | 27.76 ns | **−38.09 ns** | **2.37×** |
 | `StringNumeric` / `Numeric` | 65.00 ns | 62.65 ns | −2.35 ns | ≈ same |
@@ -51,9 +64,9 @@ did not exist in v0.0.26.
 
 ---
 
-### Integer types
+#### Integer types
 
-| Benchmark | v0.0.26 | HEAD | Δ ns/op | Improvement |
+| Benchmark | v0.0.26 | v0.1.0 | Δ ns/op | Improvement |
 |---|---|---|---|---|
 | `Int8` | 7.624 ns | 4.763 ns | −2.861 ns | **+38%** |
 | `Int16` | 7.641 ns | 4.774 ns | −2.867 ns | **+38%** |
@@ -75,7 +88,7 @@ did not exist in v0.0.26.
 | `Uint32Between` | 7.633 ns | 7.489 ns | −0.144 ns | ≈ same |
 | `Uint64Between` | 7.852 ns | 7.942 ns | +0.090 ns | ≈ same |
 
-¹ The `Between` variants cluster around 7.4–7.9 ns/op on HEAD; the remaining
+¹ The `Between` variants cluster around 7.4–7.9 ns/op on v0.1.0; the remaining
 inter-version differences are run-to-run measurement noise rather than real
 regressions.
 
@@ -85,9 +98,9 @@ that had prevented the compiler from producing the optimal instruction sequence.
 
 ---
 
-### Float types
+#### Float types
 
-| Benchmark | v0.0.26 | HEAD | Δ ns/op | Improvement |
+| Benchmark | v0.0.26 | v0.1.0 | Δ ns/op | Improvement |
 |---|---|---|---|---|
 | `Float32` | 6.256 ns | 5.804 ns | −0.452 ns | **+7%** |
 | `Float64` | 6.149 ns | 5.767 ns | −0.382 ns | **+6%** |
@@ -99,9 +112,9 @@ both float types. `Float32Between` and `Float64Between` are new API additions.
 
 ---
 
-### Complex types
+#### Complex types
 
-| Benchmark | v0.0.26 | HEAD | Δ ns/op | Improvement |
+| Benchmark | v0.0.26 | v0.1.0 | Δ ns/op | Improvement |
 |---|---|---|---|---|
 | `Complex64` | 10.27 ns | 10.25 ns | −0.02 ns | ≈ same |
 | `Complex128` | 10.48 ns | 10.44 ns | −0.04 ns | ≈ same |
@@ -110,9 +123,9 @@ both float types. `Float32Between` and `Float64Between` are new API additions.
 
 ---
 
-### Date types
+#### Date types
 
-| Benchmark | v0.0.26 | HEAD | Δ ns/op | Note |
+| Benchmark | v0.0.26 | v0.1.0 | Δ ns/op | Note |
 |---|---|---|---|---|
 | `Date` | 7.472 ns | 7.377 ns | −0.095 ns | ≈ same |
 | `UnixDate` | 7.364 ns | 7.401 ns | +0.037 ns | ≈ same |
@@ -120,19 +133,19 @@ both float types. `Float32Between` and `Float64Between` are new API additions.
 
 ---
 
-### Bool
+#### Bool
 
-| Benchmark | v0.0.26 | HEAD | Δ ns/op | Note |
+| Benchmark | v0.0.26 | v0.1.0 | Δ ns/op | Note |
 |---|---|---|---|---|
 | `Bool` | 4.777 ns | 4.719 ns | −0.058 ns | ≈ same |
 
 ---
 
-### Word / Words (new in HEAD)
+#### Word / Words (new since v0.0.26)
 
 These benchmarks have no v0.0.26 counterpart; they cover the expanded Words API.
 
-| Benchmark | HEAD |
+| Benchmark | v0.1.0 |
 |---|---|
 | `Word` | 86.55 ns/op · 18 B/op · 1 alloc/op |
 | `WordByLengthType` | 50.12 ns/op · 7 B/op · 1 alloc/op |
@@ -140,7 +153,7 @@ These benchmarks have no v0.0.26 counterpart; they cover the expanded Words API.
 
 ---
 
-## String single-allocation rewrite
+## String single-allocation rewrite (v0.2.1)
 
 **Date:** 2026-09-27  
 **Platform:** linux/amd64 · AMD Ryzen 9 5900HX · 16 threads  
@@ -206,7 +219,7 @@ value-preserving `& 63` mask: each form measured fastest for its function.
 
 ---
 
-## WordsPT sampling core
+## WordsPT sampling core (v0.2.1)
 
 **Date:** 2026-09-27  
 **Platform:** linux/amd64 · AMD Ryzen 9 5900HX · 16 threads  
@@ -278,18 +291,49 @@ not from the change.
 
 ## Allocations
 
-All numeric, boolean, and date functions remain at **0 B/op · 0 allocs/op** in
-both versions. String and word functions allocate exactly **1 alloc/op**, the
-returned string itself (`Words` allocates once per generated word). For
-`String` and `(*Generator).String` this holds for every length since the
-[single-allocation rewrite](#string-single-allocation-rewrite); before it,
-lengths above 32 bytes allocated twice.
+**Date:** 2026-09-27 · **Go:** go1.27.1 · **Code:** v0.2.1
+
+The figures below count heap allocations per call exactly: a harness outside
+the package reads `runtime.MemStats.Mallocs` before and after each of 20,000
+calls (after 2,000 warm-up calls, with `GOMAXPROCS=1`) and reports the share of
+calls that made 0, 1, or 2 allocations. Isolated samples of 0.01% (one call in
+20,000) with a higher count are runtime background allocations and are omitted.
+The means below are for the package-level functions; the `*Generator` methods
+matched them within half a percentage point. `go test -benchmem` reports the
+same figures, truncated to an integer average.
+
+| Function | Allocations per call |
+|---|---|
+| Numeric, `Bool`, `Date`, `UnixDate`, `DateBetween` | **0** |
+| `ArticlePT`, `PronounPT`, `NumeralPT`, `PrepositionPT`, `ConjunctionPT`, `InterjectionPT` | **0**: they return a string from a package-level list |
+| `String` and its variants, result of 0 or 1 byte | **0** |
+| `String` and its variants, result of 2 bytes or more | **1**, the returned string, at every length (2 to 4,096 bytes measured with an Alphanumeric source, 8 to 4,096 bytes with a single-character source) |
+| `Word`, `WordByLengthType` | **1**; a one-byte `SmallLengthWord` result makes **0** (25.6% of `WordByLengthType(SmallLengthWord)` calls) |
+| `NounPTOf` / `AdjectivePTOf` with `Singular`; the `Superlative` degree; `VerbPT`, `VerbPTOf`, `AdverbPT`, `AdverbPTByLengthType` | **1** |
+| `NounPTOf` with `Plural` | **1** for an additive plural (`+s`, `+es`), **2** for a substitutive plural (`-ões`, `-ns`, ...): mean **1.13** (12.9% of calls make 2) |
+| `AdjectivePTOf` with `Plural`, `Positive` | **1** additive, **2** substitutive (`-ais`, `-áveis`, `-íveis`, ...): mean **1.25** (24.7% of calls make 2) |
+| `NounPT` | mean **1.06** (6.5% of calls make 2) |
+| `AdjectivePT` | mean **1.06** (6.3% of calls make 2) |
+| `WordPT`, `WordPTByLengthType` | **0** for a closed-class word, **1** or **2** as above: `WordPT` mean **0.90** (12.3% make 0, 85.1% make 1, 2.5% make 2) |
+| `Words(n)`, `WordsPT(n)` | **1** for the returned slice, plus the allocations of each word as above: `Words(10)` mean **10.35**, `WordsPT(10)` mean **10.07** |
+
+Strings of zero or one byte cost no allocation, because the Go runtime serves
+one-byte strings from a static table; this explains the **0** entries for short
+`String` results and one-byte words. The exact cost of each plural build path
+(additive **1**, substitutive **2**) is pinned by
+`TestPluralBuildAllocationBudget`. The **1** allocation of `String` and
+`(*Generator).String` for every length above 32 bytes dates from the
+[single-allocation rewrite](#string-single-allocation-rewrite-v021); before it,
+those lengths allocated twice. In v0.0.26 and v0.1.0, the numeric, boolean,
+and date functions also made 0 allocations.
 
 ---
 
 ## Key commits driving the gains
 
-| Commit | Description |
-|---|---|
-| `71d7483` | Batch PRNG in `String`, eliminate `Words` allocations, precompute date ranges, inline `Float32`/`Float64` |
-| `ec0e6e4` | Rewrite `numbers.go` — eliminates G115 casts, enables better codegen for `Int8`/`Int16` |
+| Commit | First release | Description |
+|---|---|---|
+| `71d7483` | v0.0.27 | Batch PRNG in `String`, eliminate `Words` allocations, precompute date ranges, inline `Float32`/`Float64` |
+| `ec0e6e4` | v0.0.27 | Rewrite `numbers.go` — eliminates G115 casts, enables better codegen for `Int8`/`Int16` |
+| `c5683a2` | v0.2.1 | Single-allocation `String` and `(*Generator).String` for lengths above 32 bytes |
+| `b70ae60` | v0.2.1 | WordsPT sampling core: lookup and threshold tables replace binary search, map lookups, and per-draw `math.Pow`/`math.Log`/`math.Ceil` |

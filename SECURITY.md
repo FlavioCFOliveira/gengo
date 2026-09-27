@@ -25,8 +25,8 @@ the most recent release before reporting an issue.
 
 | Version  | Supported          |
 | -------- | ------------------ |
-| 0.0.27   | :white_check_mark: |
-| < 0.0.27 | :x:                |
+| 0.2.1    | :white_check_mark: |
+| < 0.2.1  | :x:                |
 
 ## Reporting a Vulnerability
 
