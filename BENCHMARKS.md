@@ -40,6 +40,14 @@ did not exist in v0.0.26.
 > benchmarks measure an 8-character result (`String(8, …)`) and retain exactly
 > 1 alloc/op (8 B/op). `StringNumeric` stays slower than `String` because its
 > 10-symbol charset rejects more sampled indices per accepted character.
+>
+> These figures predate the single-allocation rewrite of `String` described in
+> [String single-allocation rewrite](#string-single-allocation-rewrite). That
+> rewrite leaves the code for lengths up to 32 bytes unchanged, yet it measured
+> `String(8, …)` **+2.9%** slower (28.40 → 29.22 ns/op) and `String(8, "x")`
+> **+5.8%** slower (16.50 → 17.46 ns/op) on the same machine. The cause is code
+> layout: the dispatch added at the top of `String` moves the unchanged loop to
+> a different address, and the gc compiler does not align loops.
 
 ---
 
@@ -132,12 +140,80 @@ These benchmarks have no v0.0.26 counterpart; they cover the expanded Words API.
 
 ---
 
+## String single-allocation rewrite
+
+**Date:** 2026-09-27  
+**Platform:** linux/amd64 · AMD Ryzen 9 5900HX · 16 threads  
+**Go:** go1.27.1  
+**Method:** `benchstat`, 10 interleaved runs per variant, `-benchtime 200ms`,
+single-threaded benchmarks at `-cpu 1` and `b.RunParallel` benchmarks
+(`parallel_bench_test.go`) at `-cpu 1,8,16`. All figures are Alphanumeric
+source unless stated. Only changes with p < 0.05 are reported as changes.
+
+Before the rewrite, `String` and `(*Generator).String` allocated **twice** for
+lengths above 32 bytes: the `[]byte` buffer escaped to the heap and was then
+copied into the returned string. Both functions now allocate **exactly once**
+for every length:
+
+- up to 32 bytes, the characters are written to a `make([]byte, length)` that
+  the gc compiler places on the stack (its default variable-size `make`
+  threshold is 32 bytes) and then copied into the string — unchanged code;
+- from 33 to 256 bytes, they are written to a 256-byte stack array and copied
+  into the string;
+- above 256 bytes, they are written in 256-byte chunks to a `strings.Builder`
+  pre-sized to the final length;
+- a single-character source above 32 bytes is filled by doubling copies (up to
+  256 bytes) or `strings.Repeat` (above), without drawing random values.
+
+The output and the random values drawn are byte-identical to the previous
+implementation (pinned by `TestGeneratorStringGolden`).
+
+| Benchmark | Before | After | Δ | Allocs/op |
+|---|---|---|---|---|
+| `String(33)` | 98.00 ns | 82.01 ns | −16.3% | 2 → 1 |
+| `String(64)` | 155.5 ns | 132.9 ns | −14.5% | 2 → 1 |
+| `String(256)` | 518.4 ns | 437.8 ns | −15.6% | 2 → 1 |
+| `String(257)` | 530.4 ns | 456.0 ns | −14.0% | 2 → 1 |
+| `String(4096)` | 7.662 µs | 6.675 µs | −12.9% | 2 → 1 |
+| `String(4096, "x")` | 1745 ns | 465.0 ns | −73.4% | 2 → 1 |
+| `(*Generator).String(33)` | 90.42 ns | 76.27 ns | −15.6% | 2 → 1 |
+| `(*Generator).String(4096)` | 6.707 µs | 6.263 µs | −6.6% | 2 → 1 |
+| `String(8)` | 28.40 ns | 29.22 ns | **+2.9%** | 1 → 1 |
+| `String(8, "x")` | 16.50 ns | 17.46 ns | **+5.8%** | 1 → 1 |
+| `String(32)` | 78.80 ns | 77.63 ns | ~ | 1 → 1 |
+
+Concurrent use benefits most, because the contention evaluation for task #39 found
+the removed allocation to be the only contention source that gengo itself adds
+(allocator and GC pressure):
+
+| Parallel benchmark | 8 CPUs before → after | 16 CPUs before → after |
+|---|---|---|
+| `String(33)` | 32.36 → 19.75 ns (−39.0%) | 33.68 → 20.79 ns (−38.3%) |
+| `String(64)` | 45.19 → 29.84 ns (−34.0%) | 47.71 → 30.14 ns (−36.8%) |
+| `String(256)` | 165.4 → 106.7 ns (−35.5%) | 173.6 → 110.8 ns (−36.2%) |
+| `String(4096)` | 2.378 → 1.634 µs (−31.3%) | 2.435 → 1.684 µs (−30.9%) |
+| `String(64, "x")` | 29.63 → 17.48 ns (−41.0%) | 28.85 → 16.98 ns (−41.1%) |
+| `String(8)` | ~ | ~ |
+| `String(8, "x")` | ~ | 3.882 → 4.003 ns (**+3.1%**) |
+
+**Residual regression at 8 bytes.** `String(8, …)` is 2.9–5.8% slower
+single-threaded, and `String(8, "x")` is 3.1% slower at 16 CPUs. The code for
+lengths up to 32 bytes is unchanged; the difference comes from code layout (the
+new dispatch moves the unchanged loop to a different address, and the gc
+compiler does not align loops). It was accepted in exchange for the gains above.
+Code layout also explains why `fill` and `fillFrom` in `strings.go` differ by a
+value-preserving `& 63` mask: each form measured fastest for its function.
+
+---
+
 ## Allocations
 
 All numeric, boolean, and date functions remain at **0 B/op · 0 allocs/op** in
-both versions. String and word functions retain exactly **1 alloc/op**, matching
-the single backing-array allocation for the returned string (`Words` allocates
-once per generated word).
+both versions. String and word functions allocate exactly **1 alloc/op**, the
+returned string itself (`Words` allocates once per generated word). For
+`String` and `(*Generator).String` this holds for every length since the
+[single-allocation rewrite](#string-single-allocation-rewrite); before it,
+lengths above 32 bytes allocated twice.
 
 ---
 

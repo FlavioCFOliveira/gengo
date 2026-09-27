@@ -1,6 +1,8 @@
 package gengo
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"math/rand/v2"
@@ -212,5 +214,74 @@ func BenchmarkGeneratorString(b *testing.B) {
 	g := New(1)
 	for i := 0; i < b.N; i++ {
 		_ = g.String(8, Alphanumeric)
+	}
+}
+
+// TestGeneratorStringAllocs is the seeded-generator counterpart of
+// [TestStringAllocs]: every call must allocate exactly once.
+func TestGeneratorStringAllocs(t *testing.T) {
+	g := New(1)
+	for _, n := range stringAllocLengths {
+		for _, src := range []string{Alphanumeric, "x"} {
+			got := testing.AllocsPerRun(1000, func() { stringAllocSink = g.String(n, src) })
+			if got != 1 {
+				t.Errorf("Generator.String(%d, %q): %v allocs/op, want 1", n, src, got)
+			}
+		}
+	}
+}
+
+// TestGeneratorStringGolden pins the seeded output of Generator.String to
+// values captured from the implementation that preceded the single-allocation
+// rewrite, so the rewrite (and any later change) cannot alter the byte stream
+// or the number of values drawn from the source. Each case draws the lengths
+// below in order from a fresh generator, hashes the concatenated output, and
+// then records the generator's next Uint64: an equal hash proves identical
+// bytes, and an equal next value proves identical PRNG consumption. The
+// lengths cross the stack/builder threshold (32/33) and the chunk boundary
+// (255/256/257), and include a length that is not a multiple of the chunk.
+func TestGeneratorStringGolden(t *testing.T) {
+	lengths := []uint32{1, 8, 31, 32, 33, 64, 255, 256, 257, 1000, 4096}
+	sources := []string{Alphanumeric, Numeric, Hexadecimal, AllChars, "ab", "x"}
+	cases := []struct {
+		seed    uint64
+		source  int // index into sources
+		sha256  string
+		nextU64 uint64
+	}{
+		{1, 0, "310ce83b9beca59510c89c12cf211429fd810b56b0df206b197d13e97715dc83", 12636302130999401814},
+		{1, 1, "aab538e345dcf6832062455d61aa557cee1db55200eba4128fb6356269619ad2", 11988867876030144980},
+		{1, 2, "c4bc82244bcf705a9e0a2f98648e3aca674a6a866f2ac723ebd9e4f36ce8a6a2", 8615611939956464586},
+		{1, 3, "d86c232c65da69e83b2da23f894509bf6b22f523d68cb9fac6d407412894ed33", 3868033936739835070},
+		{1, 4, "b32c3a692377b62c34651882524de010f40bacde4dc4fbf1632bc5a266565572", 795680311429361281},
+		{1, 5, "5f4173da437bf31592f6b7ab630a90e6c4b1ad08b23dc62b46656966c99d2f56", 18395765901794496440},
+		{42, 0, "eba86189d1d9730348f64665afc10b91ca3b2da2d181b5f221439931a995c700", 1844005115005269374},
+		{42, 1, "c803c226900eff86a884b22db5e83faa94e1b26f13bcc70f07affe9608a97e26", 2620924418177351369},
+		{42, 2, "7435e893abe059cc4909a150b7ce5cfe4f805c6efff63164e25f73f0d6ed6ae4", 14372211197210585692},
+		{42, 3, "f8d0a3ff93965774b1fadf0c8ac7abf33a788ac6e10f278bcfbf4fdf90aadc81", 15901439249667060712},
+		{42, 4, "c6f3c1c46d982c76260fef0eaf295ddae9bbefbbff7c7ca2efc4c750397a7b98", 18401587758744925991},
+		{42, 5, "5f4173da437bf31592f6b7ab630a90e6c4b1ad08b23dc62b46656966c99d2f56", 11423875981923235010},
+	}
+	for _, c := range cases {
+		g := New(c.seed)
+		h := sha256.New()
+		for _, n := range lengths {
+			h.Write([]byte(g.String(n, sources[c.source])))
+		}
+		if got := hex.EncodeToString(h.Sum(nil)); got != c.sha256 {
+			t.Errorf("seed %d, source %q: output SHA-256 = %s, want %s", c.seed, sources[c.source], got, c.sha256)
+		}
+		if got := g.Uint64(); got != c.nextU64 {
+			t.Errorf("seed %d, source %q: next Uint64 = %d, want %d", c.seed, sources[c.source], got, c.nextU64)
+		}
+	}
+
+	// Readable spot check across the threshold.
+	g := New(42)
+	if got, want := g.String(33, Alphanumeric), "ctRPK3QWj6XKycZwmbwIfVmkJLBnc893z"; got != want {
+		t.Errorf("New(42).String(33) = %q, want %q", got, want)
+	}
+	if got, want := g.String(8, Alphanumeric), "3CFT5KGI"; got != want {
+		t.Errorf("New(42) second String(8) = %q, want %q", got, want)
 	}
 }
