@@ -216,6 +216,8 @@ WordsPT generates European-Portuguese (pt-PT) words: morphologically inflected p
 - **wordspt_verb_public.go** - Public verb API (`VerbPT`, `VerbPTOf`)
 - **wordspt_closed.go** - Closed-class selectors (`ArticlePT`, `PronounPT`, `NumeralPT`, `PrepositionPT`, `ConjunctionPT`, `InterjectionPT`)
 - **wordspt_word.go** - Top-level orchestration (`WordPT`, `WordPTByLengthType`, `WordsPT`)
+- **wordspt_skew_table.go** - Generated word-length threshold table (`skewThresholds`); do not edit, regenerate with `go generate`
+- **wordspt_skew_gen.go** - Generator of `wordspt_skew_table.go` (`//go:build ignore`, run by `go generate`)
 
 ### Key Patterns
 

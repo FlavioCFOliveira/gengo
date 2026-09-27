@@ -176,7 +176,7 @@ func TestSampleSyllabicStemBufferReuse(t *testing.T) {
 // TestDerivedInventoriesNoRejection verifies that the derived sampling
 // inventories share the correct-by-construction property of the base
 // inventories: for every r in [0,total) the returned index partitions the
-// cumulative table correctly, and every form is reachable. No draw is rejected.
+// cumulative weights correctly, and every form is reachable. No draw is rejected.
 func TestDerivedInventoriesNoRejection(t *testing.T) {
 	inventories := []struct {
 		name string
@@ -202,14 +202,14 @@ func TestDerivedInventoriesNoRejection(t *testing.T) {
 // and both offer the empty (vowel-initial) onset.
 func TestOnsetInventoryMembership(t *testing.T) {
 	for _, f := range []string{"lh", "nh", "ç"} {
-		if inventoryContains(onsetInitialInv, f) {
+		if inventoryContains(&onsetInitialInv, f) {
 			t.Errorf("onsetInitialInv must not contain %q", f)
 		}
-		if !inventoryContains(onsetMedialInv, f) {
+		if !inventoryContains(&onsetMedialInv, f) {
 			t.Errorf("onsetMedialInv must contain %q", f)
 		}
 	}
-	if !inventoryContains(onsetInitialInv, "") || !inventoryContains(onsetMedialInv, "") {
+	if !inventoryContains(&onsetInitialInv, "") || !inventoryContains(&onsetMedialInv, "") {
 		t.Error("onset inventories must offer the empty onset")
 	}
 }
@@ -238,16 +238,16 @@ func TestNucleiInventoryPartition(t *testing.T) {
 // the nasal that is illegal in its context and that every coda inventory offers
 // the empty (open-syllable) coda.
 func TestCodaInventoryMembership(t *testing.T) {
-	if inventoryContains(codaBeforePBInv, "n") {
+	if inventoryContains(&codaBeforePBInv, "n") {
 		t.Error("codaBeforePBInv must exclude n (nasal before p/b is m)")
 	}
-	if inventoryContains(codaBeforeOtherInv, "m") {
+	if inventoryContains(&codaBeforeOtherInv, "m") {
 		t.Error("codaBeforeOtherInv must exclude m (coda m only before p/b)")
 	}
-	if inventoryContains(codaFinalInv, "n") {
+	if inventoryContains(&codaFinalInv, "n") {
 		t.Error("codaFinalInv must exclude n (word-final nasal is m)")
 	}
-	for _, inv := range []weightedInventory{codaBeforePBInv, codaBeforeOtherInv, codaFinalInv} {
+	for _, inv := range []*weightedInventory{&codaBeforePBInv, &codaBeforeOtherInv, &codaFinalInv} {
 		if !inventoryContains(inv, "") {
 			t.Error("coda inventories must offer the empty coda")
 		}
@@ -255,7 +255,7 @@ func TestCodaInventoryMembership(t *testing.T) {
 }
 
 // inventoryContains reports whether inv holds the given form.
-func inventoryContains(inv weightedInventory, form string) bool {
+func inventoryContains(inv *weightedInventory, form string) bool {
 	for i := range inv.forms {
 		if inv.forms[i].form == form {
 			return true

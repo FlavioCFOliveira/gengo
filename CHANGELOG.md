@@ -42,6 +42,20 @@ re-tagging an existing one.
   31–41% faster under 8–16 concurrent goroutines. A single-character source is
   up to 73% faster at 4096 bytes. `String` with an 8-byte result measured 3–6% slower; the code for lengths
   up to 32 bytes is unchanged, and the difference comes from code layout.
+- **Performance:** the WordsPT sampling core no longer searches, hashes, or
+  evaluates logarithms per draw. Each weighted inventory now maps a draw to its
+  form through a precomputed lookup table instead of a binary search. The
+  nucleus inventory an onset licenses is recorded per form at package
+  initialization, replacing two string-keyed map lookups per syllable. The
+  word-length draw counts the thresholds of a generated integer table
+  (`wordspt_skew_table.go`, produced by `go generate`) instead of evaluating
+  `math.Pow`, `math.Log`, and `math.Ceil`. The output, including seeded
+  `Generator` sequences, is byte-identical. Measured on Go 1.27.1 (see
+  `BENCHMARKS.md`): `WordPT` is 34% faster, `(*Generator).WordPT` 38%,
+  `NounPT` 37%, `AdjectivePT` 34%, `VerbPT` 42%, `AdverbPT` 41%, and `WordsPT`
+  38%. Under 16 concurrent goroutines, the open-class functions are 30–36%
+  faster. Package initialization allocates 6.9 KB more (23.9 KB, 98
+  allocations) and takes about 24 µs longer.
 
 ### Added
 - `parallel_bench_test.go`: `BenchmarkParallel*` benchmarks that call the

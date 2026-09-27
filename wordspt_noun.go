@@ -369,17 +369,7 @@ func sampleNounStem(r *rand.Rand, buf []syllable, leadingCount int, end *nounEnd
 		if i == 0 {
 			onsetInv = &onsetInitialInv
 		}
-		onset := sampleForm(r, onsetInv)
-
-		nucInv := &nuclei
-		if _, front := onsetFrontVowelOnly[onset]; front {
-			nucInv = &nucleiFrontInv
-		} else if _, back := onsetBackVowelOnly[onset]; back {
-			nucInv = &nucleiBackInv
-		}
-
-		buf[i].onset = onset
-		buf[i].nucleus = sampleForm(r, nucInv)
+		buf[i].onset, buf[i].nucleus = sampleOnsetNucleus(r, onsetInv)
 		buf[i].coda = "" // fixed in pass 2
 	}
 
